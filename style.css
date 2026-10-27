@@ -2047,6 +2047,11 @@ body.is-start .sg-sky{
 .sgp-bshd{position:absolute;height:14px;border-radius:50%;pointer-events:none;opacity:0;
   background:radial-gradient(closest-side,rgba(40,18,2,.45),rgba(40,18,2,.25) 60%,transparent);}
 .sgp-bshd{opacity:1;}
+/* S02's tens cover (user 2026-10-27): the blocks drop in, so the floor shadow comes with them; the ten glows as it opens */
+.sgp-tens .sgp-bshd{opacity:0;transition:opacity .8s ease-out;}
+.sgp-tens.go .sgp-bshd{opacity:1;}
+.sgp-pc .sgp-im{transition:filter .35s;}
+.sgp-pc.sgp-glow .sgp-im{filter:brightness(1.18) drop-shadow(0 0 5px #FFF7B0) drop-shadow(0 0 12px #FFD23A);}
 /* reduced motion: the finished build, the children standing by it */
 .sgp.still .sgp-move,.sgp.still .sgp-pc,.sgp.still .sgp-pcs{opacity:1;animation:none;}
 .sgp.still .sgp-held,.sgp.still .sgp-ghost{display:none;}

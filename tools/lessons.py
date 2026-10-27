@@ -57,15 +57,19 @@ def split(n):
 # ---- slides -------------------------------------------------------------------------------------------
 slides = []
 
+# the story cast (user 2026-10-27, renamed the same day): the giver is MADHAV, the one who receives is AANYA on page 1 and PARI on the second story
+# page; each has their own round portrait (assets/char_<who>.webp + _blink, made from the user's character pictures)
+CAST = {"माधव": "madhav", "आन्या": "aanya", "परी": "pari"}
+
 # deck page 2 - "कितने बचे?" 25 − 6 = ?, told as File6's story (user 2026-10-27: "the first page similar to my file6"):
-# Meera with her 25 blocks, Aman with none, the equation under them; File6's lines with 6 for 13, then the deck's line
+# Madhav with his 25 blocks, Aanya with none, the equation under them; File6's lines with 6 for 13, then the deck's line
 slides.append({
     "id": "T1", "phase": "tutorial", "eis": "iconic", "type": "STORY_SUB", "prompt_hi": "कितने बचे?",
-    "audio": {"a": vo("vo_t1_a", "मीरा के पास कुल पच्चीस ब्लॉक्स हैं,"),
-              "b": vo("vo_t1_b6", "उनमें से छः ब्लॉक्स मीरा ने अमन को दिए हैं।"),
-              "ask": vo("vo_t1_ask", "चलिए, पता करते हैं, मीरा के पास अब कितने ब्लॉक्स बचे हैं?"),
+    "audio": {"a": vo("vo_t1_a_madhav", "माधव के पास कुल पच्चीस ब्लॉक्स हैं,"),
+              "b": vo("vo_t1_b6_madhav", "उनमें से छः ब्लॉक्स माधव ने आन्या को दिए हैं।"),
+              "ask": vo("vo_t1_ask_madhav", "चलिए, पता करते हैं, माधव के पास अब कितने ब्लॉक्स बचे हैं?"),
               "learn": vo("vo_t1_learn", "आइए, ब्लॉक्स की सहायता से सीखते हैं कि 25 में से 6 घटाने पर कितने बचते हैं।")},
-    "data": {"mode": "ask", "a": 25, "b": 6, "people": [{"who": "meera"}, {"who": "aman"}]}})
+    "data": {"mode": "ask", "a": 25, "b": 6, "people": [{"who": "madhav"}, {"who": "aanya"}]}})
 
 # deck page 3 (+ the 2nd page 2: "Appear the first screen") - Swiftee builds 25, opens a ten, takes 6 away. The deck's heading
 # "पहले 25 बनाते हैं।" sat on the 25 card: left out, as on S01's T2 (S01 user 2026-10-17)
@@ -87,13 +91,21 @@ slides.append({
               "total": vo("vo_t2_total", "यानी 25 में से 6 घटाने पर हमें मिलीं, 1 दहाई और 9 इकाई, यानी 19।"),
               "story_a": vo("vo_t2_story_a", "यहाँ हमने पच्चीस में से छः घटाए हैं, तो बचे 19।"),
               "story_b": vo("vo_t2_story_b", "अब इस डिब्बे में 19 आएगा।"),
-              "story_c": vo("vo_t2_story_c", "यानी मीरा के पास कुल 19 ब्लॉक्स बचे।")},   # (File6's closing line, user 2026-10-27)
+              "story_c": vo("vo_t2_story_c_madhav", "यानी माधव के पास कुल 19 ब्लॉक्स बचे।")},   # (File6's closing line, user 2026-10-27)
     "data": {"a": 25, "b": 6, "demo": True}})
+
+# user 2026-10-27: a second story page (a copy of page 1) before the 30 − 17 page - Madhav has 30 blocks, gives 17 to Pari
+slides.append({
+    "id": "T3", "phase": "tutorial", "eis": "iconic", "type": "STORY_SUB", "prompt_hi": "",   # (no heading - user 2026-10-27)
+    "audio": {"a": vo("vo_t3s_a_madhav", "आइए, एक और उदाहरण करते हैं। माधव के पास कुल 30 ब्लॉक्स थे।"),
+              "b": vo("vo_t3s_b_pari", "उनमें से 17 परी को दे दिए।"),
+              "ask": vo("vo_t3s_ask_madhav", "चलिए, पता करते हैं, माधव के पास अब कितने ब्लॉक्स बचे?")},
+    "data": {"mode": "ask", "a": 30, "b": 17, "people": [{"who": "madhav"}, {"who": "pari"}]}})
 
 # deck page 4 (its lines are in the deck's cover-slide notes) - 30 − 17: the child builds 30, the ten opens with the VO,
 # the child takes 7 ones (counted) and 1 ten; "= 13" lands in the equation
 slides.append({
-    "id": "T3", "phase": "tutorial", "eis": "iconic", "type": "PV_REGROUP_DEMO", "prompt_hi": "",   # (no heading - laid out as T2, user 2026-10-27)
+    "id": "T4", "phase": "tutorial", "eis": "iconic", "type": "PV_REGROUP_DEMO", "prompt_hi": "",   # (no heading - laid out as T2, user 2026-10-27)
     "audio": {"sub0": vo("vo_t3_sub0", "अब 30 में से 17 घटाते हैं।"),
               "intro": vo("vo_t3_intro", "सबसे पहले ब्लॉक्स की सहायता से 30 बनाते हैं।"),
               "digits": vo("vo_t3_digits", "30 में 3 दहाई और 0 इकाई होती हैं।"),
@@ -106,6 +118,10 @@ slides.append({
               "rm_tens": vo("vo_t3_rm_tens", "अब आप दहाइयाँ घटाइए। 2 दहाई में से 1 दहाई हटाइए।"),
               "tens_left": vo("vo_t3_tens_left", "बहुत बढ़िया! 2 दहाई में से 1 दहाई घटाने पर बची, 1 दहाई।"),
               "total": vo("vo_t3_total", "30 में से 17 घटाने पर हमें मिलीं, 1 दहाई और 3 इकाई, यानी 13।"),
+              # page 2's ending here too (user 2026-10-27): the story row of the second story page comes back
+              "story_a": vo("vo_t4_story_a", "यहाँ हमने तीस में से सत्रह घटाए हैं, तो बचे 13।"),
+              "story_b": vo("vo_t4_story_b", "अब इस डिब्बे में 13 आएगा।"),
+              "story_c": vo("vo_t4_story_c_madhav", "यानी माधव के पास कुल 13 ब्लॉक्स बचे।"),
               **{k: v for k, v in RM.items()}},
     "data": {"a": 30, "b": 17, "demo": False, "idle_ms": 3000}})
 
@@ -298,15 +314,15 @@ for sl in slides:
         cues["rm_ones"] = {"o": frac(au["rm_ones"], "इकाई")}
         tx = VO[au["rm_tens"]]
         cues["rm_tens"] = {"t": frac(au["rm_tens"], f"{at - 1} दहाई") if f"{at - 1} दहाई" in tx else frac(au["rm_tens"], "दहाइयाँ")}
-    if sl["type"] == "STORY_SUB":
+    if sl["type"] == "STORY_SUB" and "learn" in au:
         cues["learn"] = {"a": frac(au["learn"], str(a)), "b": frac(au["learn"], str(b), after="में से"),
                          "q": frac(au["learn"], "कितने")}
-    # File6: a portrait lights as its name is said (T1's lines, T2's story lines): role -> [[fraction, who], ...]
+    # File6: a portrait lights as its name is said (the story lines): role -> [[fraction, who], ...]
     if sl["type"] in ("STORY_SUB", "PV_REGROUP_DEMO"):
         names = {}
         for role, cid in au.items():
             txt = VO[cid]; hits = []
-            for word, who in (("मीरा", "meera"), ("अमन", "aman")):
+            for word, who in CAST.items():
                 i = txt.find(word)
                 while i >= 0:
                     hits.append([frac(cid, word, after=txt[:i] if i else None), who]); i = txt.find(word, i + 1)
@@ -345,7 +361,8 @@ for sl in slides:
         c["total"] = {"t": frac(au["total"], f"{rt} दहाई"), "o": frac(au["total"], f"{ro} इकाई"),
                       "n": frac(au["total"], "यानी", after="इकाई")}
         if "story_a" in au:
-            c["story"] = {"a": frac(au["story_a"], "पच्चीस"), "b": frac(au["story_a"], "छः"), "n": frac(au["story_a"], "बचे"),
+            NW = {25: "पच्चीस", 6: "छः", 30: "तीस", 17: "सत्रह"}   # (the story lines say a and b in words)
+            c["story"] = {"a": frac(au["story_a"], NW[a]), "b": frac(au["story_a"], NW[b]), "n": frac(au["story_a"], "बचे"),
                           "fill": frac(au["story_b"], str(diff)), "c": frac(au["story_c"], str(diff))}
     if cues:
         d["cues"] = cues
@@ -365,7 +382,7 @@ card = {
     "part_label": "",
     "theme": "toybox",
     "title": {"hi": "दहाई खोलकर घटाइए", "en": "Subtract horizontally with regrouping"},
-    "landing_hero": {"kind": "pv_story", "people": ["aman", "meera"], "build": "castle", "title_look": "wall", "start_at": START_AT},
+    "landing_hero": {"kind": "pv_story", "people": ["madhav", "aanya"], "build": "tens", "title_look": "wall", "start_at": START_AT},
     "skill_description_hi": "दो अंकों की संख्या में से दो अंकों की संख्या (हासिल के साथ) क्षैतिज रूप में घटाता है: इकाई कम हों, तो एक दहाई खोलकर दस इकाई बनाता है।",
     "phase_distribution": phase_n,
     "scaffold_rules": {"nudge_timeout_ms": {"tutorial": 7000, "guided": 7000, "practice": 7000, "independent": 7000},

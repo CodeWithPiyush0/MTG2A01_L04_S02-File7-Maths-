@@ -102,3 +102,36 @@ Verified: both games played landing → end side by side (frames compared page b
 | 3b | Page 3: no "कितने बचे?", laid out as page 2 | ✅ | heading removed; the equation, the 30 card, the table and the + box stand exactly where page 2's do |
 New VO: `vo_t1_b6`, `vo_t2_story_c` (Gemini, Kore), both checked by transcription. Manifest regenerated (110 recordings). Cache stamp `?v=20261027c`.
 Verified: pages 1-3 played through (every line in order, 0 console errors), frames checked.
+
+## User changes — 2026-10-27 (2)
+| # | Asked | Status | How it is built |
+|---|---|---|---|
+| 1 | The characters' names: Raju, Vaani (user's choice: Raju gives on both story pages) | ✅ | page 1: Raju (the boy's picture, left) has 25 and gives 6 to Vaani (the girl's picture, right): "राजू के पास कुल पच्चीस ब्लॉक्स हैं," / "उनमें से छः ब्लॉक्स राजू ने वाणी को दिए हैं।" / "चलिए, पता करते हैं, राजू के पास अब कितने ब्लॉक्स बचे हैं?"; page 2's ending: Raju's rod opens, 6 go into Vaani's picture, "यानी राजू के पास कुल 19 ब्लॉक्स बचे।". Each picture lights on its name |
+| 2 | A copy of page 1 after T2: "आइए, एक और उदाहरण करते हैं। राजू के पास कुल 30 ब्लॉक्स थे। उनमें से 17 मीरा को दे दिए। चलिए, पता करते हैं, राजू के पास अब कितने ब्लॉक्स बचे?" — Raju, Meera | ✅ | new T3 (`STORY_SUB`, 30 − 17): Raju with his 30 (3 rods), Meera (the girl's picture), the equation under them coming in with the lines; the 30 − 17 demo is now T4. Spelling only: है → हैं, ब्लॉकस → ब्लॉक्स, उनमे → उनमें |
+New VO (Gemini, Kore, each checked by transcription; two re-rendered once): `vo_t1_a_raju`, `vo_t1_b6_raju`, `vo_t1_ask_raju`, `vo_t2_story_c_raju`, `vo_t3s_a`, `vo_t3s_b`, `vo_t3s_ask`; the four old Meera/Aman clips removed. The lesson is now 12 slides (tutorial 4). Manifest regenerated (113 recordings). Cache stamp `?v=20261027d`.
+Note: Vaani (page 1) and Meera (page 3) share the girl's picture - the game has one boy and one girl picture.
+Verified: one unbroken run landing → end (12 pages, the 3 phase screens, 0 console errors); story frames checked.
+
+## User changes — 2026-10-27 (3)
+| # | Asked | Status | How it is built |
+|---|---|---|---|
+| 1 | T3 (the second story page): no "कितने बचे?" | ✅ | heading removed |
+| 2 | New pictures for Raju, Vaani, Meera (from the user's three character pictures) | ✅ | for each: a head-and-shoulders picture drawn by Gemini (gemini-2.5-flash-image) from the user's picture as the reference, and an eyes-shut copy of it; cut out and made into the story portrait the way the old ones are (400px: white ring, coloured disc - Raju blue, Vaani peach, Meera pink): `char_raju`, `char_vaani`, `char_meera` (+ `_blink` each - the characters blink, as before). Page 1: Raju + Vaani; page 2's ending: Raju + Vaani; page 3: Raju + Meera. The old portraits `char_aman` / `_blink` removed (no longer used); the old Meera portrait replaced |
+Tools kept for redoing the pictures: `tools/gen_char_art.py` (Gemini, the reference picture + a prompt; GEMINI_KEY) and `tools/make_portrait.py` (the cut-out and the round portrait; the eyes-shut copy placed exactly as the open one - measured overlap ≥ 0.995).
+Not changed: the first screen's two children (the castle cover) are still the old art - their animation needs whole-figure poses (standing, cheering, holding the block), not a portrait.
+Verified: pages 1-3 played (0 console errors); the blinks seen on page 1 (Raju, Vaani); frames checked. Cache stamp `?v=20261027e`.
+
+## User changes — 2026-10-27 (4)
+| # | Asked | Status | How it is built |
+|---|---|---|---|
+| 1 | The same characters on the cover page | ✅ | the castle cover's two children are now Raju (left) and Vaani (right) - the story's page-1 pair (the cover has two places). Their whole-figure poses, made like the old ones: standing (`char_<who>_full`, drawn by Gemini from the user's picture - Raju hands in pockets, Vaani hands together) and cheering with both arms up (`char_<who>_cheer`, an edit of the standing picture so the size and the feet stay put), each with its eyes-shut copy (`_blink`, overlap ≥ 0.97 with the open one). Cut out with `tools/make_poses.py` (the standing child 640px tall, the cheer at the same scale; it also finds the raised palms → `PVLanding.HANDS.raju / vaani`, where the red top they lift is held). The cover's animation itself is unchanged (glide in, lift the red tops off the castle, cheer, blink). The old cover art (`char_aman_*`, `char_meera_full*` / `_cheer*`) removed |
+Verified: the cover played through (frames checked: the glide in, the tops lifted into the raised hands, the cheer), both children blink, 0 console errors. Cache stamp `?v=20261027f`.
+
+
+## User changes — 2026-10-27 (5)
+| # | Asked | Status | How it is built |
+|---|---|---|---|
+| 1 | Page 4's ending: the same animation as page 2's | ✅ | after "…यानी 13" the table and the equation go and the second story row comes back (Madhav with his 30, Pari, 30 − 17 = ?): "यहाँ हमने तीस में से सत्रह घटाए हैं, तो बचे 13।" - his 30 beat; on «सत्रह» one of his rods opens into ten cubes (he has no ones), then 1 rod + 7 cubes fly into Pari's picture and his turn grey; his 13 beat; "अब इस डिब्बे में 13 आएगा।" - the "?" becomes 13, confetti; "यानी माधव के पास कुल 13 ब्लॉक्स बचे।" - Madhav's picture lights. Page 2's own words, with this page's numbers. (The confetti that came on "यानी 13" now waits for the "?") |
+| 2 | Names: Madhav, Aanya, Pari (the VO too) | ✅ | Raju → Madhav (माधव), Vaani → Aanya (आन्या), Meera → Pari (परी), in every line, the pictures' files (`char_madhav*`, `char_aanya*`, `char_pari*` - the same art) and the cover. Re-recorded: `vo_t1_a_madhav`, `vo_t1_b6_madhav`, `vo_t1_ask_madhav`, `vo_t2_story_c_madhav`, `vo_t3s_a_madhav`, `vo_t3s_b_pari`, `vo_t3s_ask_madhav`; new for page 4: `vo_t4_story_a`, `vo_t4_story_b`, `vo_t4_story_c_madhav`. Each checked by transcription (three re-rendered until right: one had dropped its first sentence, one said "दे दो", one slurred "आन्या"). The old Raju clips removed |
+| 3 | The cover: a new, better animation that fits this lesson | ✅ | the castle is replaced by the lesson's own blocks (`PVLanding.ART.tens`, same stage, title and play button): three green rods and two orange cubes drop in one by one (a squash and a knock each); Madhav and Aanya glide in; Madhav leans in and the rod beside the cubes rises, wobbles, glows and sparkles - and breaks into its ten cubes ("दहाई खोलकर"), which hop off it one by one, top first, in tumbling arcs, and stack with the two into a 5-4-3 pyramid; each child takes a top cube off and holds it up ("घटाइए"); a burst, the chime, the cheer, then the play button. The old castle art (`castle_*.webp`) removed |
+Verified: the cover played through (frames checked: drop in, glide, the rod opening, the cubes stacking, the cubes held up, the play button; 0 console errors); page 4 played to its new ending (0 errors); a full run landing → end. Cache stamp `?v=20261027g`.

@@ -1,7 +1,7 @@
 # MTG2A01_L04_S02 — दहाई खोलकर घटाइए (Subtract horizontally with regrouping)
 
 **Grade:** G2 · **LO:** MTG2A01_L04 · **Attribute:** A01 · **Type:** CORE
-**Slides:** 11 · Tutorial 3 / Guided 3 / Practice 5 (the celebration counts as practice)
+**Slides:** 12 · Tutorial 4 / Guided 3 / Practice 5 (the celebration counts as practice)
 **Source:** `MTG2A01_L04_S02_review1.pptx` (SME review 1). Every deck page is mapped in `CHANGES.md`.
 
 ## Built on MTG2A01_L04_S01's shell
@@ -22,10 +22,11 @@ What this skill adds (`app.js` `[pv regroup]`):
 ## The lesson
 | slide | deck | type | what happens |
 |---|---|---|---|
-| landing | p1 | — | S01's castle cover, title "दहाई खोलकर घटाइए", greeting "…आज हम दहाई खोलकर घटाना सीखेंगे।" |
-| T1 | p2 | EQ_STORY | "कितने बचे?" 25 − 6 = ?, each part with the VO |
-| T2 | p3 + p2b | PV_REGROUP_DEMO | Swiftee builds 25; "5 इकाई में से 6 …नहीं"; a ten comes over and opens (15 इकाई); she takes 6 (counted); "= 19"; the first screen returns and 19 fills the "?" |
-| T3 | p4 | PV_REGROUP_DEMO | 30 − 17 = ? asked; the child builds 30; the ten opens with the VO; the child takes 7 ones (counted) and 1 ten; "30 − 17 = 13" |
+| landing | p1 | — | the tens cover (S01's stage): three rods and two cubes drop in, Madhav and Aanya glide in, a rod opens into ten cubes that stack into a pyramid, each child holds one up and they cheer; title "दहाई खोलकर घटाइए", greeting "…आज हम दहाई खोलकर घटाना सीखेंगे।" |
+| T1 | p2 | STORY_SUB | "कितने बचे?" as File6's page 1: Madhav with his 25, Aanya with none, 25 − 6 = ? |
+| T2 | p3 + p2b | PV_REGROUP_DEMO | Swiftee builds 25; "5 इकाई में से 6 …नहीं"; a ten comes over and opens (15 इकाई); she takes 6 (counted); "= 19"; the story returns: Madhav's rod opens, 6 go to Aanya, 19 fills the "?" |
+| T3 | user | STORY_SUB | another example: Madhav with his 30, gives 17 to Pari; 30 − 17 = ? |
+| T4 | p4 | PV_REGROUP_DEMO | 30 − 17 = ? asked; the child builds 30; the ten opens with the VO; the child takes 7 ones (counted) and 1 ten; "30 − 17 = 13"; then page 2's ending: the T3 story returns, a rod opens, 17 go to Pari, 13 fills the "?" |
 | G1 | p5 | PV_SUB mcq | 42 − 27 (15 / 6 / 105): build, "…तो आप 1 दहाई को यहाँ लाइए" - the child brings it, takes 7 (counted), 2 tens |
 | G2 | p6 | PV_SUB mcq | 53 − 14 (39 / 12 / 93), the child opens the ten unprompted (reminder after 7 s) |
 | G3 | p7 | PV_SUB mcq | 46 − 28 (18 / 9 / 81) |

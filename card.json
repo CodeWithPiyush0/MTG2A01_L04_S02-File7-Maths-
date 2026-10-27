@@ -14,16 +14,16 @@
  "landing_hero": {
   "kind": "pv_story",
   "people": [
-   "aman",
-   "meera"
+   "madhav",
+   "aanya"
   ],
-  "build": "castle",
+  "build": "tens",
   "title_look": "wall",
   "start_at": 2.69
  },
  "skill_description_hi": "दो अंकों की संख्या में से दो अंकों की संख्या (हासिल के साथ) क्षैतिज रूप में घटाता है: इकाई कम हों, तो एक दहाई खोलकर दस इकाई बनाता है।",
  "phase_distribution": {
-  "tutorial": 3,
+  "tutorial": 4,
   "guided": 3,
   "practice": 5
  },
@@ -131,9 +131,9 @@
    "vo_rm_ones_less": "assets/voiceover/vo_rm_ones_less.ogg",
    "vo_rm_ones_more": "assets/voiceover/vo_rm_ones_more.ogg",
    "vo_rm_tens_more": "assets/voiceover/vo_rm_tens_more.ogg",
-   "vo_t1_a": "assets/voiceover/vo_t1_a.ogg",
-   "vo_t1_ask": "assets/voiceover/vo_t1_ask.ogg",
-   "vo_t1_b6": "assets/voiceover/vo_t1_b6.ogg",
+   "vo_t1_a_madhav": "assets/voiceover/vo_t1_a_madhav.ogg",
+   "vo_t1_ask_madhav": "assets/voiceover/vo_t1_ask_madhav.ogg",
+   "vo_t1_b6_madhav": "assets/voiceover/vo_t1_b6_madhav.ogg",
    "vo_t1_learn": "assets/voiceover/vo_t1_learn.ogg",
    "vo_t2_both_left": "assets/voiceover/vo_t2_both_left.ogg",
    "vo_t2_built": "assets/voiceover/vo_t2_built.ogg",
@@ -147,7 +147,7 @@
    "vo_t2_rm_ones": "assets/voiceover/vo_t2_rm_ones.ogg",
    "vo_t2_story_a": "assets/voiceover/vo_t2_story_a.ogg",
    "vo_t2_story_b": "assets/voiceover/vo_t2_story_b.ogg",
-   "vo_t2_story_c": "assets/voiceover/vo_t2_story_c.ogg",
+   "vo_t2_story_c_madhav": "assets/voiceover/vo_t2_story_c_madhav.ogg",
    "vo_t2_sub": "assets/voiceover/vo_t2_sub.ogg",
    "vo_t2_tens": "assets/voiceover/vo_t2_tens.ogg",
    "vo_t2_tens_note": "assets/voiceover/vo_t2_tens_note.ogg",
@@ -163,7 +163,13 @@
    "vo_t3_sub": "assets/voiceover/vo_t3_sub.ogg",
    "vo_t3_sub0": "assets/voiceover/vo_t3_sub0.ogg",
    "vo_t3_tens_left": "assets/voiceover/vo_t3_tens_left.ogg",
-   "vo_t3_total": "assets/voiceover/vo_t3_total.ogg"
+   "vo_t3_total": "assets/voiceover/vo_t3_total.ogg",
+   "vo_t3s_a_madhav": "assets/voiceover/vo_t3s_a_madhav.ogg",
+   "vo_t3s_ask_madhav": "assets/voiceover/vo_t3s_ask_madhav.ogg",
+   "vo_t3s_b_pari": "assets/voiceover/vo_t3s_b_pari.ogg",
+   "vo_t4_story_a": "assets/voiceover/vo_t4_story_a.ogg",
+   "vo_t4_story_b": "assets/voiceover/vo_t4_story_b.ogg",
+   "vo_t4_story_c_madhav": "assets/voiceover/vo_t4_story_c_madhav.ogg"
   },
   "audio_text": {
    "vo_ask_pick": "अब कितने बचे? सही संख्या चुनिए।",
@@ -245,9 +251,9 @@
    "vo_rm_ones_less": "आपने इकाई में कम हटाए हैं। दोबारा कोशिश करिए।",
    "vo_rm_ones_more": "आपने इकाई में ज़्यादा हटाए हैं। दोबारा कोशिश करिए।",
    "vo_rm_tens_more": "आपने दहाई में ज़्यादा हटाए हैं। दोबारा कोशिश करिए।",
-   "vo_t1_a": "मीरा के पास कुल पच्चीस ब्लॉक्स हैं,",
-   "vo_t1_ask": "चलिए, पता करते हैं, मीरा के पास अब कितने ब्लॉक्स बचे हैं?",
-   "vo_t1_b6": "उनमें से छः ब्लॉक्स मीरा ने अमन को दिए हैं।",
+   "vo_t1_a_madhav": "माधव के पास कुल पच्चीस ब्लॉक्स हैं,",
+   "vo_t1_ask_madhav": "चलिए, पता करते हैं, माधव के पास अब कितने ब्लॉक्स बचे हैं?",
+   "vo_t1_b6_madhav": "उनमें से छः ब्लॉक्स माधव ने आन्या को दिए हैं।",
    "vo_t1_learn": "आइए, ब्लॉक्स की सहायता से सीखते हैं कि 25 में से 6 घटाने पर कितने बचते हैं।",
    "vo_t2_both_left": "तो, अब यहाँ 1 दहाई और 9 इकाई बचीं।",
    "vo_t2_built": "यह हमने ब्लॉक्स से संख्या पच्चीस बना ली।",
@@ -261,7 +267,7 @@
    "vo_t2_rm_ones": "अब इसमें से 6 इकाई को हटाते हैं,",
    "vo_t2_story_a": "यहाँ हमने पच्चीस में से छः घटाए हैं, तो बचे 19।",
    "vo_t2_story_b": "अब इस डिब्बे में 19 आएगा।",
-   "vo_t2_story_c": "यानी मीरा के पास कुल 19 ब्लॉक्स बचे।",
+   "vo_t2_story_c_madhav": "यानी माधव के पास कुल 19 ब्लॉक्स बचे।",
    "vo_t2_sub": "अब 25 में से 6 घटाते हैं। 6 में सिर्फ 6 इकाई होती हैं।",
    "vo_t2_tens": "2 दहाई के लिए 2 बंडल रखते हैं।",
    "vo_t2_tens_note": "चूँकि इसमें दहाइयाँ नहीं थीं, तो यहाँ 1 दहाई ही बची।",
@@ -277,7 +283,13 @@
    "vo_t3_sub": "अब 30 में से 17 घटाते हैं। तो पहले हम इकाई से घटाएँगे।",
    "vo_t3_sub0": "अब 30 में से 17 घटाते हैं।",
    "vo_t3_tens_left": "बहुत बढ़िया! 2 दहाई में से 1 दहाई घटाने पर बची, 1 दहाई।",
-   "vo_t3_total": "30 में से 17 घटाने पर हमें मिलीं, 1 दहाई और 3 इकाई, यानी 13।"
+   "vo_t3_total": "30 में से 17 घटाने पर हमें मिलीं, 1 दहाई और 3 इकाई, यानी 13।",
+   "vo_t3s_a_madhav": "आइए, एक और उदाहरण करते हैं। माधव के पास कुल 30 ब्लॉक्स थे।",
+   "vo_t3s_ask_madhav": "चलिए, पता करते हैं, माधव के पास अब कितने ब्लॉक्स बचे?",
+   "vo_t3s_b_pari": "उनमें से 17 परी को दे दिए।",
+   "vo_t4_story_a": "यहाँ हमने तीस में से सत्रह घटाए हैं, तो बचे 13।",
+   "vo_t4_story_b": "अब इस डिब्बे में 13 आएगा।",
+   "vo_t4_story_c_madhav": "यानी माधव के पास कुल 13 ब्लॉक्स बचे।"
   }
  },
  "slides": [
@@ -288,9 +300,9 @@
    "type": "STORY_SUB",
    "prompt_hi": "कितने बचे?",
    "audio": {
-    "a": "vo_t1_a",
-    "b": "vo_t1_b6",
-    "ask": "vo_t1_ask",
+    "a": "vo_t1_a_madhav",
+    "b": "vo_t1_b6_madhav",
+    "ask": "vo_t1_ask_madhav",
     "learn": "vo_t1_learn"
    },
    "data": {
@@ -299,10 +311,10 @@
     "b": 6,
     "people": [
      {
-      "who": "meera"
+      "who": "madhav"
      },
      {
-      "who": "aman"
+      "who": "aanya"
      }
     ],
     "cues": {
@@ -314,24 +326,24 @@
      "names": {
       "a": [
        [
-        0.099,
-        "meera"
+        0.101,
+        "madhav"
        ]
       ],
       "b": [
        [
-        0.451,
-        "meera"
+        0.435,
+        "madhav"
        ],
        [
-        0.6,
-        "aman"
+        0.579,
+        "aanya"
        ]
       ],
       "ask": [
        [
         0.378,
-        "meera"
+        "madhav"
        ]
       ]
      }
@@ -361,7 +373,7 @@
     "total": "vo_t2_total",
     "story_a": "vo_t2_story_a",
     "story_b": "vo_t2_story_b",
-    "story_c": "vo_t2_story_c"
+    "story_c": "vo_t2_story_c_madhav"
    },
    "data": {
     "a": 25,
@@ -371,8 +383,8 @@
      "names": {
       "story_c": [
        [
-        0.174,
-        "meera"
+        0.173,
+        "madhav"
        ]
       ]
      },
@@ -432,6 +444,53 @@
    "id": "T3",
    "phase": "tutorial",
    "eis": "iconic",
+   "type": "STORY_SUB",
+   "prompt_hi": "",
+   "audio": {
+    "a": "vo_t3s_a_madhav",
+    "b": "vo_t3s_b_pari",
+    "ask": "vo_t3s_ask_madhav"
+   },
+   "data": {
+    "mode": "ask",
+    "a": 30,
+    "b": 17,
+    "people": [
+     {
+      "who": "madhav"
+     },
+     {
+      "who": "pari"
+     }
+    ],
+    "cues": {
+     "names": {
+      "a": [
+       [
+        0.452,
+        "madhav"
+       ]
+      ],
+      "b": [
+       [
+        0.507,
+        "pari"
+       ]
+      ],
+      "ask": [
+       [
+        0.4,
+        "madhav"
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "id": "T4",
+   "phase": "tutorial",
+   "eis": "iconic",
    "type": "PV_REGROUP_DEMO",
    "prompt_hi": "",
    "audio": {
@@ -447,6 +506,9 @@
     "rm_tens": "vo_t3_rm_tens",
     "tens_left": "vo_t3_tens_left",
     "total": "vo_t3_total",
+    "story_a": "vo_t4_story_a",
+    "story_b": "vo_t4_story_b",
+    "story_c": "vo_t4_story_c_madhav",
     "rm_ones_more": "vo_rm_ones_more",
     "rm_ones_less": "vo_rm_ones_less",
     "rm_tens_more": "vo_rm_tens_more",
@@ -458,6 +520,14 @@
     "demo": false,
     "idle_ms": 3000,
     "cues": {
+     "names": {
+      "story_c": [
+       [
+        0.176,
+        "madhav"
+       ]
+      ]
+     },
      "sub0": {
       "a": 0.152,
       "op": 0.325,
@@ -496,6 +566,13 @@
       "t": 0.539,
       "o": 0.671,
       "n": 0.793
+     },
+     "story": {
+      "a": 0.218,
+      "b": 0.395,
+      "n": 0.717,
+      "fill": 0.521,
+      "c": 0.489
      }
     }
    }
