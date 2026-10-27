@@ -259,12 +259,14 @@ function setPlaying(on){
   // .playing toggle across the header chip AND the tut-card replay chip (the header is hidden in the
   // tut frame, so the in-card .tut-audio is the only visible affordance and must react to VO too).
   isPlaying=on;
+  document.body.classList.toggle("vo-busy", !!on);   // user 2026-10-26: while a voice line plays nothing on the page takes a tap (style.css)
   bgmDuck();
   /* [QA 05] only the chip the audio is actually coming FROM animates, and only one at a time.
      It used to pulse every chip for every sound - option words, feedback, the count-aloud. */
   const src = on && currentAudio ? srcOf(currentAudio) : null;
   const from = on ? chipFor(src) : null;
   document.querySelectorAll(".audio-chip, .tut-audio, .sg-vo").forEach(c => c.classList.toggle("playing", c === from));
+  if(typeof pvChipPaint === "function" && state && state.seqTalk) pvChipPaint();   // (the page still talking: the chip's pulse stays on)
   swApplyPose();   // freeze/unfreeze Swiftie's mouth: animate only while a clip is sounding
 }
 /* [QA 15] ONE reusable VO element, not a new Audio() per clip. Every clip used to get its own
@@ -297,7 +299,7 @@ function chipFor(src){
    The tap still reports audio_replayed (flagged ignored), so every tap is logged. */
 function replayTap(slide, src){
   state.audioReplays++;
-  const busy = isPlaying;
+  const busy = isPlaying || state.speakerLive === false;
   GameBus.emit("audio_replay", { slide_id: slide ? slide.id : "landing", phase: slide ? slide.phase : "landing",
     count: state.audioReplays, src: src, ignored_while_playing: busy });
   return !busy;
@@ -1031,7 +1033,10 @@ const PVK = (function(){
     };
     return C;
   }
-  const run = (C, fn)=> fn().catch(e =>{ if(e !== C.STOP) console.error("[pv]", e); });
+  /* [QA BUG_09 / 04 / 07] the page's own flow is "talking" while it runs (C.seq); the child-input steps (build, take away,
+     cards, keypad) put themselves in C.waits while they wait for the child - see pvSpeaker */
+  const run = (C, fn)=>{ C.seq = true;
+    return fn().catch(e =>{ if(e !== C.STOP) console.error("[pv]", e); }).finally(()=>{ C.seq = false; }); };
 
   /* ---- blocks: a rod (kind "t", size = its height) or a cube (kind "o", size = its side) ---- */
   function block(sc, kind, x, y, size){
@@ -1089,18 +1094,19 @@ const PVK = (function(){
   /* ---- a dotted outline (the ten's ring, the drop target) with ONE dot missing: the gap travels round the shape a dot at a
      time while the dots stay put (review 2026-10-14). An SVG rect over the box: w x h its size, sw the line, r the corner,
      dash / gap the dot and space in px; one more than "dash" is left out so the pattern goes exactly round. ---- */
-  function dashBox(el, w, h, sw, r, dash, gap){
+  /* still: an even dotted line that does not move - no missing dot, no travel (S02's ten-frame ring, user 2026-10-27) */
+  function dashBox(el, w, h, sw, r, dash, gap, still){
     const NS = "http://www.w3.org/2000/svg", i = sw / 2, iw = w - sw, ih = h - sw, rr = Math.max(0, Math.min(r - i, iw / 2, ih / 2));
     const per = 2 * (iw + ih) - 8 * rr + 2 * Math.PI * rr, n = Math.max(6, Math.round(per / (dash + gap)));
     const d = 10 * dash / (dash + gap), g = 10 - d, pat = [];
-    for(let k = 0; k < n - 2; k++) pat.push(d, g);
-    pat.push(d, g + d + g);                                         // the missing dot
+    for(let k = 0; k < n - (still ? 0 : 2); k++) pat.push(d, g);
+    if(!still) pat.push(d, g + d + g);                              // the missing dot
     const svg = document.createElementNS(NS, "svg"), rc = document.createElementNS(NS, "rect");
     svg.setAttribute("class", "pv-dash"); svg.setAttribute("width", w); svg.setAttribute("height", h);
     [["x", i], ["y", i], ["width", iw], ["height", ih], ["rx", rr], ["pathLength", n * 10], ["stroke-dasharray", pat.map(v => +v.toFixed(3)).join(" ")]]
       .forEach(([k, v])=> rc.setAttribute(k, v));
     svg.appendChild(rc); el.appendChild(svg);
-    if(!reduce()) rc.animate([{ strokeDashoffset: 0 }, { strokeDashoffset: -n * 10 }],
+    if(!reduce() && !still) rc.animate([{ strokeDashoffset: 0 }, { strokeDashoffset: -n * 10 }],
                              { duration: n * 85, iterations: Infinity, easing: "steps(" + n + ")" });
     return svg;
   }
@@ -1233,10 +1239,10 @@ Object.assign(PVK, (function(){
   /* the dashed ring round the first ten cubes of a table (the ten-frame's two rows) */
   function ring(T, on){
     if(!T._ring){ const w = 5 * T.G + 4 * T.g + 14, h = 2 * T.cH + T.g + 14;
-      T._ring = add(T.sc, "div", "pv-ring pv-hide", "width:" + px(w) + ";height:" + px(h)); K.dashBox(T._ring, w, h, 4, 14, 11, 8);
+      T._ring = add(T.sc, "div", "pv-ring pv-hide", "width:" + px(w) + ";height:" + px(h)); K.dashBox(T._ring, w, h, 4, 14, 11, 8, true);
       T.extra.push(T._ring); }
     if(on !== false){ const p = T.onesXY(0); setXY(T._ring, p.x - 7, p.y - 7); }      // round the first ten where they stand now
-    T._ring.classList.toggle("pv-hide", on === false); if(on !== false) pop(T._ring);
+    T._ring.classList.toggle("pv-hide", on === false);                                 // (no pop, no moving dots - user 2026-10-27)
     return T._ring;
   }
   /* MAKE A TEN: the first ten cubes of table S stack into one column in their इकाई column - left of the cubes left over, the
@@ -1491,6 +1497,7 @@ Object.assign(PVK, (function(){
       const els = opts.map(v =>{ const o = add(box, "button", "mq-opt"); o.type = "button"; o.textContent = devNumeral(v); o._v = v; return o; });
       const right = els.find(o => o._v === cfg.answer);
       let wrong = 0, busy = true, idleT = 0, layer3 = false, over = false;
+      (C.waits = C.waits || []).push({ live: ()=> !over, busy: ()=> busy });
       const M = { box, els, right,
         open(){ box.classList.add("in"); },
         hide(on){ box.classList.toggle("pv-hide", on !== false); },
@@ -1508,7 +1515,7 @@ Object.assign(PVK, (function(){
         sfxWrongSoft(); setSwMood("tryagain");
         o.classList.add("wrong"); shake(o, 9); setTimeout(()=> o.classList.remove("wrong"), 900);
         await C.wait(450);
-        setSwMood("hint");
+        /* (QA BUG_06: Swiftee stays sad through the whole wrong-answer sequence - the hint too; back to normal after it) */
         await cfg.ladder(wrong, M);
         if(C.alive() && !over){ busy = false; setSwMood("point"); arm(); }
       }
@@ -1577,7 +1584,8 @@ Object.assign(PVK, (function(){
       const ok = keys["✓"];
       if(cfg.padAt) setXY(pad, cfg.padAt.cx != null ? cfg.padAt.cx - pad.offsetWidth / 2 : cfg.padAt.x, cfg.padAt.y);
       else setXY(pad, x0 + ansW + 40, cfg.y + 40 + ans.offsetHeight / 2 - pad.offsetHeight / 2);
-      let typed = [], wrong = 0, busy = false, open = false, over = false, idleT = 0, guide = null;
+      let typed = [], wrong = 0, busy = false, open = false, over = false, idleT = 0, guide = null, ready = false;
+      (C.waits = C.waits || []).push({ live: ()=> ready && !over, busy: ()=> busy });
       const P = { ans, pad,
         hide(on){ if(!T) ans.classList.toggle("pv-hide", on !== false); pad.classList.toggle("pv-hide", on !== false || !open); },
         guideKeys(){ guide = 0; Object.values(keys).forEach(b => b.classList.add("locked")); lightKey(); } };
@@ -1618,7 +1626,7 @@ Object.assign(PVK, (function(){
         GameBus.emit("answer_wrong", { slide_id: slide.id, phase: slide.phase, attempts: wrong });
         sfxWrongSoft(); setSwMood("tryagain"); ans.classList.add("wrong"); shake(ans, 9);
         await C.wait(800); ans.classList.remove("wrong"); typed = []; render();
-        setSwMood("hint");
+        /* (QA BUG_06: Swiftee stays sad through the whole wrong-answer sequence - the hint too; back to normal after it) */
         await cfg.ladder(wrong, P);
         if(C.alive() && !over){ busy = false; setSwMood("point"); render(); arm(); }
       }
@@ -1631,7 +1639,7 @@ Object.assign(PVK, (function(){
         typed.push(b._k); K.knock(); render(); pop(slot.querySelectorAll(".pv-ch")[typed.length - 1]);
         if(guide != null){ guide++; lightKey(); }
       }));
-      P.ready = ()=>{ arm(); };   // the box pulses its cursor; the hand only after 7s idle (user 2026-10-15: "comes too early")
+      P.ready = ()=>{ ready = true; arm(); };   // the box pulses its cursor; the hand only after 7s idle (user 2026-10-15: "comes too early")
       cfg.onReady && cfg.onReady(P);
     });
   }
@@ -1719,6 +1727,7 @@ Object.assign(PVK, (function(){
     const want = { t: Math.floor(n / 10), o: n % 10 };
     return new Promise(res =>{
       let idleT = 0, fin = false;
+      (C.waits = C.waits || []).push({ live: ()=> !fin, busy: ()=> false });
       const cnt = k => T.list(k).length;
       const next = ()=> cnt("t") < want.t ? "t" : (cnt("o") < want.o ? "o" : null);
       const vo = idleVo(C, ()=>{ const k = fin ? null : next(); return k ? "vo_idle_build_" + k : null; });
@@ -1782,6 +1791,7 @@ Object.assign(PVK, (function(){
   function removeChild(C, T, need, cfg){
     cfg = cfg || {};
     return new Promise(res =>{
+      (C.waits = C.waits || []).push({ live: ()=> !fin, busy: ()=> busy });
       let wrongs = 0, guided = { o: false, t: false }, wrongsBy = { o: 0, t: 0 }, busy = false, fin = false, idleT = 0, settleT = 0, onesSaid = false;
       const gone = k => T.list(k).filter(b => b._removed).length;
       const all = ()=> [...T.rods, ...T.cubes];
@@ -1834,7 +1844,7 @@ Object.assign(PVK, (function(){
         back.forEach((x, i)=> setTimeout(()=>{ if(C.alive()) putBack(C, x, cfg.to); }, i * 70));
         await C.wait(back.length * 70 + 600);
         if(T.counts) T.counts();
-        setSwMood("hint");
+        /* (QA BUG_06: Swiftee stays sad through the whole wrong-answer sequence - the hint too; back to normal after it) */
         /* the guide is the column's own (user 2026-10-23): two mistakes in the ones guide the ones only - the tens are
            then taken as usual, unless they too get two mistakes */
         const k = b._kind;
@@ -1934,6 +1944,7 @@ Object.assign(PVK, (function(){
     cfg = cfg || {};
     return new Promise(res =>{
       const rods = left(T, "t"); let idleT = 0, fin = false;
+      (C.waits = C.waits || []).push({ live: ()=> !fin, busy: ()=> false });   // [QA BUG_09] waiting for the child: the speaker may replay
       const vo = idleVo(C, ()=> fin ? null : "vo_idle_open");
       const arm = ()=>{ clearTimeout(idleT); idleT = setTimeout(()=>{ if(!C.alive() || fin) return;
         rods.forEach(r => K.repulse(r)); if(cfg.hand) placeNudge(rods[rods.length - 1]); arm(); }, cfg.idle || IDLE_MS); };
@@ -1973,7 +1984,24 @@ function pvPadPage(sc, L, d, hidden){
 }
 /* every table of the lesson is the same size (SME review 3): its tens column is wide enough for nine rods */
 const pvTable = (sc, L, cx, y)=> PVK.table(sc, { cx, y, cube: L.cube, blk: L.blk, pad: L.pad, tensMax: 9, tensFinal: 0, onesMax: 9 });
-function pvReplay(C){ state.replayAudio = ()=>{ if(!isPlaying && C.cur && C.alive()) C.say(C.cur).catch(()=>{}); }; }
+function pvReplay(C){ state.replayAudio = ()=>{ if(!isPlaying && C.cur && C.alive()) C.say(C.cur).catch(()=>{}); };
+  /* [QA BUG_09 / 04 / 07, as HI02H11_L02_S02] the speaker of the page: it takes a tap only when the page is WAITING FOR THE CHILD
+     (a build / take-away / cards / keypad step that is not itself talking) or its flow has ended - never while the page
+     talks (its opening lines and the pauses between them, a hint sequence, the lines after a right answer), and never
+     once the page is answered. While the page talks its chip pulses steadily (no on-off between two lines). */
+  const sync = ()=>{ if(!C.alive()) return false;
+    const waiting = (C.waits || []).some(w => w.live() && !w.busy());
+    state.speakerLive = !state.slideDone && !state.locked && (!C.seq || waiting);
+    state.seqTalk = !!C.seq && !waiting && !state.slideDone;
+    pvChipPaint(); return true; };
+  sync(); const iv = setInterval(()=>{ if(!sync()) clearInterval(iv); }, 120);
+}
+function pvChipPaint(){
+  const chip = document.querySelector("#slideHost .tut-audio") || document.getElementById("audioChip"); if(!chip) return;
+  chip.classList.toggle("chip-wait", state.speakerLive === false);
+  if(state.seqTalk) chip.classList.add("playing");
+  else if(!isPlaying) chip.classList.remove("playing");
+}
 /* two tables side by side, as far apart as they need to be (an 8-rod table is wider than a 3-rod one) */
 function pvPair(TA, TB, cx, gap, minHalf){
   const half = Math.max(Math.max(TA.W, TB.W) / 2 + (gap || 34), minHalf || 0);
@@ -2005,8 +2033,6 @@ function pvStoryScene(sc, d, dy){
   S.names = (cues, role, list)=> (list || []).concat(((cues && cues.names) || {})[role] ? cues.names[role].map(([f, who])=> [f, ()=> S.hl(who)]) : []);
   return S;
 }
-/* S02's first screen (deck page 2, and page 3's end): only the number sentence "a − b = ?", big, in the tutorial card's middle */
-function pvEqScene(sc, d){ return PVK.equation(sc, d.a, d.b, 666, 300, 112, "−"); }
 const PVModules = {
   STORY_SUB: {
     /* deck page 2 / "Appear the first screen" - "कितने बचे?", in the sibling's STORY page: the two people's round
@@ -2029,7 +2055,8 @@ const PVModules = {
         await C.cue("b", S.names(CU, "b", [[0.05, ()=>{ K.show(pB); sfxPop(); }], [0.72, ()=>{ K.show(minus); K.show(cB); sfxPop(); }]]));
         C.guard();
         await C.cue("ask", S.names(CU, "ask", [[0.15, ()=> K.show(eqs)], [0.6, ()=>{ K.show(cQ); cQ.classList.add("pulse"); }]]));
-        await C.cue("learn", [[0.3, ()=> say(cA)], [0.5, ()=> say(cB)], [0.8, ()=>{ cQ.classList.remove("pulse"); void cQ.offsetWidth; cQ.classList.add("pulse"); }]]);
+        const cl = CU.learn || { a: .3, b: .5, q: .8 };                      // (S02: the times measured from the clip)
+        await C.cue("learn", [[cl.a, ()=> say(cA)], [cl.b, ()=> say(cB)], [cl.q, ()=>{ cQ.classList.remove("pulse"); void cQ.offsetWidth; cQ.classList.add("pulse"); }]]);
         setNavActive(true);
       });
     }
@@ -2135,28 +2162,6 @@ const PVModules = {
       });
     }
   },
-  EQ_STORY: {
-    /* S02 deck page 2 - "कितने बचे?": no people, only the number sentence 25 − 6 = ? in the card's middle, each part coming in
-       as it is said ("Sync 25, −, 6, =, ? with the VO"): 25 on "पच्चीस", − on "घटा", 6 on "छः", = on "बराबर", ? on "कितना";
-       then "…25 में से 6 घटाने पर कितने बचते हैं" lights 25, 6 and the "?". data: { a, b, cues }. audio: a, learn. */
-    mount(host, slide){
-      const d = slide.data, K = PVK, sc = K.scene(host), C = K.ctx(slide, sc), CU = d.cues || {};
-      state.ownsAudio = true; setNavActive(false); pvReplay(C);
-      const E = pvEqScene(sc, d), P = [E.a, E.op, E.b, E.eq, E.q];
-      const say = e =>{ e.classList.remove("pv-say"); void e.offsetWidth; e.classList.add("pv-say"); };
-      const inn = e =>{ K.show(e); sfxPop(); };
-      P.forEach(e => e.classList.add("pv-hide"));
-      K.run(C, async ()=>{
-        await C.wait(300);
-        const c = CU.a || { a: .45, op: .55, b: .65, eq: .75, q: .88 };
-        await C.cue("a", [[c.a, ()=> inn(E.a)], [c.op, ()=> inn(E.op)], [c.b, ()=> inn(E.b)], [c.eq, ()=> inn(E.eq)], [c.q, ()=>{ inn(E.q); E.q.classList.add("pulse"); }]]);
-        P.forEach(e => K.show(e));
-        const l = CU.learn || { a: .4, b: .55, q: .8 };
-        await C.cue("learn", [[l.a, ()=> say(E.a)], [l.b, ()=> say(E.b)], [l.q, ()=>{ E.q.classList.remove("pulse"); void E.q.offsetWidth; E.q.classList.add("pulse"); }]]);
-        setNavActive(true);
-      });
-    }
-  },
   PV_REGROUP_DEMO: {
     /* S02 deck pages 3 and 4 - subtraction WITH regrouping, in one table (as S01's T2). data.demo true (page 3, 25 − 6): Swiftee's
        hand builds 25; "5 इकाई में से 6 इकाई नहीं घटाई जा सकती…"; on "हम 1 दहाई को यहाँ लाएँगे" a rod moves into the इकाई
@@ -2167,13 +2172,12 @@ const PVModules = {
        "…यानी 13" fills the equation's "?". Beats, no glow. data: { a, b, demo, idle_ms, cues }. */
     mount(host, slide){
       const d = slide.data, K = PVK, sc = K.scene(host), C = K.ctx(slide, sc), CU = d.cues || {};
-      /* page 4 keeps its heading "कितने बचे?" (every mockup of it shows it): the number, the equation and the table stand 48px
-         lower, clear of it */
-      const L = slide.prompt_hi ? Object.assign({}, PV_LAY.tut, { numY: PV_LAY.tut.numY + 48, eqY: PV_LAY.tut.eqY + 48, tableY: PV_LAY.tut.tableY + 44 }) : PV_LAY.tut;
+      const L = PV_LAY.tut;                                      // (pages 3 and 4 laid out alike - user 2026-10-27)
       state.ownsAudio = true; setNavActive(false); setSwMood("teach"); pvReplay(C);
       const A = pvSplit(d.a), B = pvSplit(d.b), R = pvSplit(d.a - d.b), diff = d.a - d.b;
       const prompt = host.closest(".tut-card").querySelector(".tut-prompt");
       const card = K.numCard(sc, d.a, L.cx, L.numY, L.numH);
+      if(audioFor(slide, "sub0")) card.classList.add("pv-hide");   // page 4 opens on the question: the card hidden from the first frame (it flashed - user 2026-10-27)
       const TA = pvTable(sc, L, L.cx, L.tableY); TA.el.classList.add("pv-hide");
       const E = K.equation(sc, d.a, d.b, L.cx, L.eqY, L.eqH, "−"); E.el.classList.add("pv-hide");
       const eqP = [E.a, E.op, E.b, E.eq, E.q];
@@ -2209,10 +2213,14 @@ const PVModules = {
         }
         await C.cue("built", [[0.15, ()=> K.popTable(TA)]]);
         GameBus.emit("pv_build_done", { slide_id: slide.id });
-        src.fade(); card.classList.add("pv-gone"); if(d.demo) prompt.classList.add("pv-gone");   // (page 4 keeps "कितने बचे?" - its mockups)
+        src.fade(); card.classList.add("pv-gone"); prompt.classList.add("pv-gone");
         await C.wait(350);
         await eqIn("sub");
-        if(C.has("cant")) await C.cue("cant", [[(CU.cant || { o: .1 }).o, bO]]);
+        /* "5 इकाई में से 6 इकाई नहीं घटाई जा सकती…": the 5 of 25 lights on "5 इकाई", the 6 on "6 इकाई"; both stay lit through the
+           line (user 2026-10-27) */
+        if(C.has("cant")){ const c = CU.cant || { o: .05, b: .25 };
+          await C.cue("cant", [[c.o, ()=>{ K.lightDigit(E.a, "o"); bO(); }], [c.b, ()=> K.lightDigit(E.b, "o")]]);
+          K.lightDigit(E.a, "o", false); K.lightDigit(E.b, "o", false); }
         /* the ten: brought in on "हम 1 दहाई को यहाँ लाएँगे", opened on "तोड़ेंगे" */
         const co = CU.open || { bring: .3, split: .55 };
         let opening = null;
@@ -2253,18 +2261,52 @@ const PVModules = {
           C.guard(); try{ confettiCannon(); }catch(e){} setSwMood("happy");
         }
         await C.wait(500);
-        /* page 3's end - "Appear the first screen": the table and the equation go, T1's screen comes back; "…तो बचे 19।" -
-           25 and 6 light; "अब इस डिब्बे में 19 आएगा।" - 19 lands in the "?" */
-        if(C.has("story_a")){
-          TA.fade(); E.el.classList.add("pv-gone"); PVSFX.move(); prompt.classList.remove("pv-gone"); prompt.textContent = "कितने बचे?";
+        /* page 3's end - "Appear the first screen", as File6's T2 ends (user 2026-10-27): the table and the equation go, T1's
+           story row comes back (Meera, her 25, Aman with none, 25 − 6 = ?). "…पच्चीस में से छः घटाए…" - her 25 beat; on "छः"
+           one of her rods opens into ten cubes (she has only 5 ones), then 6 of them go into Aman's picture and hers turn grey;
+           "बचे 19" - her 19 left beat; "अब इस डिब्बे में 19 आएगा।" - the "?" becomes 19; "यानी मीरा के पास कुल 19 ब्लॉक्स बचे।" */
+        const SD = (CARD.slides.find(x => x.type === "STORY_SUB") || {}).data;
+        if(SD && C.has("story_a")){
+          TA.fade(); E.el.classList.add("pv-gone"); PVSFX.move();
           await C.wait(550); C.guard();
-          const S = pvEqScene(sc, d), P = [S.a, S.op, S.b, S.eq, S.q];
-          P.forEach((e, i)=>{ e.classList.add("pv-hide"); setTimeout(()=>{ if(C.alive()){ K.show(e); if(!i) sfxPop(); } }, i * 70); });
-          await C.wait(600); C.guard();
-          const cy = CU.story || { a: .25, b: .45, n: .78, fill: .5 };
-          await C.cue("story_a", [[cy.a, ()=> say(S.a)], [cy.b, ()=> say(S.b)], [cy.n, ()=> S.q.classList.add("pulse")]]);
-          await C.cue("story_b", [[cy.fill, ()=>{ S.q.classList.remove("pulse"); S.fill(diff); sfxCorrect(); }]]);
+          const S = pvStoryScene(sc, SD, -34), all = S.parts();
+          all.forEach(e => e.classList.add("pv-hide"));
+          all.forEach((e, i)=> setTimeout(()=>{ if(C.alive()){ K.show(e); if(i % 4 === 0) PVSFX.appear(); } }, i * 30));
+          await C.wait(all.length * 30 + 450); C.guard();
+          const G = S.gA, BB = pvSplit(d.b);
+          /* her rod opens: the rod goes (a sparkle), ten cubes come out of it and take their places beside her own five */
+          const openRod = async ()=>{
+            const rod = G.rods.pop(); if(!rod) return;
+            const LO = G.layout(G.rods.length, G.cubes.length + 10), cs = S.cs, cH = cs * K.CUBE.ar;
+            K.sparkles(C, rod._x + rod._w / 2, rod._y + rod._h / 2, 10); PVSFX.magic();
+            rod.classList.add("pv-gone"); setTimeout(()=> rod.remove(), 450);
+            const ten = []; for(let j = 0; j < 10; j++) ten.push(K.block(sc, "o", rod._x + (rod._w - cs) / 2, rod._y + j * (rod._h - cH) / 9, cs));
+            G.rods.forEach((r, j)=> K.glide(r, LO.rod(j), 560, false));
+            G.cubes.forEach((c, i)=> K.glide(c, LO.cube(i), 560, false));
+            const n0 = G.cubes.length; G.cubes.push(...ten);
+            await Promise.all(ten.map((c, j)=> K.wait(j * 40).then(()=> K.glide(c, LO.cube(n0 + j), 600, true))));
+            K.knock(); };
+          let kept = [];
+          /* (File6: a copy of each goes to Aman - into his picture and gone - and hers turns grey where it stands) */
+          const give = async ()=>{
+            const goR = G.rods.slice(G.rods.length - BB.t), goC = G.cubes.slice(G.cubes.length - BB.o);
+            kept = [...G.rods.slice(0, G.rods.length - BB.t), ...G.cubes.slice(0, G.cubes.length - BB.o)];
+            PVSFX.move(); const at = S.amanAt;
+            await Promise.all([...goR, ...goC].map((x, n)=> K.wait(n * 90).then(()=>{ if(!C.alive()) return;
+              const c = K.block(sc, x._kind, x._x, x._y, x._kind === "t" ? S.BH : S.cs); x.classList.add("pv-taken");
+              return K.glide(c, { x: at.x - c._w / 2, y: at.y - c._h / 2 }, 650, true).then(()=>{
+                c.animate([{ scale: "1", opacity: 1 }, { scale: ".2", opacity: 0 }], { duration: 260, easing: "ease-in" }).onfinish = ()=> c.remove();
+                if(n === 0 || n === goR.length + goC.length - 1) K.beat([S.pB], 0); }); }))); };
+          let giving = null;
+          const cy = CU.story || { a: .25, b: .45, n: .78, fill: .5, c: .6 };
+          await C.cue("story_a", S.names(CU, "story_a", [[cy.a, ()=>{ say(S.cA); K.beat(S.gA.all(), 25); }],
+                                  [cy.b, ()=>{ say(S.cB); giving = (A.o < B.o ? openRod() : Promise.resolve()).then(()=> C.alive() && give()); }],
+                                  [cy.n, ()=>{ (giving || Promise.resolve()).then(()=>{ if(C.alive()) K.beat(kept, 60); }); }]]));
+          if(giving) await giving; C.guard();
+          await C.cue("story_b", [[0.12, ()=> S.cQ.classList.add("pulse")],
+                                  [cy.fill, ()=>{ S.cQ.classList.remove("pulse"); S.cQ.innerHTML = K.numHTML(diff); S.cQ.classList.add("filled"); K.pop(S.cQ); sfxCorrect(); }]]);
           C.guard(); try{ confettiCannon(); }catch(e){} setSwMood("happy");
+          if(C.has("story_c")) await C.cue("story_c", S.names(CU, "story_c", [[cy.c, ()=>{ K.beat(kept, 60); say(S.cQ); }]]));
         }
         await C.wait(600);
         setNavActive(true);
@@ -2808,6 +2850,7 @@ function mountSlideNow(idx){
   state.attempts = 0; state.selectedKey = null; state.locked = false;
   state.hintUsed = false; state.nudgeUsed = false; state.scaffoldLevel = 0; state.hintActive = false;
   state.audioReplays = 0; state.gateNavUntilAudio = false; state.endBtnPending = false;
+  state.speakerLive = undefined; state.seqTalk = false; state.slideDone = false;   // [QA BUG_09/07] the speaker, per page
   state.replayAudio = null;   // a module may set a slide-specific replay (e.g. teach slides whose
                               // audio roles aren't in the autoPlayChain order); else the chip replays the chain
   state.ownsAudio = false;    // a module that drives its OWN audio sequence sets this → skip autoPlayChain
@@ -3022,6 +3065,7 @@ function phaseBlurTransition(cb, toPhase){
 }
 
 function completeSlide(success){
+  state.slideDone = true; state.speakerLive = false; state.seqTalk = false;   // [QA BUG_07] answered: the speaker takes no tap
   const slide = CARD.slides[state.idx];
   GameBus.emit("slide_completed", {
     slide_id: slide.id, phase: slide.phase, success: !!success,
@@ -3265,7 +3309,9 @@ const ASSET_SIZES = {
   "assets/voiceover/vo_rm_ones_less.ogg": 14424,
   "assets/voiceover/vo_rm_ones_more.ogg": 14986,
   "assets/voiceover/vo_rm_tens_more.ogg": 15734,
-  "assets/voiceover/vo_t1_a.ogg": 24956,
+  "assets/voiceover/vo_t1_a.ogg": 10531,
+  "assets/voiceover/vo_t1_ask.ogg": 15153,
+  "assets/voiceover/vo_t1_b6.ogg": 13337,
   "assets/voiceover/vo_t1_learn.ogg": 26153,
   "assets/voiceover/vo_t2_both_left.ogg": 15117,
   "assets/voiceover/vo_t2_built.ogg": 11402,
@@ -3279,6 +3325,7 @@ const ASSET_SIZES = {
   "assets/voiceover/vo_t2_rm_ones.ogg": 10996,
   "assets/voiceover/vo_t2_story_a.ogg": 17618,
   "assets/voiceover/vo_t2_story_b.ogg": 10024,
+  "assets/voiceover/vo_t2_story_c.ogg": 14229,
   "assets/voiceover/vo_t2_sub.ogg": 20150,
   "assets/voiceover/vo_t2_tens.ogg": 12878,
   "assets/voiceover/vo_t2_tens_note.ogg": 17500,

@@ -1,7 +1,10 @@
 <!doctype html>
-<html lang="hi">
+<html lang="hi" translate="no" class="notranslate">
 <head>
 <meta charset="utf-8">
+<!-- [QA BUG_01] Chrome offered to translate the Hindi, and a translated page breaks the game (Translate rewrites the text the
+     engine drives - in HI02H11 the Play button went). The lesson is never to be translated. -->
+<meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">   <!-- [responsive] the page fills the whole screen (notch, home bar); app.js fits the stage inside the safe area -->
 <title>SwiftPAL · MTG2A01_L04_S02 · दहाई खोलकर घटाइए</title>
 <link rel="icon" href="data:,">   <!-- [QA 15] no favicon request: the browser's automatic /favicon.ico 404 was the last console error -->
@@ -9,7 +12,7 @@
      request, so without this the very first paint is unstyled. This inline rule
      lands the loader's own colour on the first frame. -->
 <style>html,body{background:#FFFFFF;margin:0;}</style>
-<link rel="stylesheet" href="style.css?v=20261026e">
+<link rel="stylesheet" href="style.css?v=20261027c">
 <!-- [loading] the landing's own files start downloading with the page, alongside style.css - not only once app.js has
      arrived and asked for them (the boot loader waits for exactly these: app.js Assets, CRIT). http(s) only: on
      file:// a preload of a fetch() fails, and local files need no head start. -->
@@ -280,6 +283,8 @@
    "vo_rm_ones_more": "assets/voiceover/vo_rm_ones_more.ogg",
    "vo_rm_tens_more": "assets/voiceover/vo_rm_tens_more.ogg",
    "vo_t1_a": "assets/voiceover/vo_t1_a.ogg",
+   "vo_t1_ask": "assets/voiceover/vo_t1_ask.ogg",
+   "vo_t1_b6": "assets/voiceover/vo_t1_b6.ogg",
    "vo_t1_learn": "assets/voiceover/vo_t1_learn.ogg",
    "vo_t2_both_left": "assets/voiceover/vo_t2_both_left.ogg",
    "vo_t2_built": "assets/voiceover/vo_t2_built.ogg",
@@ -293,6 +298,7 @@
    "vo_t2_rm_ones": "assets/voiceover/vo_t2_rm_ones.ogg",
    "vo_t2_story_a": "assets/voiceover/vo_t2_story_a.ogg",
    "vo_t2_story_b": "assets/voiceover/vo_t2_story_b.ogg",
+   "vo_t2_story_c": "assets/voiceover/vo_t2_story_c.ogg",
    "vo_t2_sub": "assets/voiceover/vo_t2_sub.ogg",
    "vo_t2_tens": "assets/voiceover/vo_t2_tens.ogg",
    "vo_t2_tens_note": "assets/voiceover/vo_t2_tens_note.ogg",
@@ -390,7 +396,9 @@
    "vo_rm_ones_less": "आपने इकाई में कम हटाए हैं। दोबारा कोशिश करिए।",
    "vo_rm_ones_more": "आपने इकाई में ज़्यादा हटाए हैं। दोबारा कोशिश करिए।",
    "vo_rm_tens_more": "आपने दहाई में ज़्यादा हटाए हैं। दोबारा कोशिश करिए।",
-   "vo_t1_a": "यहाँ एक संख्या वाक्य दिया हुआ है। पच्चीस घटा छः बराबर कितना?",
+   "vo_t1_a": "मीरा के पास कुल पच्चीस ब्लॉक्स हैं,",
+   "vo_t1_ask": "चलिए, पता करते हैं, मीरा के पास अब कितने ब्लॉक्स बचे हैं?",
+   "vo_t1_b6": "उनमें से छः ब्लॉक्स मीरा ने अमन को दिए हैं।",
    "vo_t1_learn": "आइए, ब्लॉक्स की सहायता से सीखते हैं कि 25 में से 6 घटाने पर कितने बचते हैं।",
    "vo_t2_both_left": "तो, अब यहाँ 1 दहाई और 9 इकाई बचीं।",
    "vo_t2_built": "यह हमने ब्लॉक्स से संख्या पच्चीस बना ली।",
@@ -404,6 +412,7 @@
    "vo_t2_rm_ones": "अब इसमें से 6 इकाई को हटाते हैं,",
    "vo_t2_story_a": "यहाँ हमने पच्चीस में से छः घटाए हैं, तो बचे 19।",
    "vo_t2_story_b": "अब इस डिब्बे में 19 आएगा।",
+   "vo_t2_story_c": "यानी मीरा के पास कुल 19 ब्लॉक्स बचे।",
    "vo_t2_sub": "अब 25 में से 6 घटाते हैं। 6 में सिर्फ 6 इकाई होती हैं।",
    "vo_t2_tens": "2 दहाई के लिए 2 बंडल रखते हैं।",
    "vo_t2_tens_note": "चूँकि इसमें दहाइयाँ नहीं थीं, तो यहाँ 1 दहाई ही बची।",
@@ -426,28 +435,56 @@
   {
    "id": "T1",
    "phase": "tutorial",
-   "eis": "symbolic",
-   "type": "EQ_STORY",
+   "eis": "iconic",
+   "type": "STORY_SUB",
    "prompt_hi": "कितने बचे?",
    "audio": {
     "a": "vo_t1_a",
+    "b": "vo_t1_b6",
+    "ask": "vo_t1_ask",
     "learn": "vo_t1_learn"
    },
    "data": {
+    "mode": "ask",
     "a": 25,
     "b": 6,
-    "cues": {
-     "a": {
-      "a": 0.552,
-      "op": 0.653,
-      "b": 0.711,
-      "eq": 0.755,
-      "q": 0.842
+    "people": [
+     {
+      "who": "meera"
      },
+     {
+      "who": "aman"
+     }
+    ],
+    "cues": {
      "learn": {
       "a": 0.472,
       "b": 0.633,
       "q": 0.773
+     },
+     "names": {
+      "a": [
+       [
+        0.099,
+        "meera"
+       ]
+      ],
+      "b": [
+       [
+        0.451,
+        "meera"
+       ],
+       [
+        0.6,
+        "aman"
+       ]
+      ],
+      "ask": [
+       [
+        0.378,
+        "meera"
+       ]
+      ]
      }
     }
    }
@@ -474,13 +511,22 @@
     "both_left": "vo_t2_both_left",
     "total": "vo_t2_total",
     "story_a": "vo_t2_story_a",
-    "story_b": "vo_t2_story_b"
+    "story_b": "vo_t2_story_b",
+    "story_c": "vo_t2_story_c"
    },
    "data": {
     "a": 25,
     "b": 6,
     "demo": true,
     "cues": {
+     "names": {
+      "story_c": [
+       [
+        0.174,
+        "meera"
+       ]
+      ]
+     },
      "intro": {
       "n": 0.589
      },
@@ -496,7 +542,8 @@
       "o": 0.682
      },
      "cant": {
-      "o": 0.045
+      "o": 0.045,
+      "b": 0.218
      },
      "open": {
       "o": null,
@@ -526,7 +573,8 @@
       "a": 0.221,
       "b": 0.443,
       "n": 0.714,
-      "fill": 0.523
+      "fill": 0.523,
+      "c": 0.489
      }
     }
    }
@@ -536,7 +584,7 @@
    "phase": "tutorial",
    "eis": "iconic",
    "type": "PV_REGROUP_DEMO",
-   "prompt_hi": "कितने बचे?",
+   "prompt_hi": "",
    "audio": {
     "sub0": "vo_t3_sub0",
     "intro": "vo_t3_intro",
@@ -1174,6 +1222,6 @@
 
 <!-- ============ ENGINE ============ -->
 <script src="swiftpal-bridge.js"></script>   <!-- [QA 01] host bridge: Android / iOS / web - must load before app.js -->
-<script src="app.js?v=20261026e"></script>
+<script src="app.js?v=20261027c"></script>
 </body>
 </html>

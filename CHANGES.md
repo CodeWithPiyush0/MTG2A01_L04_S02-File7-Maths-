@@ -78,3 +78,27 @@ say their line were re-rendered (`vo_num_5/6/7`, `vo_t3_build`, `vo_t3_rm_ones`,
 - `vo_num_8` ("आठ।") — the transcriber hears every single-word count as "एक" (it does so for S01's approved "तीन" too), so it could not be confirmed
 - `vo_t2_cant` — the transcriber hears "क्योंकि" where the line says "चूँकि"
 - every count word `vo_num_4…8`
+
+## Sync with MTG2A01_L04_S01 — 2026-10-27 (its commits 7a4e2db + a29b606, after this build was copied from it)
+Merged three-way (S01 7a4e2db = the version this build was copied from, as the base): S01's changes came in as written, no conflicts.
+| S01 change | Here |
+|---|---|
+| QA BUG_01: no Google Translate offer (`translate="no"`, `notranslate`) | ✅ |
+| QA BUG_09 / 04 / 07: the speaker takes a tap only while the page waits for the child or has ended; steady pulse while the page talks; none once answered | ✅ + the open-a-ten step registers as "waiting for the child" (measured on G2: speaker off while Swiftee talks, on while the rods wait) |
+| No taps while a voice line plays (`body.vo-busy`) | ✅ |
+| QA BUG_06: Swiftee stays sad through the whole wrong-answer help | ✅ |
+| The VO manifest `lesson_vo_manifest.xlsx` (`tools/gen_vo_manifest.py`) | ✅ ported with this lesson's pages (the regroup demo, the open-a-ten step and its reminder, the counts): 170 rows, 107 recordings, none missing |
+| Cache stamps | `?v=20261027a` |
+Verified: both games played landing → end side by side (frames compared page by page), 0 console errors in either.
+
+## User changes — 2026-10-27
+| # | Asked | Status | How it is built |
+|---|---|---|---|
+| 1 | Page 1 like File6 (user's choice: File6's story with 25 − 6) | ✅ | `STORY_SUB` (File6's module): Meera with her 25 blocks, Aman with none, 25 − 6 = ? under them, the portrait lights on its name. VO: "मीरा के पास कुल पच्चीस ब्लॉक्स हैं," + "चलिए, पता करते हैं, मीरा के पास अब कितने ब्लॉक्स बचे हैं?" (File6's own clips), new "उनमें से छः ब्लॉक्स मीरा ने अमन को दिए हैं।", and the deck's "आइए, ब्लॉक्स की सहायता से सीखते हैं कि 25 में से 6 घटाने पर कितने बचते हैं।" (25, 6, ? light on their words). The equation-only page is removed |
+| 2a | Page 2: "5 इकाई में से 6 इकाई नहीं…" - highlight 5 and 6 in the equation | ✅ | the 5 of 25 lights on «5 इकाई», the 6 on «6 इकाई»; both stay lit through the line (times from the clip) |
+| 2b | The border round the opened ten: no animation | ✅ | an even dotted line that stands still: no travelling gap, no pop, no pulsing dots (`dashBox(..., still)`, `.pv-ring` CSS) - measured: 0 animations on it |
+| 2c | Page 2's end like File6's | ✅ | the story row comes back; on «छः» one of Meera's rods opens into ten cubes (she has only five ones), 6 of them fly into Aman's picture and hers turn grey; her 19 beat on «बचे 19»; «19 आएगा» fills the "?"; new closing line "यानी मीरा के पास कुल 19 ब्लॉक्स बचे।" (File6's) |
+| 3a | Page 3: the 30 flashed as the page opened | ✅ | the 30 card is hidden from its first frame when the page opens on the question - measured: 0 of 178 frames show it |
+| 3b | Page 3: no "कितने बचे?", laid out as page 2 | ✅ | heading removed; the equation, the 30 card, the table and the + box stand exactly where page 2's do |
+New VO: `vo_t1_b6`, `vo_t2_story_c` (Gemini, Kore), both checked by transcription. Manifest regenerated (110 recordings). Cache stamp `?v=20261027c`.
+Verified: pages 1-3 played through (every line in order, 0 console errors), frames checked.
