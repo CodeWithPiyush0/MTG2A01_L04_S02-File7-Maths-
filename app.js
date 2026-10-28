@@ -2889,18 +2889,17 @@ const PVLanding = {
     const AT = +((CARD.landing_hero || {}).start_at) || 0;
     let greeted = false;
     /* the tens cover runs WITH the greeting (its beats are the greeting's words): it starts when the clip is really
-       playing, its clock set from the clip. Sound refused before the first tap (the live site, autoplay policy): nothing
-       moves yet - the speaker pulses with a gold ring ("tap me") and the child's first tap anywhere starts the greeting,
-       and the picture with it. A clip that cannot play at all (a missing file): the picture on its own clock, 4s on. */
-    const tapMe = on =>{ const v = document.getElementById("sgVo"); if(v) v.classList.toggle("sg-tapme", on); };
+       playing, its clock set from the clip. Sound refused (the live site, autoplay policy - the boot loader's tap
+       normally unlocks it first): nothing moves yet, and the next "sg-greeting-start" (a tap) starts the greeting and the
+       picture with it. A clip that cannot play at all (a missing file): the picture on its own clock, 4s on. */
     const withVoice = ()=>{ const t0 = Date.now(); let blocked = false;
       const onB = ()=>{ blocked = true; }; document.addEventListener("vo-blocked", onB, { once: true });
       const tick = ()=>{ if(started) return;
         const a = typeof currentAudio !== "undefined" ? currentAudio : null;
         if(a && !a.paused && a.currentTime > 0){ document.removeEventListener("vo-blocked", onB);
-          window.__sgT0 = Date.now() - a.currentTime * 1000; tapMe(false); go(); return; }
-        if(blocked){ tapMe(true); return; }                                    // (the next "sg-greeting-start" tries again)
-        if(Date.now() - t0 > 4000){ document.removeEventListener("vo-blocked", onB); tapMe(false); go(); return; }
+          window.__sgT0 = Date.now() - a.currentTime * 1000; go(); return; }
+        if(blocked) return;                                                    // (the next "sg-greeting-start" tries again)
+        if(Date.now() - t0 > 4000){ document.removeEventListener("vo-blocked", onB); go(); return; }
         setTimeout(tick, 30); };
       tick(); };
     document.addEventListener("sg-greeting-start", ()=>{ greeted = true; window.__sgT0 = Date.now();
@@ -3859,11 +3858,34 @@ function boot(){
   // ===== QA CHECKLIST [02]: PRELOAD BEFORE THE START SCREEN - since 2026-10-01 only what the START SCREEN shows. It
   // used to be every image and clip of the lesson ([loading], Assets); each slide now waits for its own files instead
   // (mountSlide), so art and VO still never pop in mid-lesson. A FAILED ASSET COUNTS AS DONE: a 404 never strands. ----
+  /* User fix 2026-10-28 ("bring back the loader" / no glowing speaker / the greeting only on a tap): the loader shows at
+     least BL_MIN_MS (the cover's files are small, so it used to flash for ~0.4s), and on a browser that refuses sound
+     before a tap (the live site; the app allows it) it ENDS on the round play button: that tap lifts it and starts the
+     greeting inside the tap itself, so the cover's voice and picture begin together as it appears. Sound allowed: it
+     lifts by itself, as before. The probe is a silent clip; no answer in 1.5s counts as allowed. */
+  const BL_MIN_MS = 1500;
+  const SILENT = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQQAAACAgICA";
+  const soundAllowed = cb =>{ let t = 0; const fin = ok =>{ if(t < 0) return; clearTimeout(t); t = -1; cb(ok); };
+    t = setTimeout(()=> fin(true), 1500);
+    try{ const p = new Audio(SILENT).play();
+      if(p && p.then) p.then(()=> fin(true), e => fin(!(e && e.name === "NotAllowedError"))); else fin(true);
+    }catch(e){ fin(true); } };
   (function(){
     const bl = $("bootLoader");
     if(!bl){ document.body.classList.add("loaded"); playLanding(); Assets.start(); return; }
+    let settled = false;
     const ready = ()=>{
-      if(bl.classList.contains("done")) return;   // the files + the watchdog both land here → dedup
+      if(settled) return;                          // the files + the watchdog both land here → dedup
+      settled = true;
+      setTimeout(()=> soundAllowed(ok => ok ? lift() : askTap()), Math.max(0, BL_MIN_MS - performance.now()));
+    };
+    const askTap = ()=>{
+      if(!bl.isConnected) return;
+      bl.classList.add("tap");
+      bl.addEventListener("click", lift, { once: true });   // (click, not pointerdown: a touch's pointerdown does not unlock sound)
+    };
+    const lift = ()=>{
+      if(bl.classList.contains("done")) return;
       bl.classList.add("done");
       document.body.classList.add("loaded");       // starts the .sg-acell pop chain
       /* [QA 03] the landing wave plays ONCE (the .webp's loop count is 1). It decodes under the loader, so without a
@@ -3882,7 +3904,7 @@ function boot(){
      silenced it again. */
   window.addEventListener("pointerdown", function tapStart(ev){
     if(_greetingHeard || !onLandingNow()){ window.removeEventListener("pointerdown", tapStart, true); return; }
-    if(ev && ev.target && ev.target.closest && ev.target.closest("#sgBtn, #sgVo")) return;   // (they start it themselves)
+    if(ev && ev.target && ev.target.closest && ev.target.closest("#sgBtn, #sgVo, #bootLoader")) return;   // (they start it themselves)
     if(!isPlaying) playLanding(); }, true);   // (any tap until the greeting has really been heard - the live site refuses sound before one)
 
   $("sgBtn").onclick = ()=>{

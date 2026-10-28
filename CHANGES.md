@@ -153,3 +153,14 @@ Fix (`app.js`, `style.css`):
 - The tens cover now starts only when the greeting is really playing, its clock set from the clip - so its beats stay on their words however late the greeting starts. Refused: nothing moves yet, and the cover's speaker asks for a tap (a strong pulse with a gold ring, `.sg-tapme`); the child's first tap anywhere starts the greeting and the picture with it. A clip that cannot play at all (a missing file): the picture runs on its own after 4 s.
 - Any tap on the cover starts a refused greeting, until it has really been heard (was: only the very first tap).
 Verified under the real autoplay policy (headless Chrome without the autoplay flag): before a tap nothing moves and the speaker pulses; after a tap the greeting plays and the beats land on its words (glide 0.39 s, drop 1.36 s, rise 2.95 s, open 3.73 s, cheer 4.69-4.72 s), then the play button. With autoplay allowed (the app): the same beats; a full run landing → end, 0 console errors. Cache stamp `?v=20261028b`.
+
+
+## User fix — 2026-10-28 (2): the loader back, no gold glow, the greeting without a tap on the cover
+Asked: "bring back the loader, also why there is yellow glow around the speaker button in the cover page and when I click on the page then VO plays - fix all these".
+Cause: the loader was never removed, but the tens cover's files are small, so it lifted after ~0.4 s and was not seen. The gold ring was the previous fix's "tap me" signal for a refused greeting; a browser refuses ALL sound until the visitor's first tap (no page can get round it), so on the live site the greeting could only start on a tap on the cover.
+Fix (`index.html`, `app.js`, `style.css`):
+- The boot loader shows at least 1.5 s.
+- A silent probe asks the browser whether sound may play. Allowed (the app): the loader lifts by itself, as before. Refused (the live site): once the cover's files are in, the loader's animation gives way to the round play button (it pops in and beats gently; the whole white screen is the tap target). That tap lifts the loader and starts the greeting inside the tap itself, so the cover's voice and its animation begin together as the cover appears - no tap on the cover needed.
+- The gold ring / pulse on the cover's speaker (`.sg-tapme`) is removed.
+- `style.css` back to LF line endings (the previous fix had rewritten it as CRLF; no content change).
+Verified, muted (headless Chrome `--mute-audio`): real autoplay policy - the loader's play button at 1.4 s, its tap → the greeting and the cover in step (glide 0.41 s, drop 1.36 s, cheer 4.70 s on the clip), then the play button; autoplay allowed - the loader lifts at 1.5 s, the same beats; no glow anywhere; a full run landing → `lesson_completed`, 0 console errors. Cache stamp `?v=20261028c`.
