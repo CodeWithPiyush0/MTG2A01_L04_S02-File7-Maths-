@@ -66,6 +66,7 @@
    "vo_cel": "assets/voiceover/vo_cel.ogg",
    "vo_g1_build": "assets/voiceover/vo_g1_build.ogg",
    "vo_g1_correct": "assets/voiceover/vo_g1_correct.ogg",
+   "vo_g1_correct_late": "assets/voiceover/vo_g1_correct_late.ogg",
    "vo_g1_eq": "assets/voiceover/vo_g1_eq.ogg",
    "vo_g1_h2": "assets/voiceover/vo_g1_h2.ogg",
    "vo_g1_ones_left": "assets/voiceover/vo_g1_ones_left.ogg",
@@ -79,6 +80,7 @@
    "vo_g1_sub": "assets/voiceover/vo_g1_sub.ogg",
    "vo_g2_build": "assets/voiceover/vo_g2_build.ogg",
    "vo_g2_correct": "assets/voiceover/vo_g2_correct.ogg",
+   "vo_g2_correct_late": "assets/voiceover/vo_g2_correct_late.ogg",
    "vo_g2_h2": "assets/voiceover/vo_g2_h2.ogg",
    "vo_g2_prompt": "assets/voiceover/vo_g2_prompt.ogg",
    "vo_g2_reveal": "assets/voiceover/vo_g2_reveal.ogg",
@@ -86,6 +88,7 @@
    "vo_g2_rm_tens": "assets/voiceover/vo_g2_rm_tens.ogg",
    "vo_g2_sub": "assets/voiceover/vo_g2_sub.ogg",
    "vo_g3_correct": "assets/voiceover/vo_g3_correct.ogg",
+   "vo_g3_correct_late": "assets/voiceover/vo_g3_correct_late.ogg",
    "vo_g3_h2": "assets/voiceover/vo_g3_h2.ogg",
    "vo_g3_prompt": "assets/voiceover/vo_g3_prompt.ogg",
    "vo_g3_reveal": "assets/voiceover/vo_g3_reveal.ogg",
@@ -109,6 +112,7 @@
    "vo_num_7": "assets/voiceover/vo_num_7.ogg",
    "vo_p1_ask": "assets/voiceover/vo_p1_ask.ogg",
    "vo_p1_correct": "assets/voiceover/vo_p1_correct.ogg",
+   "vo_p1_correct_late": "assets/voiceover/vo_p1_correct_late.ogg",
    "vo_p1_h2": "assets/voiceover/vo_p1_h2.ogg",
    "vo_p1_prompt": "assets/voiceover/vo_p1_prompt.ogg",
    "vo_p1_reveal": "assets/voiceover/vo_p1_reveal.ogg",
@@ -116,6 +120,7 @@
    "vo_p1_rm_tens": "assets/voiceover/vo_p1_rm_tens.ogg",
    "vo_p1_sub": "assets/voiceover/vo_p1_sub.ogg",
    "vo_p2_correct": "assets/voiceover/vo_p2_correct.ogg",
+   "vo_p2_correct_late": "assets/voiceover/vo_p2_correct_late.ogg",
    "vo_p2_h2": "assets/voiceover/vo_p2_h2.ogg",
    "vo_p2_prompt": "assets/voiceover/vo_p2_prompt.ogg",
    "vo_p2_reveal": "assets/voiceover/vo_p2_reveal.ogg",
@@ -123,10 +128,12 @@
    "vo_p2_rm_tens": "assets/voiceover/vo_p2_rm_tens.ogg",
    "vo_p2_sub": "assets/voiceover/vo_p2_sub.ogg",
    "vo_p3_correct": "assets/voiceover/vo_p3_correct.ogg",
+   "vo_p3_correct_late": "assets/voiceover/vo_p3_correct_late.ogg",
    "vo_p3_h2": "assets/voiceover/vo_p3_h2.ogg",
    "vo_p3_prompt": "assets/voiceover/vo_p3_prompt.ogg",
    "vo_p3_reveal": "assets/voiceover/vo_p3_reveal.ogg",
    "vo_p4_correct": "assets/voiceover/vo_p4_correct.ogg",
+   "vo_p4_correct_late": "assets/voiceover/vo_p4_correct_late.ogg",
    "vo_p4_h2": "assets/voiceover/vo_p4_h2.ogg",
    "vo_p4_prompt": "assets/voiceover/vo_p4_prompt.ogg",
    "vo_p4_reveal": "assets/voiceover/vo_p4_reveal.ogg",
@@ -182,6 +189,7 @@
    "vo_cel": "शाबाश! आपने दहाई खोलकर घटाना सीख लिया!",
    "vo_g1_build": "सबसे पहले ब्लॉक्स की सहायता से 42 बनाइए, जिसमें 4 दहाई और 2 इकाई होते हैं।",
    "vo_g1_correct": "शाबाश! 42 में से 27 घटाने पर हमें मिलीं 1 दहाई और 5 इकाई, यानी 15।",
+   "vo_g1_correct_late": "42 में से 27 घटाने पर हमें मिलीं 1 दहाई और 5 इकाई, यानी 15।",
    "vo_g1_eq": "इसलिए 42 घटा 27 बराबर 15।",
    "vo_g1_h2": "42 में से 27 घटाने पर, 1 दहाई और 5 इकाई बचती हैं।",
    "vo_g1_ones_left": "इन 12 इकाई में से 7 इकाई हटाने पर बचीं, 5 इकाई।",
@@ -195,6 +203,7 @@
    "vo_g1_sub": "और अब 27 घटाते हैं, 27 में 2 दहाई और 7 इकाई हैं।",
    "vo_g2_build": "सबसे पहले ब्लॉक्स की सहायता से 53 बनाइए।",
    "vo_g2_correct": "शाबाश! 53 घटा 14 बराबर 39।",
+   "vo_g2_correct_late": "53 घटा 14 बराबर 39।",
    "vo_g2_h2": "53 में से 14 घटाने पर, 3 दहाई और 9 इकाई बचती हैं।",
    "vo_g2_prompt": "53 में से 14 घटाइए।",
    "vo_g2_reveal": "53 में से 14 घटाने पर 39 बचता है। तो सही संख्या यह है।",
@@ -202,6 +211,7 @@
    "vo_g2_rm_tens": "अब दहाइयाँ घटाइए।",
    "vo_g2_sub": "और अब इसमें से 14 घटाइए।",
    "vo_g3_correct": "शाबाश! 46 घटा 28 बराबर 18।",
+   "vo_g3_correct_late": "46 घटा 28 बराबर 18।",
    "vo_g3_h2": "46 में से 28 घटाने पर, 1 दहाई और 8 इकाई बचती हैं।",
    "vo_g3_prompt": "46 में से 28 घटाइए।",
    "vo_g3_reveal": "46 में से 28 घटाने पर 18 बचता है। तो सही संख्या यह है।",
@@ -225,6 +235,7 @@
    "vo_num_7": "सात।",
    "vo_p1_ask": "अब कितने बचे? नीचे डिब्बे पर टैप करके सही संख्या लिखिए।",
    "vo_p1_correct": "शाबाश! 74 में से 58 घटाने पर हमें मिला 16।",
+   "vo_p1_correct_late": "74 में से 58 घटाने पर हमें मिला 16।",
    "vo_p1_h2": "74 में से 58 घटाने पर, 1 दहाई और 6 इकाई बचती हैं।",
    "vo_p1_prompt": "74 में से 58 घटाइए।",
    "vo_p1_reveal": "74 में से 58 घटाने पर 16 बचता है। तो सही संख्या यह है।",
@@ -232,6 +243,7 @@
    "vo_p1_rm_tens": "अब दहाइयाँ घटाइए।",
    "vo_p1_sub": "और अब इसमें से 58 घटाते हैं।",
    "vo_p2_correct": "शाबाश! 61 में से 35 घटाने पर हमें मिला 26।",
+   "vo_p2_correct_late": "61 में से 35 घटाने पर हमें मिला 26।",
    "vo_p2_h2": "61 में से 35 घटाने पर, 2 दहाई और 6 इकाई बचती हैं।",
    "vo_p2_prompt": "61 में से 35 घटाइए।",
    "vo_p2_reveal": "61 में से 35 घटाने पर 26 बचता है। तो सही संख्या यह है।",
@@ -239,10 +251,12 @@
    "vo_p2_rm_tens": "अब दहाइयाँ हटाइए।",
    "vo_p2_sub": "और अब इसमें से 35 घटाते हैं।",
    "vo_p3_correct": "शाबाश! आपने सही संख्या चुन ली। 84 घटा 46 बराबर 38।",
+   "vo_p3_correct_late": "आपने सही संख्या चुन ली। 84 घटा 46 बराबर 38।",
    "vo_p3_h2": "84 में से 46 घटाने पर, 3 दहाई और 8 इकाई बचती हैं।",
    "vo_p3_prompt": "84 में से 46 घटाइए और सही संख्या चुनिए।",
    "vo_p3_reveal": "84 में से 46 घटाने पर 38 बचता है। तो सही संख्या यह है।",
    "vo_p4_correct": "शाबाश! आपने सही संख्या चुन ली। 91 घटा 14 बराबर 77।",
+   "vo_p4_correct_late": "आपने सही संख्या चुन ली। 91 घटा 14 बराबर 77।",
    "vo_p4_h2": "91 में से 14 घटाने पर, 7 दहाई और 7 इकाई बचती हैं।",
    "vo_p4_prompt": "91 में से 14 घटाइए और सही संख्या चुनिए।",
    "vo_p4_reveal": "91 में से 14 घटाने पर 77 बचता है। तो सही संख्या यह है।",
@@ -604,7 +618,8 @@
     "h2": "vo_g1_h2",
     "reveal": "vo_g1_reveal",
     "correct": "vo_g1_correct",
-    "eq": "vo_g1_eq"
+    "eq": "vo_g1_eq",
+    "correct_late": "vo_g1_correct_late"
    },
    "data": {
     "a": 42,
@@ -688,7 +703,8 @@
     "recount": "vo_h_recount",
     "h2": "vo_g2_h2",
     "reveal": "vo_g2_reveal",
-    "correct": "vo_g2_correct"
+    "correct": "vo_g2_correct",
+    "correct_late": "vo_g2_correct_late"
    },
    "data": {
     "a": 53,
@@ -722,6 +738,13 @@
        0.461,
        0.621,
        0.74
+      ],
+      "correct_late": [
+       0.072,
+       0.263,
+       0.358,
+       0.549,
+       0.692
       ]
      },
      "build": {
@@ -760,7 +783,8 @@
     "recount": "vo_h_recount",
     "h2": "vo_g3_h2",
     "reveal": "vo_g3_reveal",
-    "correct": "vo_g3_correct"
+    "correct": "vo_g3_correct",
+    "correct_late": "vo_g3_correct_late"
    },
    "data": {
     "a": 46,
@@ -794,6 +818,13 @@
        0.462,
        0.624,
        0.745
+      ],
+      "correct_late": [
+       0.074,
+       0.264,
+       0.359,
+       0.549,
+       0.691
       ]
      },
      "sub": {
@@ -828,7 +859,8 @@
     "recount": "vo_h_recount",
     "h2": "vo_p1_h2",
     "reveal": "vo_p1_reveal",
-    "correct": "vo_p1_correct"
+    "correct": "vo_p1_correct",
+    "correct_late": "vo_p1_correct_late"
    },
    "data": {
     "a": 74,
@@ -882,7 +914,8 @@
     "recount": "vo_h_recount",
     "h2": "vo_p2_h2",
     "reveal": "vo_p2_reveal",
-    "correct": "vo_p2_correct"
+    "correct": "vo_p2_correct",
+    "correct_late": "vo_p2_correct_late"
    },
    "data": {
     "a": 61,
@@ -928,7 +961,8 @@
     "order": "vo_h_order",
     "h2": "vo_p3_h2",
     "reveal": "vo_p3_reveal",
-    "correct": "vo_p3_correct"
+    "correct": "vo_p3_correct",
+    "correct_late": "vo_p3_correct_late"
    },
    "data": {
     "a": 84,
@@ -957,6 +991,13 @@
        0.641,
        0.748,
        0.828
+      ],
+      "correct_late": [
+       0.419,
+       0.537,
+       0.596,
+       0.715,
+       0.803
       ]
      }
     }
@@ -973,7 +1014,8 @@
     "order": "vo_h_order",
     "h2": "vo_p4_h2",
     "reveal": "vo_p4_reveal",
-    "correct": "vo_p4_correct"
+    "correct": "vo_p4_correct",
+    "correct_late": "vo_p4_correct_late"
    },
    "data": {
     "a": 91,
@@ -1002,6 +1044,13 @@
        0.641,
        0.748,
        0.829
+      ],
+      "correct_late": [
+       0.419,
+       0.538,
+       0.597,
+       0.715,
+       0.804
       ]
      }
     }

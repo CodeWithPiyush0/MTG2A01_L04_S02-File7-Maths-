@@ -1014,11 +1014,16 @@ const PVK = (function(){
       alive: ()=> CARD.slides[state.idx] === slide && sc.isConnected,
       guard(){ if(!C.alive()) throw STOP; },
       has: role => !!audioFor(slide, role),
+      /* user 2026-10-28: "शाबाश" only for a first-try right answer - after a wrong one (C.late, set by mcq / numpad) the
+         "correct" line is its "correct_late" twin, the same words without it */
+      late: false,
+      right: role => role === "correct" && C.late && audioFor(slide, "correct_late") ? "correct_late" : role,
       wait: ms => wait(ms).then(()=> C.guard()),
       say(role){ return C.cue(role, []); },
       cue(role, cues){
         cues = (cues || []).filter(p => typeof p[0] === "number" && isFinite(p[0])).sort((p, q)=> p[0] - q[0]);   // (a cue the card has no time for is left out - it would hold back every cue after it)
         let i = 0; const fireTo = f =>{ while(i < cues.length && cues[i][0] <= f){ try{ cues[i][1](); }catch(e){ console.error(e); } i++; } };
+        role = C.right(role);
         return new Promise(res =>{
           if(!C.alive()) return res();
           const src = audioFor(slide, role);
@@ -1531,6 +1536,7 @@ Object.assign(PVK, (function(){
         recordResult(slide, wrong === 0);
         GameBus.emit("mcq_correct", { slide_id: slide.id, phase: slide.phase, value: wrong === 0, first_try: wrong === 0, attempts: wrong + 1, latency_ms: Date.now() - state.slideStart });
         sfxCorrect(); try{ confettiCannon(); }catch(e){} setSwMood("happy");
+        C.late = wrong > 0;                                              // (no "शाबाश" after a wrong answer - ctx right())
         if(cfg.onRight) await cfg.onRight(o);
         els.forEach(x => x.classList.add("pv-gone"));   // the answer now stands in the equation: the cards below go
         await (cfg.sayCorrect ? cfg.sayCorrect() : C.say("correct"));   // (S02: "शाबाश! 53 घटा 14 बराबर 39।" - the equation lit in sync)
@@ -1621,6 +1627,7 @@ Object.assign(PVK, (function(){
           GameBus.emit("numpad_correct", { slide_id: slide.id, phase: slide.phase, value: wrong === 0, first_try: wrong === 0, attempts: wrong + 1, latency_ms: Date.now() - state.slideStart });
           sfxCorrect(); try{ confettiCannon(); }catch(e){} setSwMood("happy");
           pad.classList.add("pv-gone");   // the keypad goes as the answer goes up (review 2026-10-14)
+          C.late = wrong > 0;                                            // (no "शाबाश" after a wrong answer - ctx right())
           if(cfg.onRight) await cfg.onRight(ans);
           await (cfg.sayCorrect ? cfg.sayCorrect() : C.say("correct")); if(cfg.after) await cfg.after(); await C.wait(500);
           completeSlide(wrong === 0); res(); return;
@@ -1907,7 +1914,8 @@ Object.assign(PVK, (function(){
   }
 
   /* the equation lit part by part at the card's own times (lessons.py eq_cues: "… a घटा b बराबर n", measured from the clip) */
-  function eqSyncAt(C, E, role, fr){
+  function eqSyncAt(C, E, role, fr, eqs){
+    if(eqs && C.right(role) !== role && eqs[C.right(role)]){ fr = eqs[C.right(role)]; role = C.right(role); }   // (the late line's own times)
     const parts = [E.a, E.op, E.b, E.eq, E.q];
     return C.cue(role, parts.map((el, i)=> [fr[i], ()=>{ el.classList.remove("pv-say"); void el.offsetWidth; el.classList.add("pv-say"); }]));
   }
@@ -2405,7 +2413,7 @@ const PVModules = {
           await K.mcq(C, { options: d.options, answer: diff, y: ansY, reask: "ask",
             onReady: M =>{ M.open(); C.say("ask").then(()=> M.ready(), ()=>{}); },
             onRight: o => K.flyToQ(C, o, E),
-            sayCorrect: EQS.correct ? ()=> K.eqSyncAt(C, E, "correct", EQS.correct) : null,
+            sayCorrect: EQS.correct ? ()=> K.eqSyncAt(C, E, "correct", EQS.correct, EQS) : null,
             after: ()=> C.has("eq") ? (EQS.eq ? K.eqSyncAt(C, E, "eq", EQS.eq) : K.eqSync(C, E, "eq")) : null,
             ladder: async (n, M)=>{ if(n === 1) await recount(); else if(n === 2) await sayH2();
               else { await digitsUnder(dy => M.moveTo(ansY + dy)); M.lock(); if(d.reveal_hand) setTimeout(()=>{ if(C.alive()) placeNudge(M.right); }, 300); await C.say("reveal"); } } });
@@ -2474,7 +2482,7 @@ const PVModules = {
           await K.mcq(C, { options: d.options, answer: diff, y: Y0, reask: "prompt",
             onReady: M =>{ M.open(); C.say("prompt").then(()=> M.ready(), ()=>{}); },
             onRight: o => K.flyToQ(C, o, E),
-            sayCorrect: (CU.eqs || {}).correct ? ()=> K.eqSyncAt(C, E, "correct", CU.eqs.correct) : null,
+            sayCorrect: (CU.eqs || {}).correct ? ()=> K.eqSyncAt(C, E, "correct", CU.eqs.correct, CU.eqs) : null,
             ladder: async (n, M)=>{
               if(n === 1) await order();
               else if(n === 2) await blocks(on => M.hide(on), y =>{ optY = y; M.moveTo(y); });
@@ -3347,6 +3355,7 @@ const ASSET_SIZES = {
   "assets/voiceover/vo_cel.ogg": 15254,
   "assets/voiceover/vo_g1_build.ogg": 28748,
   "assets/voiceover/vo_g1_correct.ogg": 29620,
+  "assets/voiceover/vo_g1_correct_late.ogg": 25773,
   "assets/voiceover/vo_g1_eq.ogg": 16447,
   "assets/voiceover/vo_g1_h2.ogg": 23464,
   "assets/voiceover/vo_g1_ones_left.ogg": 20710,
@@ -3360,6 +3369,7 @@ const ASSET_SIZES = {
   "assets/voiceover/vo_g1_sub.ogg": 21990,
   "assets/voiceover/vo_g2_build.ogg": 16488,
   "assets/voiceover/vo_g2_correct.ogg": 17375,
+  "assets/voiceover/vo_g2_correct_late.ogg": 14551,
   "assets/voiceover/vo_g2_h2.ogg": 18258,
   "assets/voiceover/vo_g2_prompt.ogg": 9341,
   "assets/voiceover/vo_g2_reveal.ogg": 22754,
@@ -3367,6 +3377,7 @@ const ASSET_SIZES = {
   "assets/voiceover/vo_g2_rm_tens.ogg": 7592,
   "assets/voiceover/vo_g2_sub.ogg": 8409,
   "assets/voiceover/vo_g3_correct.ogg": 19686,
+  "assets/voiceover/vo_g3_correct_late.ogg": 14223,
   "assets/voiceover/vo_g3_h2.ogg": 21590,
   "assets/voiceover/vo_g3_prompt.ogg": 10177,
   "assets/voiceover/vo_g3_reveal.ogg": 22282,
@@ -3390,6 +3401,7 @@ const ASSET_SIZES = {
   "assets/voiceover/vo_num_7.ogg": 4521,
   "assets/voiceover/vo_p1_ask.ogg": 16750,
   "assets/voiceover/vo_p1_correct.ogg": 19860,
+  "assets/voiceover/vo_p1_correct_late.ogg": 14971,
   "assets/voiceover/vo_p1_h2.ogg": 21826,
   "assets/voiceover/vo_p1_prompt.ogg": 9171,
   "assets/voiceover/vo_p1_reveal.ogg": 22727,
@@ -3397,6 +3409,7 @@ const ASSET_SIZES = {
   "assets/voiceover/vo_p1_rm_tens.ogg": 9390,
   "assets/voiceover/vo_p1_sub.ogg": 14178,
   "assets/voiceover/vo_p2_correct.ogg": 20439,
+  "assets/voiceover/vo_p2_correct_late.ogg": 14826,
   "assets/voiceover/vo_p2_h2.ogg": 23132,
   "assets/voiceover/vo_p2_prompt.ogg": 9107,
   "assets/voiceover/vo_p2_reveal.ogg": 18218,
@@ -3404,10 +3417,12 @@ const ASSET_SIZES = {
   "assets/voiceover/vo_p2_rm_tens.ogg": 6865,
   "assets/voiceover/vo_p2_sub.ogg": 10769,
   "assets/voiceover/vo_p3_correct.ogg": 27619,
+  "assets/voiceover/vo_p3_correct_late.ogg": 21877,
   "assets/voiceover/vo_p3_h2.ogg": 21672,
   "assets/voiceover/vo_p3_prompt.ogg": 17926,
   "assets/voiceover/vo_p3_reveal.ogg": 21910,
   "assets/voiceover/vo_p4_correct.ogg": 27929,
+  "assets/voiceover/vo_p4_correct_late.ogg": 21981,
   "assets/voiceover/vo_p4_h2.ogg": 20305,
   "assets/voiceover/vo_p4_prompt.ogg": 13798,
   "assets/voiceover/vo_p4_reveal.ogg": 25367,
@@ -3858,18 +3873,10 @@ function boot(){
   // ===== QA CHECKLIST [02]: PRELOAD BEFORE THE START SCREEN - since 2026-10-01 only what the START SCREEN shows. It
   // used to be every image and clip of the lesson ([loading], Assets); each slide now waits for its own files instead
   // (mountSlide), so art and VO still never pop in mid-lesson. A FAILED ASSET COUNTS AS DONE: a 404 never strands. ----
-  /* User fix 2026-10-28 ("bring back the loader" / no glowing speaker / the greeting only on a tap): the loader shows at
-     least BL_MIN_MS (the cover's files are small, so it used to flash for ~0.4s), and on a browser that refuses sound
-     before a tap (the live site; the app allows it) it ENDS on the round play button: that tap lifts it and starts the
-     greeting inside the tap itself, so the cover's voice and picture begin together as it appears. Sound allowed: it
-     lifts by itself, as before. The probe is a silent clip; no answer in 1.5s counts as allowed. */
+  /* User fix 2026-10-28 ("bring back the loader"): the loader shows at least BL_MIN_MS (the cover's files are small, so
+     it used to flash for ~0.4s), then lifts into the cover by itself - no button of its own (user: "I don't need 2 play
+     buttons"). Where the browser refuses sound before a tap (the live site), a tap anywhere on the cover starts it. */
   const BL_MIN_MS = 1500;
-  const SILENT = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQQAAACAgICA";
-  const soundAllowed = cb =>{ let t = 0; const fin = ok =>{ if(t < 0) return; clearTimeout(t); t = -1; cb(ok); };
-    t = setTimeout(()=> fin(true), 1500);
-    try{ const p = new Audio(SILENT).play();
-      if(p && p.then) p.then(()=> fin(true), e => fin(!(e && e.name === "NotAllowedError"))); else fin(true);
-    }catch(e){ fin(true); } };
   (function(){
     const bl = $("bootLoader");
     if(!bl){ document.body.classList.add("loaded"); playLanding(); Assets.start(); return; }
@@ -3877,12 +3884,7 @@ function boot(){
     const ready = ()=>{
       if(settled) return;                          // the files + the watchdog both land here → dedup
       settled = true;
-      setTimeout(()=> soundAllowed(ok => ok ? lift() : askTap()), Math.max(0, BL_MIN_MS - performance.now()));
-    };
-    const askTap = ()=>{
-      if(!bl.isConnected) return;
-      bl.classList.add("tap");
-      bl.addEventListener("click", lift, { once: true });   // (click, not pointerdown: a touch's pointerdown does not unlock sound)
+      setTimeout(lift, Math.max(0, BL_MIN_MS - performance.now()));
     };
     const lift = ()=>{
       if(bl.classList.contains("done")) return;
@@ -3902,8 +3904,10 @@ function boot(){
   /* ...but not when the greeting has already been heard or is playing now, and never on the play button
      itself - tapping the live gold button used to restart the greeting a split second before its click
      silenced it again. */
-  window.addEventListener("pointerdown", function tapStart(ev){
-    if(_greetingHeard || !onLandingNow()){ window.removeEventListener("pointerdown", tapStart, true); return; }
+  /* (click, not pointerdown: a finger's pointerdown does not count as the tap that lets sound play - on a phone the
+     greeting was refused again) */
+  window.addEventListener("click", function tapStart(ev){
+    if(_greetingHeard || !onLandingNow()){ window.removeEventListener("click", tapStart, true); return; }
     if(ev && ev.target && ev.target.closest && ev.target.closest("#sgBtn, #sgVo, #bootLoader")) return;   // (they start it themselves)
     if(!isPlaying) playLanding(); }, true);   // (any tap until the greeting has really been heard - the live site refuses sound before one)
 

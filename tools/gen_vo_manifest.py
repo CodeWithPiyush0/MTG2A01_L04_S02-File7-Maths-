@@ -101,6 +101,7 @@ ROLE = {
     "h2_mental": ("Hint 2 (2nd wrong answer)", "the table comes in with the first number's blocks; the second number is taken away as it is said"),
     "reveal": ("Hint 3 (3rd wrong answer)", "the right card / the right keys lit (one key at a time), the others off"),
     "correct": ("correct answer", "the answer goes into the ?; confetti (a line with «… घटा … बराबर …» lights each part as it is said)"),
+    "correct_late": ("correct answer after a wrong one", "the same as the correct line, without «शाबाश» (only a first-try answer gets it)"),
     "eq": ("the equation read out", "after the correct line: each part lights as it is said"),
     "rm_tens_more": ("take-away mistake - 1st time", "a ten too many taken: the tens go back, this line"),
     "rm_guide": ("take-away mistake - 2nd time", "the tens go back; only the tens to take stay live, the others dimmed"),
@@ -161,9 +162,9 @@ def page_rows(i, s):
             add(au.get("remove"), "remove"); add("vo_idle_rm_o", "idle_rm_now"); add("vo_idle_rm_t", "idle_rm_now")
         add(au.get("rm_tens_more"), "rm_tens_more"); add(au.get("rm_guide"), "rm_guide")
         add(au.get("ask"), "ask"); add(au.get("recount"), "recount"); add(au.get("h2"), "h2"); add(au.get("reveal"), "reveal")
-        add(au.get("correct"), "correct"); add(au.get("eq"), "eq")
+        add(au.get("correct"), "correct"); add(au.get("correct_late"), "correct_late"); add(au.get("eq"), "eq")
     elif ty == "MENTAL_SUB":
-        for r, k in (("prompt", "prompt"), ("order", "order"), ("h2", "h2_mental"), ("reveal", "reveal"), ("correct", "correct")):
+        for r, k in (("prompt", "prompt"), ("order", "order"), ("h2", "h2_mental"), ("reveal", "reveal"), ("correct", "correct"), ("correct_late", "correct_late")):
             add(au.get(r), k)
     elif ty == "CELEBRATION":
         add(au.get("prompt"), "cel")

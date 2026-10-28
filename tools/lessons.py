@@ -275,8 +275,15 @@ def eq_cues(cid, a, b, n, op="घटा"):
             frac(cid, "बराबर"), frac(cid, str(n), after="बराबर")]
 
 
+# user 2026-10-28: "शाबाश" only for a first-try right answer (G1 - P4). After a wrong answer the same line without it
+# ("correct_late", app.js ctx): the clip is the correct clip with its "शाबाश!" cut off (same take, 0.28s lead like the rest)
 for sl in slides:
-    au, d = sl["audio"], sl["data"]; cues = {}
+    au = sl.get("audio", {})
+    if au.get("correct") and VO[au["correct"]].startswith("शाबाश! "):
+        au["correct_late"] = vo(au["correct"] + "_late", VO[au["correct"]][len("शाबाश! "):])
+
+for sl in slides:
+    au, d = sl["audio"], sl["data"]; cues = {}
     if "a" not in d:
         continue
     a, b = d["a"], d["b"]; diff = a - b
@@ -289,7 +296,7 @@ for sl in slides:
     if "order" in au:
         cues["order"] = {"o": frac(au["order"], "इकाई"), "t": frac(au["order"], "दहाई")}
     eqs = {}
-    for role in ("eq", "correct"):
+    for role in ("eq", "correct", "correct_late"):
         if role in au and "बराबर" in VO[au[role]]:
             eqs[role] = eq_cues(au[role], a, b, diff)
     if eqs:
