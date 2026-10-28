@@ -43,8 +43,9 @@ RECOUNT = vo("vo_h_recount", "बची हुई दहाई और इका�
 ORDER = vo("vo_h_order", "संख्याओं में से पहले इकाई घटाइए, फिर दहाई घटाइए।")
 vo("vo_idle_build_t", "अब दहाई बनाइए।"); vo("vo_idle_build_o", "अब इकाई बनाइए।")
 vo("vo_idle_rm_t", "अब दहाई हटाइए।"); vo("vo_idle_rm_o", "अब इकाई हटाइए।")
-# the count said on each one taken away (deck: "1, 2, 3, 4, 5, 6, 7") - one to eight in this lesson
-for _n, _w in enumerate(("एक।", "दो।", "तीन।", "चार।", "पाँच।", "छः।", "सात।", "आठ।"), 1):
+# the count said on each one taken away (deck: "1, 2, 3, 4, 5, 6, 7") - one to seven: only the tutorial pages count (T2 six,
+# T4 seven); G1-G3 do not (SME review 2026-10-28)
+for _n, _w in enumerate(("एक।", "दो।", "तीन।", "चार।", "पाँच।", "छः।", "सात।"), 1):
     vo(f"vo_num_{_n}", _w)
 # the 7s reminder while a ten is to be opened (user 2026-10-26: the child taps a rod; idle -> this line)
 vo("vo_idle_open", "अब 1 दहाई को इकाई में लाइए।")
@@ -57,9 +58,9 @@ def split(n):
 # ---- slides -------------------------------------------------------------------------------------------
 slides = []
 
-# the story cast (user 2026-10-27, renamed the same day): the giver is MADHAV, the one who receives is AANYA on page 1 and PARI on the second story
+# the story cast (user 2026-10-27, renamed the same day): the giver is MADHAV, the one who receives is AANYA on page 1 and MYRA on the second story (Pari -> Myra: SME review 2026-10-28)
 # page; each has their own round portrait (assets/char_<who>.webp + _blink, made from the user's character pictures)
-CAST = {"माधव": "madhav", "आन्या": "aanya", "परी": "pari"}
+CAST = {"माधव": "madhav", "आन्या": "aanya", "मायरा": "myra"}
 
 # deck page 2 - "कितने बचे?" 25 − 6 = ?, told as File6's story (user 2026-10-27: "the first page similar to my file6"):
 # Madhav with his 25 blocks, Aanya with none, the equation under them; File6's lines with 6 for 13, then the deck's line
@@ -94,13 +95,13 @@ slides.append({
               "story_c": vo("vo_t2_story_c_madhav", "यानी माधव के पास कुल 19 ब्लॉक्स बचे।")},   # (File6's closing line, user 2026-10-27)
     "data": {"a": 25, "b": 6, "demo": True}})
 
-# user 2026-10-27: a second story page (a copy of page 1) before the 30 − 17 page - Madhav has 30 blocks, gives 17 to Pari
+# user 2026-10-27: a second story page (a copy of page 1) before the 30 − 17 page - Madhav has 30 blocks, gives 17 to Myra
 slides.append({
     "id": "T3", "phase": "tutorial", "eis": "iconic", "type": "STORY_SUB", "prompt_hi": "",   # (no heading - user 2026-10-27)
     "audio": {"a": vo("vo_t3s_a_madhav", "आइए, एक और उदाहरण करते हैं। माधव के पास कुल 30 ब्लॉक्स थे।"),
-              "b": vo("vo_t3s_b_pari", "उनमें से 17 परी को दे दिए।"),
+              "b": vo("vo_t3s_b_myra", "उनमें से 17 मायरा को दे दिए।"),
               "ask": vo("vo_t3s_ask_madhav", "चलिए, पता करते हैं, माधव के पास अब कितने ब्लॉक्स बचे?")},
-    "data": {"mode": "ask", "a": 30, "b": 17, "people": [{"who": "madhav"}, {"who": "pari"}]}})
+    "data": {"mode": "ask", "a": 30, "b": 17, "people": [{"who": "madhav"}, {"who": "myra"}]}})
 
 # deck page 4 (its lines are in the deck's cover-slide notes) - 30 − 17: the child builds 30, the ten opens with the VO,
 # the child takes 7 ones (counted) and 1 ten; "= 13" lands in the equation
@@ -126,11 +127,12 @@ slides.append({
     "data": {"a": 30, "b": 17, "demo": False, "idle_ms": 3000}})
 
 
-def pv_sub(sid, phase, a, b, lines, answer, options=None, count=False, extra_data=None):
-    """a guided / practice screen: build a, open a ten (the child taps a rod), take b away, then answer"""
+def pv_sub(sid, phase, a, b, lines, answer, options=None, count=False, extra_data=None, build=True):
+    """a guided / practice screen: build a (build False: the table comes with a's blocks), open a ten (the child taps a
+    rod), take b away, then answer"""
     au = dict(RM)
     au.update(lines)
-    d = {"a": a, "b": b, "answer": answer, "build": True, "steps": True, "right_table": False, "count": count}
+    d = {"a": a, "b": b, "answer": answer, "build": build, "steps": True, "right_table": False, "count": count}
     if options:
         d["options"] = options
     if extra_data:
@@ -139,7 +141,7 @@ def pv_sub(sid, phase, a, b, lines, answer, options=None, count=False, extra_dat
             "audio": au, "data": d}
 
 
-# deck page 5 - 42 − 27 (15 / 6 / 105): the child builds 42, brings a ten over, takes 7 ones (counted), then 2 tens
+# deck page 5 - 42 − 27 (15 / 6 / 105): the child builds 42, brings a ten over, takes 7 ones, then 2 tens (no count - SME review 2026-10-28)
 slides.append(pv_sub("G1", "guided", 42, 27, {
     "prompt": vo("vo_g1_prompt", "42 में से 27 घटाइए।"),
     "build": vo("vo_g1_build", "सबसे पहले ब्लॉक्स की सहायता से 42 बनाइए, जिसमें 4 दहाई और 2 इकाई होते हैं।"),
@@ -154,7 +156,7 @@ slides.append(pv_sub("G1", "guided", 42, 27, {
     "reveal": vo("vo_g1_reveal", "42 में से 27 घटाने पर 15 बचता है। तो सही संख्या यह है।"),
     "correct": vo("vo_g1_correct", "शाबाश! 42 में से 27 घटाने पर हमें मिलीं 1 दहाई और 5 इकाई, यानी 15।"),
     "eq": vo("vo_g1_eq", "इसलिए 42 घटा 27 बराबर 15।")},
-    answer="mcq", options=[15, 6, 105], count=True, extra_data={"reveal_hand": True}))
+    answer="mcq", options=[15, 6, 105], extra_data={"reveal_hand": True}))
 
 # deck page 6 - 53 − 14 (39 / 12 / 93)
 slides.append(pv_sub("G2", "guided", 53, 14, {
@@ -166,43 +168,40 @@ slides.append(pv_sub("G2", "guided", 53, 14, {
     "ask": ASK_PICK, "recount": RECOUNT, "h2": vo("vo_g2_h2", "53 में से 14 घटाने पर, 3 दहाई और 9 इकाई बचती हैं।"),
     "reveal": vo("vo_g2_reveal", "53 में से 14 घटाने पर 39 बचता है। तो सही संख्या यह है।"),
     "correct": vo("vo_g2_correct", "शाबाश! 53 घटा 14 बराबर 39।")},
-    answer="mcq", options=[39, 12, 93], count=True, extra_data={"reveal_hand": True}))
+    answer="mcq", options=[39, 12, 93], extra_data={"reveal_hand": True}))
 
 # deck page 7 - 46 − 28 (18 / 9 / 81)
 slides.append(pv_sub("G3", "guided", 46, 28, {
     "prompt": vo("vo_g3_prompt", "46 में से 28 घटाइए।"),
-    "build": vo("vo_g3_build", "सबसे पहले ब्लॉक्स से 46 बनाइए।"),
     "sub": vo("vo_g3_sub", "और अब इसमें से 28 घटाइए।"),
     "rm_ones": vo("vo_g3_rm_ones", "इसमें से 8 इकाई को हटाइए।"),
     "rm_tens": vo("vo_g3_rm_tens", "अब दहाइयाँ हटाइए।"),
     "ask": ASK_PICK, "recount": RECOUNT, "h2": vo("vo_g3_h2", "46 में से 28 घटाने पर, 1 दहाई और 8 इकाई बचती हैं।"),
     "reveal": vo("vo_g3_reveal", "46 में से 28 घटाने पर 18 बचता है। तो सही संख्या यह है।"),
     "correct": vo("vo_g3_correct", "शाबाश! 46 घटा 28 बराबर 18।")},
-    answer="mcq", options=[18, 9, 81], count=True, extra_data={"reveal_hand": True}))
+    answer="mcq", options=[18, 9, 81], extra_data={"reveal_hand": True}, build=False))
 
 # deck page 8 - 74 − 58, the answer typed on the number pad (16)
 slides.append(pv_sub("P1", "practice", 74, 58, {
     "prompt": vo("vo_p1_prompt", "74 में से 58 घटाइए।"),
-    "build": vo("vo_p1_build", "सबसे पहले ब्लॉक्स से 74 बनाइए।"),
     "sub": vo("vo_p1_sub", "और अब इसमें से 58 घटाते हैं।"),
     "rm_ones": vo("vo_p1_rm_ones", "14 इकाई में से 8 इकाई हटाइए।"),
     "rm_tens": vo("vo_p1_rm_tens", "अब दहाइयाँ घटाइए।"),
     "ask": ASK_PAD, "recount": RECOUNT, "h2": vo("vo_p1_h2", "74 में से 58 घटाने पर, 1 दहाई और 6 इकाई बचती हैं।"),
     "reveal": vo("vo_p1_reveal", "74 में से 58 घटाने पर 16 बचता है। तो सही संख्या यह है।"),
     "correct": vo("vo_p1_correct", "शाबाश! 74 में से 58 घटाने पर हमें मिला 16।")},
-    answer="numpad", extra_data={"ones_first": True}))
+    answer="numpad", extra_data={"ones_first": True}, build=False))
 
 # deck page 9 - 61 − 35, number pad (26)
 slides.append(pv_sub("P2", "practice", 61, 35, {
     "prompt": vo("vo_p2_prompt", "61 में से 35 घटाइए।"),
-    "build": vo("vo_p2_build", "सबसे पहले ब्लॉक्स से 61 बनाइए।"),
     "sub": vo("vo_p2_sub", "और अब इसमें से 35 घटाते हैं।"),
     "rm_ones": vo("vo_p2_rm_ones", "इकाई हटाइए।"),
     "rm_tens": vo("vo_p2_rm_tens", "अब दहाइयाँ हटाइए।"),
     "ask": ASK_PAD, "recount": RECOUNT, "h2": vo("vo_p2_h2", "61 में से 35 घटाने पर, 2 दहाई और 6 इकाई बचती हैं।"),
     "reveal": vo("vo_p2_reveal", "61 में से 35 घटाने पर 26 बचता है। तो सही संख्या यह है।"),
     "correct": vo("vo_p2_correct", "शाबाश! 61 में से 35 घटाने पर हमें मिला 26।")},
-    answer="numpad", extra_data={"ones_first": True}))
+    answer="numpad", extra_data={"ones_first": True}, build=False))
 
 
 def mental(sid, a, b, options):
@@ -295,10 +294,11 @@ for sl in slides:
             eqs[role] = eq_cues(au[role], a, b, diff)
     if eqs:
         cues["eqs"] = eqs
-    if sl["type"] == "PV_SUB":
+    if sl["type"] == "PV_SUB" and "build" in au:
         tx = VO[au["build"]]
         cues["build"] = ({"t": frac(au["build"], f"{at} दहाई"), "o": frac(au["build"], f"{ao} इकाई")} if "दहाई" in tx
                          else {"t": frac(au["build"], str(a)), "o": min(.95, frac(au["build"], str(a)) + .1)})
+    if sl["type"] == "PV_SUB":
         tx = VO[au["sub"]]; c = {"b": frac(au["sub"], str(b))}
         if "दहाई" in tx:
             c.update({"t": frac(au["sub"], f"{bt} दहाई"), "o": frac(au["sub"], f"{bo} इकाई")})
@@ -370,6 +370,11 @@ for sl in slides:
 # the landing's picture comes in on "आज हम" (S01: landing_hero.start_at, the word's time in vo_landing)
 _ld = clip_len("vo_landing")
 START_AT = round(frac("vo_landing", "आज हम") * _ld, 2) if _ld else 2.9
+# the tens cover follows the greeting word by word (SME review 2026-10-28 "align the visuals with the narration"): the
+# times (s) in vo_landing.ogg, MEASURED from its loudness (pauses at 1.05-1.32, 2.21-2.60, 4.94-): glide = "नमस्ते दोस्त",
+# drop = "मैं हूँ स्विफ्टी", lean = "आज हम", rise = "दहाई", open = "खोलकर", take = "घटाना", cheer = "सीखेंगे", end = the line's end.
+# Re-measure them if vo_landing is re-recorded.
+BEATS = {"glide": 0.28, "drop": 1.32, "lean": 2.6, "rise": 2.92, "open": 3.7, "take": 4.2, "cheer": 4.66, "end": 4.94}
 
 AUDIO_IDS = sorted(set(VO) | {"sfx_celebrate"})
 card = {
@@ -382,7 +387,7 @@ card = {
     "part_label": "",
     "theme": "toybox",
     "title": {"hi": "दहाई खोलकर घटाइए", "en": "Subtract horizontally with regrouping"},
-    "landing_hero": {"kind": "pv_story", "people": ["madhav", "aanya"], "build": "tens", "title_look": "wall", "start_at": START_AT},
+    "landing_hero": {"kind": "pv_story", "people": ["madhav", "aanya"], "build": "tens", "title_look": "wall", "start_at": 0, "beats": BEATS},
     "skill_description_hi": "दो अंकों की संख्या में से दो अंकों की संख्या (हासिल के साथ) क्षैतिज रूप में घटाता है: इकाई कम हों, तो एक दहाई खोलकर दस इकाई बनाता है।",
     "phase_distribution": phase_n,
     "scaffold_rules": {"nudge_timeout_ms": {"tutorial": 7000, "guided": 7000, "practice": 7000, "independent": 7000},

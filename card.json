@@ -19,7 +19,17 @@
   ],
   "build": "tens",
   "title_look": "wall",
-  "start_at": 2.69
+  "start_at": 0,
+  "beats": {
+   "glide": 0.28,
+   "drop": 1.32,
+   "lean": 2.6,
+   "rise": 2.92,
+   "open": 3.7,
+   "take": 4.2,
+   "cheer": 4.66,
+   "end": 4.94
+  }
  },
  "skill_description_hi": "दो अंकों की संख्या में से दो अंकों की संख्या (हासिल के साथ) क्षैतिज रूप में घटाता है: इकाई कम हों, तो एक दहाई खोलकर दस इकाई बनाता है।",
  "phase_distribution": {
@@ -75,7 +85,6 @@
    "vo_g2_rm_ones": "assets/voiceover/vo_g2_rm_ones.ogg",
    "vo_g2_rm_tens": "assets/voiceover/vo_g2_rm_tens.ogg",
    "vo_g2_sub": "assets/voiceover/vo_g2_sub.ogg",
-   "vo_g3_build": "assets/voiceover/vo_g3_build.ogg",
    "vo_g3_correct": "assets/voiceover/vo_g3_correct.ogg",
    "vo_g3_h2": "assets/voiceover/vo_g3_h2.ogg",
    "vo_g3_prompt": "assets/voiceover/vo_g3_prompt.ogg",
@@ -98,9 +107,7 @@
    "vo_num_5": "assets/voiceover/vo_num_5.ogg",
    "vo_num_6": "assets/voiceover/vo_num_6.ogg",
    "vo_num_7": "assets/voiceover/vo_num_7.ogg",
-   "vo_num_8": "assets/voiceover/vo_num_8.ogg",
    "vo_p1_ask": "assets/voiceover/vo_p1_ask.ogg",
-   "vo_p1_build": "assets/voiceover/vo_p1_build.ogg",
    "vo_p1_correct": "assets/voiceover/vo_p1_correct.ogg",
    "vo_p1_h2": "assets/voiceover/vo_p1_h2.ogg",
    "vo_p1_prompt": "assets/voiceover/vo_p1_prompt.ogg",
@@ -108,7 +115,6 @@
    "vo_p1_rm_ones": "assets/voiceover/vo_p1_rm_ones.ogg",
    "vo_p1_rm_tens": "assets/voiceover/vo_p1_rm_tens.ogg",
    "vo_p1_sub": "assets/voiceover/vo_p1_sub.ogg",
-   "vo_p2_build": "assets/voiceover/vo_p2_build.ogg",
    "vo_p2_correct": "assets/voiceover/vo_p2_correct.ogg",
    "vo_p2_h2": "assets/voiceover/vo_p2_h2.ogg",
    "vo_p2_prompt": "assets/voiceover/vo_p2_prompt.ogg",
@@ -166,7 +172,7 @@
    "vo_t3_total": "assets/voiceover/vo_t3_total.ogg",
    "vo_t3s_a_madhav": "assets/voiceover/vo_t3s_a_madhav.ogg",
    "vo_t3s_ask_madhav": "assets/voiceover/vo_t3s_ask_madhav.ogg",
-   "vo_t3s_b_pari": "assets/voiceover/vo_t3s_b_pari.ogg",
+   "vo_t3s_b_myra": "assets/voiceover/vo_t3s_b_myra.ogg",
    "vo_t4_story_a": "assets/voiceover/vo_t4_story_a.ogg",
    "vo_t4_story_b": "assets/voiceover/vo_t4_story_b.ogg",
    "vo_t4_story_c_madhav": "assets/voiceover/vo_t4_story_c_madhav.ogg"
@@ -195,7 +201,6 @@
    "vo_g2_rm_ones": "इसमें से 4 इकाई को हटाइए।",
    "vo_g2_rm_tens": "अब दहाइयाँ घटाइए।",
    "vo_g2_sub": "और अब इसमें से 14 घटाइए।",
-   "vo_g3_build": "सबसे पहले ब्लॉक्स से 46 बनाइए।",
    "vo_g3_correct": "शाबाश! 46 घटा 28 बराबर 18।",
    "vo_g3_h2": "46 में से 28 घटाने पर, 1 दहाई और 8 इकाई बचती हैं।",
    "vo_g3_prompt": "46 में से 28 घटाइए।",
@@ -218,9 +223,7 @@
    "vo_num_5": "पाँच।",
    "vo_num_6": "छः।",
    "vo_num_7": "सात।",
-   "vo_num_8": "आठ।",
    "vo_p1_ask": "अब कितने बचे? नीचे डिब्बे पर टैप करके सही संख्या लिखिए।",
-   "vo_p1_build": "सबसे पहले ब्लॉक्स से 74 बनाइए।",
    "vo_p1_correct": "शाबाश! 74 में से 58 घटाने पर हमें मिला 16।",
    "vo_p1_h2": "74 में से 58 घटाने पर, 1 दहाई और 6 इकाई बचती हैं।",
    "vo_p1_prompt": "74 में से 58 घटाइए।",
@@ -228,7 +231,6 @@
    "vo_p1_rm_ones": "14 इकाई में से 8 इकाई हटाइए।",
    "vo_p1_rm_tens": "अब दहाइयाँ घटाइए।",
    "vo_p1_sub": "और अब इसमें से 58 घटाते हैं।",
-   "vo_p2_build": "सबसे पहले ब्लॉक्स से 61 बनाइए।",
    "vo_p2_correct": "शाबाश! 61 में से 35 घटाने पर हमें मिला 26।",
    "vo_p2_h2": "61 में से 35 घटाने पर, 2 दहाई और 6 इकाई बचती हैं।",
    "vo_p2_prompt": "61 में से 35 घटाइए।",
@@ -286,7 +288,7 @@
    "vo_t3_total": "30 में से 17 घटाने पर हमें मिलीं, 1 दहाई और 3 इकाई, यानी 13।",
    "vo_t3s_a_madhav": "आइए, एक और उदाहरण करते हैं। माधव के पास कुल 30 ब्लॉक्स थे।",
    "vo_t3s_ask_madhav": "चलिए, पता करते हैं, माधव के पास अब कितने ब्लॉक्स बचे?",
-   "vo_t3s_b_pari": "उनमें से 17 परी को दे दिए।",
+   "vo_t3s_b_myra": "उनमें से 17 मायरा को दे दिए।",
    "vo_t4_story_a": "यहाँ हमने तीस में से सत्रह घटाए हैं, तो बचे 13।",
    "vo_t4_story_b": "अब इस डिब्बे में 13 आएगा।",
    "vo_t4_story_c_madhav": "यानी माधव के पास कुल 13 ब्लॉक्स बचे।"
@@ -448,7 +450,7 @@
    "prompt_hi": "",
    "audio": {
     "a": "vo_t3s_a_madhav",
-    "b": "vo_t3s_b_pari",
+    "b": "vo_t3s_b_myra",
     "ask": "vo_t3s_ask_madhav"
    },
    "data": {
@@ -460,7 +462,7 @@
       "who": "madhav"
      },
      {
-      "who": "pari"
+      "who": "myra"
      }
     ],
     "cues": {
@@ -473,8 +475,8 @@
       ],
       "b": [
        [
-        0.507,
-        "pari"
+        0.485,
+        "myra"
        ]
       ],
       "ask": [
@@ -611,7 +613,7 @@
     "build": true,
     "steps": true,
     "right_table": false,
-    "count": true,
+    "count": false,
     "options": [
      15,
      6,
@@ -695,7 +697,7 @@
     "build": true,
     "steps": true,
     "right_table": false,
-    "count": true,
+    "count": false,
     "options": [
      39,
      12,
@@ -751,7 +753,6 @@
     "rm_tens_more": "vo_rm_tens_more",
     "rm_guide": "vo_rm_guide",
     "prompt": "vo_g3_prompt",
-    "build": "vo_g3_build",
     "sub": "vo_g3_sub",
     "rm_ones": "vo_g3_rm_ones",
     "rm_tens": "vo_g3_rm_tens",
@@ -765,10 +766,10 @@
     "a": 46,
     "b": 28,
     "answer": "mcq",
-    "build": true,
+    "build": false,
     "steps": true,
     "right_table": false,
-    "count": true,
+    "count": false,
     "options": [
      18,
      9,
@@ -795,10 +796,6 @@
        0.745
       ]
      },
-     "build": {
-      "t": 0.56,
-      "o": 0.66
-     },
      "sub": {
       "b": 0.485,
       "this": 0.257
@@ -824,7 +821,6 @@
     "rm_tens_more": "vo_rm_tens_more",
     "rm_guide": "vo_rm_guide",
     "prompt": "vo_p1_prompt",
-    "build": "vo_p1_build",
     "sub": "vo_p1_sub",
     "rm_ones": "vo_p1_rm_ones",
     "rm_tens": "vo_p1_rm_tens",
@@ -838,7 +834,7 @@
     "a": 74,
     "b": 58,
     "answer": "numpad",
-    "build": true,
+    "build": false,
     "steps": true,
     "right_table": false,
     "count": false,
@@ -853,10 +849,6 @@
      "recount": {
       "t": 0.254,
       "o": 0.424
-     },
-     "build": {
-      "t": 0.556,
-      "o": 0.656
      },
      "sub": {
       "b": 0.441,
@@ -883,7 +875,6 @@
     "rm_tens_more": "vo_rm_tens_more",
     "rm_guide": "vo_rm_guide",
     "prompt": "vo_p2_prompt",
-    "build": "vo_p2_build",
     "sub": "vo_p2_sub",
     "rm_ones": "vo_p2_rm_ones",
     "rm_tens": "vo_p2_rm_tens",
@@ -897,7 +888,7 @@
     "a": 61,
     "b": 35,
     "answer": "numpad",
-    "build": true,
+    "build": false,
     "steps": true,
     "right_table": false,
     "count": false,
@@ -912,10 +903,6 @@
      "recount": {
       "t": 0.254,
       "o": 0.424
-     },
-     "build": {
-      "t": 0.555,
-      "o": 0.655
      },
      "sub": {
       "b": 0.44,

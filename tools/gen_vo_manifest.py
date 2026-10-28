@@ -63,7 +63,7 @@ ROLE = {
     ("T2", "story_c"): ("story's answer - the end", "his 19 beat, Madhav's picture lights on «माधव»; then the next button"),
     # T3 - the second story page (user 2026-10-27)
     ("T3", "a"): ("story - another example, Madhav's blocks", "as the page opens; Madhav's picture and his 30 blocks come in, the card 30; his picture lights on «माधव»"),
-    ("T3", "b"): ("story - 17 given to Pari", "next; Pari's picture comes in, then − 17; her picture lights on «परी»"),
+    ("T3", "b"): ("story - 17 given to Myra", "next; Myra's picture comes in, then − 17; her picture lights on «मायरा»"),
     ("T3", "ask"): ("story - the question", "next; = ? comes in and pulses; Madhav's picture lights on «माधव»; then the next button"),
     # T4 (deck page 4) - the child builds and takes away
     ("T4", "sub0"): ("the question", "as the page opens; 30 − 17 = ? comes in part by part"),
@@ -79,7 +79,7 @@ ROLE = {
     ("T4", "rm_tens"): ("the child takes a ten", "the tens pulse; the child taps one (the hand after 3s)"),
     ("T4", "tens_left"): ("tens left", "the tens column beats on «1 दहाई»"),
     ("T4", "total"): ("the result", "the columns beat; the ? becomes 13 on «यानी 13»"),
-    ("T4", "story_a"): ("story's answer", "T3's story row comes back; on «सत्रह» one of Madhav's rods opens into 10 cubes and 1 rod + 7 cubes fly into Pari's picture (his grey); his 13 beat"),
+    ("T4", "story_a"): ("story's answer", "T3's story row comes back; on «सत्रह» one of Madhav's rods opens into 10 cubes and 1 rod + 7 cubes fly into Myra's picture (his grey); his 13 beat"),
     ("T4", "story_b"): ("story's answer - the box", "the ? becomes 13 on «13 आएगा»; confetti"),
     ("T4", "story_c"): ("story's answer - the end", "his 13 beat, Madhav's picture lights on «माधव»; then the next button"),
     # the guided / practice pages

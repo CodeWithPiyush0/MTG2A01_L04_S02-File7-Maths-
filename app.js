@@ -2573,22 +2573,25 @@ const PVLanding = {
       order: [["cubes"], ["cube_l", 0, 1], ["cube_r", 1, 1]],
       cubes: [95, 190, 1441, 992], cube_l: [220, 41, 439, 220], cube_r: [1096, 41, 1315, 220] },
     /* MTG2A01_L04_S02 (subtraction WITH regrouping, user 2026-10-27 "according to this file and some better animation"): the
-       lesson's own blocks - three green rods and two orange cubes drop in one by one; the children glide in; Madhav leans
-       in and the rod beside the cubes rises, wobbles, glows and breaks into its ten cubes ("दहाई खोलकर"), which hop off it
-       one by one, top first, and stack up with the two into a 5-4-3 pyramid; each child takes a top cube and holds it up
-       ("घटाइए"); a burst, the chime, the cheer. Built in build() (no drawing to cut): RH the rod's height in stage px. */
-    tens: { take: true, drop: true, RH: 150, DY: -30, KIDY: 168.3, PX: 56 }
+       lesson's own blocks, told by the greeting word by word (SME review 2026-10-28 "align the visuals with the narration";
+       card landing_hero.beats = the words' times in vo_landing): "नमस्ते दोस्त" - the children glide in; "मैं हूँ स्विफ्टी" -
+       three green rods and two orange cubes drop in; "आज हम" - Madhav leans in; "दहाई" - the rod beside the cubes rises,
+       glows and wobbles; "खोलकर" - it breaks into its ten cubes, eight of which hop off and stack with the two into a
+       4-3-2-1 pyramid; "घटाना" - the last two fly into the children's hands, held up; "सीखेंगे" - a burst, the chime, the
+       cheer; the play button as the line ends. Built in build() (no drawing to cut): RH the rod's height in stage px. */
+    tens: { take: true, drop: true, RH: 150, DY: -30, KIDY: 168.3, PX: 50 }
   },
   /* the build, bottom up: [type, x of centre, y of bottom, w, h, picture, who brings it (0 left child, 1 right; none:
      already standing; "pop": goes up at the end), the order it is put in] */
   build(kind, M, B){ const A = this.ART[kind]; B += A.DY || 0;
-    if(kind === "tens"){                                                       // [type, x, y, w, h, picture, by, order, from the rod]
-      const w = A.RH * 147 / 987, c = w, ch = c * 289 / 300, step = c * 93.2 / 147, out = [];
+    if(kind === "tens"){       // [type, x, y, w, h, picture, by, order, from the rod, its place in the rod (0 = the bottom cube)]
+      const w = A.RH * 147 / 987, c = w, ch = c * 289 / 300, step = c * 93.2 / 147, out = [], RX = M - 100 + 2 * (w + 5);
       for(let j = 0; j < 3; j++) out.push(["img", M - 100 + j * (w + 5), B, w, A.RH, "pv_rod11", undefined, 0, 0]);
       let n = 0;
-      [5, 4, 3].forEach((cnt, r)=>{ for(let k = 0; k < cnt; k++){ const own = r === 0 && k < 2;
-        const by = r === 2 && k === 0 ? 0 : r === 2 && k === cnt - 1 ? 1 : undefined;   // (the top row's ends: one for each child)
-        out.push(["img", M + A.PX + (k - (cnt - 1) / 2) * (c + 1), B - r * step, c, ch, "pv_cube10", by, own ? 0 : ++n, own ? 0 : 1]); } });
+      [4, 3, 2, 1].forEach((cnt, r)=>{ for(let k = 0; k < cnt; k++){ const own = r === 0 && k < 2;
+        out.push(["img", M + A.PX + (k - (cnt - 1) / 2) * (c + 1), B - r * step, c, ch, "pv_cube10", undefined, own ? 0 : ++n, own ? 0 : 1, own ? -1 : 10 - n]); } });
+      /* the rod's two bottom cubes go to the children (they stand in the rod till then) */
+      out.push(["img", RX, B - step, c, ch, "pv_cube10", 0, 9, 1, 1], ["img", RX, B, c, ch, "pv_cube10", 1, 10, 1, 0]);
       return out; }
     return A.order.map(([k, by, seq])=>{ const [x0, y0, x1, y1] = A[k];
       return ["img", M + ((x0 + x1) / 2 - A.WX) * A.S, B + (y1 - A.FOOT) * A.S, (x1 - x0) * A.S, (y1 - y0) * A.S, kind + "_" + k, by, seq || 0]; }); },
@@ -2764,66 +2767,78 @@ const PVLanding = {
         if(!root.getClientRects().length) return;                                 // (the landing is not showing)
         const s = n++ % 2; lean(s, 2, 1100); if(n % 3 === 0) hop(s, 1, 10); twinkle(); }, 2400 * T); };
     const top = Math.min(...plan.map(p => p[2] - p[4]));
-    /* the tens cover (ART.tens): drop in, glide in, open a ten, take a cube each, cheer */
+    /* the tens cover (ART.tens), in step with the greeting: each beat waits for its word in the clip (landing_hero.beats);
+       if the clip is not playing (blocked, or over) the clock from the greeting's start stands in, a second late at most */
     const shadow = (i, on)=>{ const e = q(root, '.sgp-pcs[data-i="' + i + '"]'); if(e) e.classList.toggle("on", on); };
+    const BT = (CARD.landing_hero || {}).beats || { glide: .3, drop: 1.3, lean: 2.6, rise: 2.9, open: 3.7, take: 4.2, cheer: 4.7, end: 5 };
+    const until = t => new Promise(r =>{ const t0 = window.__sgT0 || Date.now(), tick = ()=>{
+      const a = typeof currentAudio !== "undefined" ? currentAudio : null;
+      if((a && !a.paused && a.currentTime >= t) || (Date.now() - t0) / 1000 >= t + 1) return r();
+      setTimeout(tick, 25); }; tick(); });
     const tens = async ()=>{
-      const idx = plan.map((p, i)=> i), own = idx.filter(i => !plan[i][8]), kids10 = idx.filter(i => plan[i][8]).sort((a, b)=> plan[a][7] - plan[b][7]);
+      const idx = plan.map((p, i)=> i), own = idx.filter(i => !plan[i][8]), out = idx.filter(i => plan[i][8]);
+      const pile = out.filter(i => plan[i][6] === undefined).sort((a, b)=> plan[a][7] - plan[b][7]), mine = out.filter(i => plan[i][6] !== undefined);
       const rods = own.filter(i => plan[i][5] === "pv_rod11"), ri = rods[rods.length - 1], rp = plan[ri], rod = pcs[ri];
-      root.classList.add("go");
-      await wait(300);
-      /* 1. the blocks drop in one by one - a squash as each lands, a knock */
+      root.classList.add("go"); window.__sgT0 = window.__sgT0 || Date.now();   // (no greeting: the clock from now)
+      /* "नमस्ते दोस्त" - the children glide in */
+      await until(BT.glide); zoom(0); setTimeout(()=> zoom(1), 160);
+      /* "मैं हूँ स्विफ्टी" - the blocks drop in one by one: a squash as each lands, a knock */
+      await until(BT.drop); root.classList.add("dropped");
       own.forEach((i, n)=> setTimeout(()=>{ pcs[i].classList.add("on");
         pcs[i].animate([{ translate: "0 -90px", scale: "1", opacity: 0, easing: "cubic-bezier(.55,0,1,.6)" }, { translate: "0 0", scale: "1", opacity: 1, offset: .55 },
-          { translate: "0 0", scale: "1.16 .84", offset: .7 }, { translate: "0 -5px", scale: ".96 1.05", offset: .85 }, { translate: "0 0", scale: "1 1" }], { duration: 640, easing: "ease-out" });
-        setTimeout(()=>{ shadow(i, true); sound(()=> PVSFX.land()); }, 350); }, n * 170));
-      await wait(own.length * 170 + 500);
-      /* 2. the children glide in */
-      zoom(0); await wait(240 * T); zoom(1); await wait(860 * T);
-      /* 3. Madhav leans in; the rod next to the cubes rises, wobbles, glows ... */
-      lean(0, 8, 760); await wait(260 * T);
+          { translate: "0 0", scale: "1.16 .84", offset: .7 }, { translate: "0 -5px", scale: ".96 1.05", offset: .85 }, { translate: "0 0", scale: "1 1" }], { duration: 520, easing: "ease-out" });
+        setTimeout(()=>{ shadow(i, true); sound(()=> PVSFX.land()); }, 290); }, n * 110));
+      /* "आज हम" - Madhav leans in toward the rods */
+      await until(BT.lean); lean(0, 8, 520);
+      /* "दहाई" - the rod beside the cubes rises, glows, sparkles and wobbles, till ... */
+      await until(BT.rise);
+      const LIFT = 18, cx = rp[1], cy = rp[2] - LIFT - rp[4] / 2, wob = Math.max(400, (BT.open - BT.rise) * 1000);
       sound(()=> PVSFX.move()); rod.classList.add("sgp-glow");
-      const LIFT = 18, cx = rp[1], cy = rp[2] - LIFT - rp[4] / 2;
-      const spk = setInterval(()=> sparkle(cx + (Math.random() - .5) * 34, cy + (Math.random() - .5) * rp[4] * .9), 160);
-      await rod.animate([{ translate: "0 0", rotate: "0deg" }, { translate: "0 " + -LIFT + "px", rotate: "0deg", offset: .22 },
-        { translate: "0 " + -LIFT + "px", rotate: "-6deg", offset: .36 }, { translate: "0 " + -LIFT + "px", rotate: "6deg", offset: .5 },
-        { translate: "0 " + -LIFT + "px", rotate: "-5deg", offset: .64 }, { translate: "0 " + -LIFT + "px", rotate: "4deg", offset: .78 },
-        { translate: "0 " + -LIFT + "px", rotate: "0deg", scale: "1.08 1", offset: .92 }, { translate: "0 " + -LIFT + "px", rotate: "0deg", scale: "1 1" }],
-        { duration: 1500, easing: "ease-in-out", fill: "forwards" }).finished.catch(()=>{});
-      clearInterval(spk);
-      /* ... and breaks: in its place its ten cubes, stacked as it was (a flash, the burst) */
-      const c = plan[kids10[0]][3], step = c * 93.2 / 147, rodBot = rp[2] - LIFT;
+      const spk = setInterval(()=> sparkle(cx + (Math.random() - .5) * 34, cy + (Math.random() - .5) * rp[4] * .9), 130);
+      rod.animate([{ translate: "0 0", rotate: "0deg" }, { translate: "0 " + -LIFT + "px", rotate: "0deg", offset: .25 },
+        { translate: "0 " + -LIFT + "px", rotate: "-6deg", offset: .42 }, { translate: "0 " + -LIFT + "px", rotate: "6deg", offset: .6 },
+        { translate: "0 " + -LIFT + "px", rotate: "-4deg", offset: .78 }, { translate: "0 " + -LIFT + "px", rotate: "0deg", scale: "1.1 1", offset: .92 },
+        { translate: "0 " + -LIFT + "px", rotate: "0deg", scale: "1 1" }], { duration: wob, easing: "ease-in-out", fill: "forwards" });
+      /* "खोलकर" - it breaks: in its place its ten cubes, stacked as it was (the burst) ... */
+      await until(BT.open); clearInterval(spk);
+      const c = plan[out[0]][3], step = c * 93.2 / 147, rodBot = rp[2] - LIFT;
       const at = j => ({ x: cx, y: rodBot - j * step });                       // the rod's j-th cube from the bottom (its foot point)
       rod.style.visibility = "hidden"; shadow(ri, false);
       burst(cx, cy); sound(()=> PVSFX.magic()); sparkle(cx, cy, true);
-      const hold = kids10.map((i, n)=>{ const p = plan[i], f = at(9 - n);       // (the first to go is the top one)
-        pcs[i].classList.add("on"); pcs[i].style.zIndex = 60 - n;
-        return pcs[i].animate([{ translate: (f.x - p[1]).toFixed(1) + "px " + (f.y - p[2]).toFixed(1) + "px" }], { duration: 1, fill: "forwards" }); });
-      await wait(420);
-      /* the cubes hop off it one by one, top first, in arcs, and stack into their places in the pyramid */
-      await Promise.all(kids10.map((i, n)=> wait(n * 150).then(()=>{
-        const p = plan[i], f = at(9 - n), dx = f.x - p[1], dy = f.y - p[2], apex = Math.min(dy, 0) - 46 - n * 1.5, F = [];
+      const hold = {};
+      out.forEach(i =>{ const p = plan[i], f = at(p[9]);
+        pcs[i].classList.add("on"); pcs[i].style.zIndex = 50 + p[9];
+        hold[i] = pcs[i].animate([{ translate: (f.x - p[1]).toFixed(1) + "px " + (f.y - p[2]).toFixed(1) + "px" }], { duration: 1, fill: "forwards" }); });
+      /* ... and eight of them hop off, top first, in tumbling arcs, and stack with the two into the pyramid */
+      await wait(140);
+      pile.forEach((i, n)=> setTimeout(()=>{
+        const p = plan[i], f = at(p[9]), dx = f.x - p[1], dy = f.y - p[2], apex = Math.min(dy, 0) - 40 - n * 2, F = [];
         for(let j = 0; j <= 10; j++){ const t = j / 10, y = (1 - t) * (1 - t) * dy + 2 * (1 - t) * t * apex;
           F.push({ translate: (dx * (1 - t)).toFixed(1) + "px " + y.toFixed(1) + "px", rotate: (-200 * (1 - t) * (1 - t)).toFixed(0) + "deg", scale: "1 1", offset: t * .78 }); }
         F.push({ translate: "0 0", rotate: "0deg", scale: "1.18 .8", offset: .88 }, { translate: "0 0", rotate: "0deg", scale: "1 1" });
-        sound(()=> PVSFX.appear());
-        hold[n].cancel();
-        const a = pcs[i].animate(F, { duration: 620, easing: "linear" });
-        setTimeout(()=>{ pcs[i].style.zIndex = ""; }, 300);
-        return wait(620 * .78).then(()=>{ shadow(i, true); sound(()=> PVSFX.land()); if(n % 3 === 2) sparkle(p[1], p[2] - p[4]);
-          return a.finished.catch(()=>{}); }); })));
-      rod.classList.remove("sgp-glow");
-      sound(()=> _tone([520, 660, 780], "sine", .3, .07));
-      hop(1, 1, 10); await wait(560 * T);
-      /* 4. each child takes a cube off the top and holds it up */
-      await Promise.all(idx.filter(i => plan[i][6] === 0 || plan[i][6] === 1).map(i => take(i)));
-      await wait(380);
-      /* 5. the cheer */
-      root.classList.add("built"); await wait(200);
-      const tp = Math.min(...plan.filter(p => p[8]).map(p => p[2] - p[4]));
+        hold[i].cancel(); sound(()=> PVSFX.appear());
+        pcs[i].animate(F, { duration: 440, easing: "linear" });
+        setTimeout(()=>{ pcs[i].style.zIndex = 20 + i; shadow(i, true); sound(()=> PVSFX.land()); if(n % 3 === 2) sparkle(p[1], p[2] - p[4]); }, 440 * .78); }, n * 45));
+      setTimeout(()=> rod.classList.remove("sgp-glow"), 300);
+      /* "घटाना" - the last two fly out of it into the children's hands, held up */
+      await until(BT.take);
+      const o = root.getBoundingClientRect();
+      await Promise.all(mine.map(i =>{ const p = plan[i], s = p[6], kd = kids[s], held = q(kd, '.sgp-held[data-i="' + i + '"]');
+        const f = at(p[9]), a = ctr(held, o), sc = parseFloat(held.style.scale) || 1;
+        const x0 = f.x - p[1], y0 = f.y - p[2], x1 = a.x - p[1], y1 = a.y - p[2], apex = Math.min(y0, y1) - 34, F = [];
+        for(let j = 0; j <= 10; j++){ const t = j / 10, y = (1 - t) * (1 - t) * y0 + 2 * (1 - t) * t * apex + t * t * y1;
+          F.push({ translate: (x0 + (x1 - x0) * t).toFixed(1) + "px " + y.toFixed(1) + "px", rotate: (dir(s) * -24 * t).toFixed(1) + "deg", scale: (1 + (sc - 1) * t).toFixed(3) }); }
+        hold[i].cancel(); lean(s, 5, 300); sound(()=> _tone([470, 700], "triangle", .1, .07));
+        return pcs[i].animate(F, { duration: 420, easing: "ease-in-out" }).finished.catch(()=>{}).then(()=>{
+          pcs[i].style.visibility = "hidden"; held.style.visibility = "visible"; pose(kd, "carry", true); }); }));
+      /* "सीखेंगे" - the cheer */
+      await until(BT.cheer);
+      root.classList.add("built");
+      const tp = Math.min(...pile.map(i => plan[i][2] - plan[i][4]));
       burst(L.MID + L.ART.tens.PX, tp); sparkle(L.MID - 60, top + 10, true); sparkle(L.MID + 90, tp - 10, true);
       sound(()=> _tone([660, 880, 1180], "sine", .5, .1));
-      kids.forEach(kd => pose(kd, "cheer", true)); hop(0, 2, 14); setTimeout(()=> hop(1, 2, 16), 110 * T);
-      await wait(1300 * T); };
+      kids.forEach(kd => pose(kd, "cheer", true)); hop(0, 1, 14); setTimeout(()=> hop(1, 1, 16), 110);
+      await until(BT.end); await wait(500); };
     let started = false;
     const go = async ()=>{ if(started) return; started = true;
       await ready;
@@ -2869,7 +2884,7 @@ const PVLanding = {
        start never puts it early. Never stranded: 2.5s past that time it comes in anyway. */
     const AT = +((CARD.landing_hero || {}).start_at) || 0;
     let greeted = false;
-    document.addEventListener("sg-greeting-start", ()=>{ greeted = true;
+    document.addEventListener("sg-greeting-start", ()=>{ greeted = true; window.__sgT0 = Date.now();
       if(!AT){ go(); return; }
       const t0 = Date.now(), tick = ()=>{ if(started) return;
         const a = typeof currentAudio !== "undefined" ? currentAudio : null;
@@ -3270,8 +3285,8 @@ const ASSET_SIZES = {
   "assets/char_madhav_cheer_blink.webp": 35698,
   "assets/char_madhav_full.webp": 33154,
   "assets/char_madhav_full_blink.webp": 31960,
-  "assets/char_pari.webp": 16922,
-  "assets/char_pari_blink.webp": 15808,
+  "assets/char_myra.webp": 16922,
+  "assets/char_myra_blink.webp": 15808,
   "assets/end_screen.webp": 33634,
   "assets/fonts/baloo2-600.woff2": 87020,
   "assets/fonts/baloo2-700.woff2": 86108,
@@ -3332,7 +3347,6 @@ const ASSET_SIZES = {
   "assets/voiceover/vo_g2_rm_ones.ogg": 9533,
   "assets/voiceover/vo_g2_rm_tens.ogg": 7592,
   "assets/voiceover/vo_g2_sub.ogg": 8409,
-  "assets/voiceover/vo_g3_build.ogg": 14886,
   "assets/voiceover/vo_g3_correct.ogg": 19686,
   "assets/voiceover/vo_g3_h2.ogg": 21590,
   "assets/voiceover/vo_g3_prompt.ogg": 10177,
@@ -3355,9 +3369,7 @@ const ASSET_SIZES = {
   "assets/voiceover/vo_num_5.ogg": 4219,
   "assets/voiceover/vo_num_6.ogg": 3615,
   "assets/voiceover/vo_num_7.ogg": 4521,
-  "assets/voiceover/vo_num_8.ogg": 3070,
   "assets/voiceover/vo_p1_ask.ogg": 16750,
-  "assets/voiceover/vo_p1_build.ogg": 13056,
   "assets/voiceover/vo_p1_correct.ogg": 19860,
   "assets/voiceover/vo_p1_h2.ogg": 21826,
   "assets/voiceover/vo_p1_prompt.ogg": 9171,
@@ -3365,7 +3377,6 @@ const ASSET_SIZES = {
   "assets/voiceover/vo_p1_rm_ones.ogg": 12831,
   "assets/voiceover/vo_p1_rm_tens.ogg": 9390,
   "assets/voiceover/vo_p1_sub.ogg": 14178,
-  "assets/voiceover/vo_p2_build.ogg": 12637,
   "assets/voiceover/vo_p2_correct.ogg": 20439,
   "assets/voiceover/vo_p2_h2.ogg": 23132,
   "assets/voiceover/vo_p2_prompt.ogg": 9107,
@@ -3423,7 +3434,7 @@ const ASSET_SIZES = {
   "assets/voiceover/vo_t3_total.ogg": 27709,
   "assets/voiceover/vo_t3s_a_madhav.ogg": 20319,
   "assets/voiceover/vo_t3s_ask_madhav.ogg": 15454,
-  "assets/voiceover/vo_t3s_b_pari.ogg": 9373,
+  "assets/voiceover/vo_t3s_b_myra.ogg": 9676,
   "assets/voiceover/vo_t4_story_a.ogg": 19020,
   "assets/voiceover/vo_t4_story_b.ogg": 9684,
   "assets/voiceover/vo_t4_story_c_madhav.ogg": 14151

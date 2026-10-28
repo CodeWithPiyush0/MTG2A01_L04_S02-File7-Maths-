@@ -22,16 +22,16 @@ What this skill adds (`app.js` `[pv regroup]`):
 ## The lesson
 | slide | deck | type | what happens |
 |---|---|---|---|
-| landing | p1 | — | the tens cover (S01's stage): three rods and two cubes drop in, Madhav and Aanya glide in, a rod opens into ten cubes that stack into a pyramid, each child holds one up and they cheer; title "दहाई खोलकर घटाइए", greeting "…आज हम दहाई खोलकर घटाना सीखेंगे।" |
+| landing | p1 | — | the tens cover (S01's stage), in step with the greeting word by word (`landing_hero.beats`): Madhav and Aanya glide in («नमस्ते दोस्त»), three rods and two cubes drop in («मैं हूँ स्विफ्टी»), a rod rises («दहाई») and opens into ten cubes («खोलकर») - eight stack into a pyramid, two fly into the children's hands («घटाना») - and they cheer («सीखेंगे»); title "दहाई खोलकर घटाइए", greeting "…आज हम दहाई खोलकर घटाना सीखेंगे।" |
 | T1 | p2 | STORY_SUB | "कितने बचे?" as File6's page 1: Madhav with his 25, Aanya with none, 25 − 6 = ? |
 | T2 | p3 + p2b | PV_REGROUP_DEMO | Swiftee builds 25; "5 इकाई में से 6 …नहीं"; a ten comes over and opens (15 इकाई); she takes 6 (counted); "= 19"; the story returns: Madhav's rod opens, 6 go to Aanya, 19 fills the "?" |
-| T3 | user | STORY_SUB | another example: Madhav with his 30, gives 17 to Pari; 30 − 17 = ? |
-| T4 | p4 | PV_REGROUP_DEMO | 30 − 17 = ? asked; the child builds 30; the ten opens with the VO; the child takes 7 ones (counted) and 1 ten; "30 − 17 = 13"; then page 2's ending: the T3 story returns, a rod opens, 17 go to Pari, 13 fills the "?" |
-| G1 | p5 | PV_SUB mcq | 42 − 27 (15 / 6 / 105): build, "…तो आप 1 दहाई को यहाँ लाइए" - the child brings it, takes 7 (counted), 2 tens |
+| T3 | user | STORY_SUB | another example: Madhav with his 30, gives 17 to Myra; 30 − 17 = ? |
+| T4 | p4 | PV_REGROUP_DEMO | 30 − 17 = ? asked; the child builds 30; the ten opens with the VO; the child takes 7 ones (counted) and 1 ten; "30 − 17 = 13"; then page 2's ending: the T3 story returns, a rod opens, 17 go to Myra, 13 fills the "?" |
+| G1 | p5 | PV_SUB mcq | 42 − 27 (15 / 6 / 105): build, "…तो आप 1 दहाई को यहाँ लाइए" - the child brings it, takes 7, 2 tens (no counting aloud on G1-G3) |
 | G2 | p6 | PV_SUB mcq | 53 − 14 (39 / 12 / 93), the child opens the ten unprompted (reminder after 7 s) |
-| G3 | p7 | PV_SUB mcq | 46 − 28 (18 / 9 / 81) |
-| P1 | p8 | PV_SUB numpad | 74 − 58 → 16, typed into the "?" |
-| P2 | p9 | PV_SUB numpad | 61 − 35 → 26 |
+| G3 | p7 | PV_SUB mcq | 46 − 28 (18 / 9 / 81); the table comes with 46 (no building, G3 - P2) |
+| P1 | p8 | PV_SUB numpad | 74 − 58 → 16, typed into the "?"; the table comes with 74 |
+| P2 | p9 | PV_SUB numpad | 61 − 35 → 26; the table comes with 61 |
 | P3 | p10 | MENTAL_SUB mcq | 84 − 46 (38 / 42 / 83), the equation only; the 2nd help shows the blocks (a ten opened) |
 | P4 | p11 | MENTAL_SUB mcq | 91 − 14 (77 / 83 / 87) |
 | CEL | p17 | CELEBRATION | "शाबाश! आपने दहाई खोलकर घटाना सीख लिया!" |
