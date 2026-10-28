@@ -324,7 +324,11 @@ function play(src, onEnd){
       setTimeout(fire, 1200); };
     a.setAttribute("data-asset", src);
     a.src = Assets.url(src); setPlaying(true);   // re-apply now the src is known, so the right chip lights
-    a.play().catch(()=>{ if(tok === _playTok) setTimeout(fire, 1200); });
+    /* the browser refuses sound before the first tap (its autoplay policy - the live site, not the app): "vo-blocked",
+       and the clip is over at once, so that first tap can start it again (live version: the cover's greeting never played) */
+    a.play().catch(e =>{ if(tok !== _playTok) return;
+      if(e && e.name === "NotAllowedError"){ document.dispatchEvent(new Event("vo-blocked")); fire(); return; }
+      setTimeout(fire, 1200); });
     /* WATCHDOG: whatever waits on this clip's end (आगे, the next line, the play button) can never be stranded by a clip
        that stalls mid-way or never reports `ended`: the clip's remaining length + 3s grace, re-armed while it is still
        really moving on. No length yet (metadata stuck): 15s. */
@@ -2823,22 +2827,22 @@ const PVLanding = {
       /* "घटाना" - the last two fly out of it into the children's hands, held up */
       await until(BT.take);
       const o = root.getBoundingClientRect();
-      await Promise.all(mine.map(i =>{ const p = plan[i], s = p[6], kd = kids[s], held = q(kd, '.sgp-held[data-i="' + i + '"]');
+      const took = Promise.all(mine.map(i =>{ const p = plan[i], s = p[6], kd = kids[s], held = q(kd, '.sgp-held[data-i="' + i + '"]');
         const f = at(p[9]), a = ctr(held, o), sc = parseFloat(held.style.scale) || 1;
         const x0 = f.x - p[1], y0 = f.y - p[2], x1 = a.x - p[1], y1 = a.y - p[2], apex = Math.min(y0, y1) - 34, F = [];
         for(let j = 0; j <= 10; j++){ const t = j / 10, y = (1 - t) * (1 - t) * y0 + 2 * (1 - t) * t * apex + t * t * y1;
           F.push({ translate: (x0 + (x1 - x0) * t).toFixed(1) + "px " + y.toFixed(1) + "px", rotate: (dir(s) * -24 * t).toFixed(1) + "deg", scale: (1 + (sc - 1) * t).toFixed(3) }); }
         hold[i].cancel(); lean(s, 5, 300); sound(()=> _tone([470, 700], "triangle", .1, .07));
-        return pcs[i].animate(F, { duration: 420, easing: "ease-in-out" }).finished.catch(()=>{}).then(()=>{
+        return pcs[i].animate(F, { duration: 360, easing: "ease-in-out" }).finished.catch(()=>{}).then(()=>{
           pcs[i].style.visibility = "hidden"; held.style.visibility = "visible"; pose(kd, "carry", true); }); }));
-      /* "सीखेंगे" - the cheer */
+      /* "सीखेंगे" - the cheer (on its word, not on the flight's end) */
       await until(BT.cheer);
       root.classList.add("built");
       const tp = Math.min(...pile.map(i => plan[i][2] - plan[i][4]));
       burst(L.MID + L.ART.tens.PX, tp); sparkle(L.MID - 60, top + 10, true); sparkle(L.MID + 90, tp - 10, true);
       sound(()=> _tone([660, 880, 1180], "sine", .5, .1));
       kids.forEach(kd => pose(kd, "cheer", true)); hop(0, 1, 14); setTimeout(()=> hop(1, 1, 16), 110);
-      await until(BT.end); await wait(500); };
+      await took; await until(BT.end); await wait(500); };
     let started = false;
     const go = async ()=>{ if(started) return; started = true;
       await ready;
@@ -2884,7 +2888,23 @@ const PVLanding = {
        start never puts it early. Never stranded: 2.5s past that time it comes in anyway. */
     const AT = +((CARD.landing_hero || {}).start_at) || 0;
     let greeted = false;
+    /* the tens cover runs WITH the greeting (its beats are the greeting's words): it starts when the clip is really
+       playing, its clock set from the clip. Sound refused before the first tap (the live site, autoplay policy): nothing
+       moves yet - the speaker pulses with a gold ring ("tap me") and the child's first tap anywhere starts the greeting,
+       and the picture with it. A clip that cannot play at all (a missing file): the picture on its own clock, 4s on. */
+    const tapMe = on =>{ const v = document.getElementById("sgVo"); if(v) v.classList.toggle("sg-tapme", on); };
+    const withVoice = ()=>{ const t0 = Date.now(); let blocked = false;
+      const onB = ()=>{ blocked = true; }; document.addEventListener("vo-blocked", onB, { once: true });
+      const tick = ()=>{ if(started) return;
+        const a = typeof currentAudio !== "undefined" ? currentAudio : null;
+        if(a && !a.paused && a.currentTime > 0){ document.removeEventListener("vo-blocked", onB);
+          window.__sgT0 = Date.now() - a.currentTime * 1000; tapMe(false); go(); return; }
+        if(blocked){ tapMe(true); return; }                                    // (the next "sg-greeting-start" tries again)
+        if(Date.now() - t0 > 4000){ document.removeEventListener("vo-blocked", onB); tapMe(false); go(); return; }
+        setTimeout(tick, 30); };
+      tick(); };
     document.addEventListener("sg-greeting-start", ()=>{ greeted = true; window.__sgT0 = Date.now();
+      if(L.ART[KIND].drop){ withVoice(); return; }
       if(!AT){ go(); return; }
       const t0 = Date.now(), tick = ()=>{ if(started) return;
         const a = typeof currentAudio !== "undefined" ? currentAudio : null;
@@ -3860,9 +3880,10 @@ function boot(){
   /* ...but not when the greeting has already been heard or is playing now, and never on the play button
      itself - tapping the live gold button used to restart the greeting a split second before its click
      silenced it again. */
-  window.addEventListener("pointerdown", function once(ev){ window.removeEventListener("pointerdown", once);
-    if(ev && ev.target && ev.target.closest && ev.target.closest("#sgBtn")) return;
-    if(!_greetingHeard && !isPlaying) playLanding(); }, { once:true });
+  window.addEventListener("pointerdown", function tapStart(ev){
+    if(_greetingHeard || !onLandingNow()){ window.removeEventListener("pointerdown", tapStart, true); return; }
+    if(ev && ev.target && ev.target.closest && ev.target.closest("#sgBtn, #sgVo")) return;   // (they start it themselves)
+    if(!isPlaying) playLanding(); }, true);   // (any tap until the greeting has really been heard - the live site refuses sound before one)
 
   $("sgBtn").onclick = ()=>{
     if(startWaiting()){                 // still waiting for the greeting: a tap can only START it
