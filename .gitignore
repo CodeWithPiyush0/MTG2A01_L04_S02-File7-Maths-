@@ -8,6 +8,8 @@
 
 # the v1 build kept as a local backup, and the review screenshots (regenerated; they are in the review .pptx)
 _archive_v1/
+# the VO team's source recordings (WAV); the game ships their finished .ogg in assets/voiceover/
+_vo_source/
 _review_shots/
 
 # editor / OS / Office lock files

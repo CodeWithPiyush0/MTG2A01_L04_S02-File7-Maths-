@@ -88,11 +88,11 @@ slides.append({
               "rm_ones": vo("vo_t2_rm_ones", "अब इसमें से 6 इकाई को हटाते हैं,"),
               "ones_left": vo("vo_t2_ones_left", "इन 15 इकाई में से 6 इकाई घटाने पर बचीं, 9 इकाई।"),
               "tens_note": vo("vo_t2_tens_note", "चूँकि इसमें दहाइयाँ नहीं थीं, तो यहाँ 1 दहाई ही बची।"),
-              "both_left": vo("vo_t2_both_left", "तो, अब यहाँ 1 दहाई और 9 इकाई बचीं।"),
+              "both_left": vo("vo_t2_both_left", "अब यहाँ 1 दहाई और 9 इकाई बचीं।"),
               "total": vo("vo_t2_total", "यानी 25 में से 6 घटाने पर हमें मिलीं, 1 दहाई और 9 इकाई, यानी 19।"),
               "story_a": vo("vo_t2_story_a", "यहाँ हमने पच्चीस में से छः घटाए हैं, तो बचे 19।"),
               "story_b": vo("vo_t2_story_b", "अब इस डिब्बे में 19 आएगा।"),
-              "story_c": vo("vo_t2_story_c_madhav", "यानी माधव के पास कुल 19 ब्लॉक्स बचे।")},   # (File6's closing line, user 2026-10-27)
+              "story_c": vo("vo_t2_story_c_madhav", "यानी माधव के पास 19 ब्लॉक्स बचे।")},   # (File6's closing line, user 2026-10-27)
     "data": {"a": 25, "b": 6, "demo": True}})
 
 # user 2026-10-27: a second story page (a copy of page 1) before the 30 − 17 page - Madhav has 30 blocks, gives 17 to Myra
@@ -114,15 +114,15 @@ slides.append({
               "built": vo("vo_t3_built", "यह आपने ब्लॉक्स से संख्या 30 बना ली।"),
               "sub": vo("vo_t3_sub", "अब 30 में से 17 घटाते हैं। तो पहले हम इकाई से घटाएँगे।"),
               "open": vo("vo_t3_open", "यहाँ शून्य इकाई हैं, तो हम 1 दहाई को यहाँ लाएँगे और इसको तोड़ेंगे, अब ये 1 दहाई, 10 इकाई में हो गई।"),
-              "rm_ones": vo("vo_t3_rm_ones", "अब इसमें से 7 इकाई को हटाइए।"),
+              "rm_ones": vo("vo_t3_rm_ones", "अब इसमें से 7 इकाई को आप हटाइए।"),
               "ones_left": vo("vo_t3_ones_left", "इन 10 इकाई में से 7 इकाई घटाने पर बचीं, 3 इकाई।"),
-              "rm_tens": vo("vo_t3_rm_tens", "अब आप दहाइयाँ घटाइए। 2 दहाई में से 1 दहाई हटाइए।"),
+              "rm_tens": vo("vo_t3_rm_tens", "अब आप दहाई घटाइए। 2 दहाई में से 1 दहाई हटाइए।"),
               "tens_left": vo("vo_t3_tens_left", "बहुत बढ़िया! 2 दहाई में से 1 दहाई घटाने पर बची, 1 दहाई।"),
               "total": vo("vo_t3_total", "30 में से 17 घटाने पर हमें मिलीं, 1 दहाई और 3 इकाई, यानी 13।"),
               # page 2's ending here too (user 2026-10-27): the story row of the second story page comes back
               "story_a": vo("vo_t4_story_a", "यहाँ हमने तीस में से सत्रह घटाए हैं, तो बचे 13।"),
               "story_b": vo("vo_t4_story_b", "अब इस डिब्बे में 13 आएगा।"),
-              "story_c": vo("vo_t4_story_c_madhav", "यानी माधव के पास कुल 13 ब्लॉक्स बचे।"),
+              "story_c": vo("vo_t4_story_c_madhav", "यानी माधव के पास 13 ब्लॉक्स बचे।"),
               **{k: v for k, v in RM.items()}},
     "data": {"a": 30, "b": 17, "demo": False, "idle_ms": 3000}})
 
@@ -378,10 +378,10 @@ for sl in slides:
 _ld = clip_len("vo_landing")
 START_AT = round(frac("vo_landing", "आज हम") * _ld, 2) if _ld else 2.9
 # the tens cover follows the greeting word by word (SME review 2026-10-28 "align the visuals with the narration"): the
-# times (s) in vo_landing.ogg, MEASURED from its loudness (pauses at 1.05-1.32, 2.21-2.60, 4.94-): glide = "नमस्ते दोस्त",
+# times (s) in vo_landing.ogg, MEASURED from its loudness (user's recording 2026-10-29; pauses at 1.13-1.42, 2.25-2.81, 5.23-): glide = "नमस्ते दोस्त",
 # drop = "मैं हूँ स्विफ्टी", lean = "आज हम", rise = "दहाई", open = "खोलकर", take = "घटाना", cheer = "सीखेंगे", end = the line's end.
 # Re-measure them if vo_landing is re-recorded.
-BEATS = {"glide": 0.28, "drop": 1.32, "lean": 2.6, "rise": 2.92, "open": 3.7, "take": 4.2, "cheer": 4.66, "end": 4.94}
+BEATS = {"glide": 0.28, "drop": 1.42, "lean": 2.81, "rise": 3.06, "open": 3.86, "take": 4.32, "cheer": 4.76, "end": 5.23}
 
 AUDIO_IDS = sorted(set(VO) | {"sfx_celebrate"})
 card = {
