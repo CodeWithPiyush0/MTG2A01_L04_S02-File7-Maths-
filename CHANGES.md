@@ -182,3 +182,10 @@ Verified, muted (`--mute-audio`): G1 (2 wrong) → `vo_g1_correct_late` then `vo
 | 3 | (the cover) | ✅ | the cover's beats re-measured in the new `vo_landing` (`landing_hero.beats`): glide 0.28, drop 1.42, lean 2.81, rise 3.06, open 3.86, take 4.32, cheer 4.76, end 5.23 s |
 Not used: `vo_t2_tens_note.wav` - 1.2 s, says only «तो» (the line is «चूँकि इसमें दहाइयाँ नहीं थीं, तो यहाँ 1 दहाई ही बची।», 4.4 s): the old clip is kept. Not in the delivery (old clips kept): `vo_rm_ones_less`, `vo_rm_ones_more`. The replaced clips are backed up outside the repo.
 Verified, muted (`--mute-audio`): the cover's beats on the new greeting (drop 1.45 s, rise 3.09 s, open 3.89 s, cheer 4.77 s on the clip); a full run landing → `lesson_completed`, every clip played, 0 console errors. Cache stamp `?v=20261029a`.
+
+
+## User change — 2026-10-29 (2)
+| # | Asked | Status | How it is built |
+|---|---|---|---|
+| 1 | "reduce the speed of animation in the cover page, currently its too fast" | ✅ | the tens cover's block moves run at half speed (`app.js`, `TT = 2`): the five blocks drop in over ~1.9 s (was ~1 s), the eight cubes hop off into the pyramid over ~1.5 s (was ~0.75 s), the two cubes fly into the children's hands in 0.72 s (was 0.36 s). Each move still starts on its word in the greeting; the cheer now waits for the last block to land (~0.5 s after the line ends, was on «सीखेंगे»). The children's glide / leans / hops were already slowed (`T = 2.2`, 2026-10-15) and are unchanged |
+Verified, muted (`--mute-audio`), seconds from the greeting's start: glide 0.35, drop 1.47, rise 3.10, open 3.90, take landed 5.11, cheer 5.74, play button 6.8 (was ~5.9); 0 console errors. Cache stamp `?v=20261029b`.

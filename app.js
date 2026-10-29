@@ -2783,6 +2783,10 @@ const PVLanding = {
        if the clip is not playing (blocked, or over) the clock from the greeting's start stands in, a second late at most */
     const shadow = (i, on)=>{ const e = q(root, '.sgp-pcs[data-i="' + i + '"]'); if(e) e.classList.toggle("on", on); };
     const BT = (CARD.landing_hero || {}).beats || { glide: .3, drop: 1.3, lean: 2.6, rise: 2.9, open: 3.7, take: 4.2, cheer: 4.7, end: 5 };
+    /* the blocks' moves x this (user 2026-10-29 "reduce the speed of animation in the cover page, currently its too fast"):
+       each still starts on its word; the moves themselves (the drops, the hops into the pyramid, the flight into the
+       hands) take twice as long, and the cheer waits for the last block to land - just past the line's end */
+    const TT = 2;
     const until = t => new Promise(r =>{ const t0 = window.__sgT0 || Date.now(), tick = ()=>{
       const a = typeof currentAudio !== "undefined" ? currentAudio : null;
       if((a && !a.paused && a.currentTime >= t) || (Date.now() - t0) / 1000 >= t + 1) return r();
@@ -2798,8 +2802,8 @@ const PVLanding = {
       await until(BT.drop); root.classList.add("dropped");
       own.forEach((i, n)=> setTimeout(()=>{ pcs[i].classList.add("on");
         pcs[i].animate([{ translate: "0 -90px", scale: "1", opacity: 0, easing: "cubic-bezier(.55,0,1,.6)" }, { translate: "0 0", scale: "1", opacity: 1, offset: .55 },
-          { translate: "0 0", scale: "1.16 .84", offset: .7 }, { translate: "0 -5px", scale: ".96 1.05", offset: .85 }, { translate: "0 0", scale: "1 1" }], { duration: 520, easing: "ease-out" });
-        setTimeout(()=>{ shadow(i, true); sound(()=> PVSFX.land()); }, 290); }, n * 110));
+          { translate: "0 0", scale: "1.16 .84", offset: .7 }, { translate: "0 -5px", scale: ".96 1.05", offset: .85 }, { translate: "0 0", scale: "1 1" }], { duration: 520 * TT, easing: "ease-out" });
+        setTimeout(()=>{ shadow(i, true); sound(()=> PVSFX.land()); }, 290 * TT); }, n * 110 * TT));
       /* "आज हम" - Madhav leans in toward the rods */
       await until(BT.lean); lean(0, 8, 520);
       /* "दहाई" - the rod beside the cubes rises, glows, sparkles and wobbles, till ... */
@@ -2822,15 +2826,16 @@ const PVLanding = {
         pcs[i].classList.add("on"); pcs[i].style.zIndex = 50 + p[9];
         hold[i] = pcs[i].animate([{ translate: (f.x - p[1]).toFixed(1) + "px " + (f.y - p[2]).toFixed(1) + "px" }], { duration: 1, fill: "forwards" }); });
       /* ... and eight of them hop off, top first, in tumbling arcs, and stack with the two into the pyramid */
-      await wait(140);
+      await wait(140 * TT);
+      const piled = wait(((pile.length - 1) * 45 + 440) * TT);                  // (the last of them lands)
       pile.forEach((i, n)=> setTimeout(()=>{
         const p = plan[i], f = at(p[9]), dx = f.x - p[1], dy = f.y - p[2], apex = Math.min(dy, 0) - 40 - n * 2, F = [];
         for(let j = 0; j <= 10; j++){ const t = j / 10, y = (1 - t) * (1 - t) * dy + 2 * (1 - t) * t * apex;
           F.push({ translate: (dx * (1 - t)).toFixed(1) + "px " + y.toFixed(1) + "px", rotate: (-200 * (1 - t) * (1 - t)).toFixed(0) + "deg", scale: "1 1", offset: t * .78 }); }
         F.push({ translate: "0 0", rotate: "0deg", scale: "1.18 .8", offset: .88 }, { translate: "0 0", rotate: "0deg", scale: "1 1" });
         hold[i].cancel(); sound(()=> PVSFX.appear());
-        pcs[i].animate(F, { duration: 440, easing: "linear" });
-        setTimeout(()=>{ pcs[i].style.zIndex = 20 + i; shadow(i, true); sound(()=> PVSFX.land()); if(n % 3 === 2) sparkle(p[1], p[2] - p[4]); }, 440 * .78); }, n * 45));
+        pcs[i].animate(F, { duration: 440 * TT, easing: "linear" });
+        setTimeout(()=>{ pcs[i].style.zIndex = 20 + i; shadow(i, true); sound(()=> PVSFX.land()); if(n % 3 === 2) sparkle(p[1], p[2] - p[4]); }, 440 * TT * .78); }, n * 45 * TT));
       setTimeout(()=> rod.classList.remove("sgp-glow"), 300);
       /* "घटाना" - the last two fly out of it into the children's hands, held up */
       await until(BT.take);
@@ -2841,16 +2846,16 @@ const PVLanding = {
         for(let j = 0; j <= 10; j++){ const t = j / 10, y = (1 - t) * (1 - t) * y0 + 2 * (1 - t) * t * apex + t * t * y1;
           F.push({ translate: (x0 + (x1 - x0) * t).toFixed(1) + "px " + y.toFixed(1) + "px", rotate: (dir(s) * -24 * t).toFixed(1) + "deg", scale: (1 + (sc - 1) * t).toFixed(3) }); }
         hold[i].cancel(); lean(s, 5, 300); sound(()=> _tone([470, 700], "triangle", .1, .07));
-        return pcs[i].animate(F, { duration: 360, easing: "ease-in-out" }).finished.catch(()=>{}).then(()=>{
+        return pcs[i].animate(F, { duration: 360 * TT, easing: "ease-in-out" }).finished.catch(()=>{}).then(()=>{
           pcs[i].style.visibility = "hidden"; held.style.visibility = "visible"; pose(kd, "carry", true); }); }));
-      /* "सीखेंगे" - the cheer (on its word, not on the flight's end) */
-      await until(BT.cheer);
+      /* "सीखेंगे" - the cheer, once every block is in its place (its word, or a moment after) */
+      await until(BT.cheer); await piled; await took;
       root.classList.add("built");
       const tp = Math.min(...pile.map(i => plan[i][2] - plan[i][4]));
       burst(L.MID + L.ART.tens.PX, tp); sparkle(L.MID - 60, top + 10, true); sparkle(L.MID + 90, tp - 10, true);
       sound(()=> _tone([660, 880, 1180], "sine", .5, .1));
       kids.forEach(kd => pose(kd, "cheer", true)); hop(0, 1, 14); setTimeout(()=> hop(1, 1, 16), 110);
-      await took; await until(BT.end); await wait(500); };
+      await until(BT.end); await wait(500); };
     let started = false;
     const go = async ()=>{ if(started) return; started = true;
       await ready;
