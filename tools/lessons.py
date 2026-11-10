@@ -268,6 +268,47 @@ def frac(cid, phrase, after=None):
     return round((0.28 + pos * (dur - 0.28 - 0.36)) / dur, 3)
 
 
+# the closing lines' word times MEASURED on the clips (seconds; from their pauses and a 50 ms loudness strip, each word group being its
+# own voiced stretch) - the text estimate (frac) drifts on these lines, most after the slow «शाबाश!» (user 2026-11-10: the equation
+# lit in sync with the VO). a | − (घटा / में से) | b | (x: lights off while the line says something else) | = (बराबर / यानी / मिला) |
+# the answer. Re-measure a line if it is re-recorded.
+MEASURED = {
+    "vo_t2_total":        {"a": 1.15, "op": 1.70, "b": 2.10, "x": 3.10, "eq": 6.75, "q": 7.45},   # यानी | 25 में से 6 घटाने पर | … | यानी | 19
+    "vo_t3_total":        {"a": 0.25, "op": 0.60, "b": 1.20, "x": 2.10, "eq": 5.45, "q": 6.10},   # 30 में से 17 घटाने पर | … | यानी | 13
+    "vo_g1_correct":      {"a": 1.30, "op": 1.95, "b": 2.75, "x": 3.25, "eq": 6.35, "q": 6.95},   # शाबाश! 42 में से 27 घटाने पर … यानी 15।
+    "vo_g1_correct_late": {"a": 0.25, "op": 0.95, "b": 1.50, "x": 2.55, "eq": 5.65, "q": 6.25},
+    "vo_g1_eq":           {"a": 1.15, "op": 2.15, "b": 2.70, "eq": 3.55, "q": 4.45},              # इसलिए 42 घटा 27 बराबर 15।
+    "vo_g2_correct":      {"a": 1.55, "op": 2.15, "b": 2.35, "eq": 2.90, "q": 3.65},              # शाबाश! 53 घटा 14 बराबर 39।
+    "vo_g2_correct_late": {"a": 0.25, "op": 1.25, "b": 2.25, "eq": 3.25, "q": 4.35},
+    "vo_g3_correct":      {"a": 1.70, "op": 2.35, "b": 2.90, "eq": 3.45, "q": 4.00},              # शाबाश! 46 घटा 28 बराबर 18।
+    "vo_g3_correct_late": {"a": 0.30, "op": 0.95, "b": 1.35, "eq": 2.10, "q": 2.75},
+    "vo_p1_correct":      {"a": 1.60, "op": 2.40, "b": 2.75, "x": 3.60, "eq": 3.95, "q": 4.75},   # शाबाश! 74 में से 58 घटाने पर हमें मिला 16।
+    "vo_p1_correct_late": {"a": 0.30, "op": 1.15, "b": 1.55, "x": 2.40, "eq": 2.85, "q": 3.70},
+    "vo_p2_correct":      {"a": 1.55, "op": 2.25, "b": 2.65, "x": 3.50, "eq": 4.05, "q": 4.50},   # शाबाश! 61 में से 35 घटाने पर हमें मिला 26।
+    "vo_p2_correct_late": {"a": 0.25, "op": 0.90, "b": 1.30, "x": 2.15, "eq": 2.70, "q": 3.05},
+    "vo_p3_correct":      {"a": 3.45, "op": 3.90, "b": 4.50, "eq": 5.20, "q": 5.95},              # … चुन ली। 84 घटा 46 बराबर 38।
+    "vo_p3_correct_late": {"a": 2.50, "op": 3.00, "b": 3.60, "eq": 4.50, "q": 5.25},
+    "vo_p4_correct":      {"a": 3.60, "op": 4.50, "b": 5.10, "eq": 5.75, "q": 6.50},              # … चुन ली। 91 घटा 14 बराबर 77।
+    "vo_p4_correct_late": {"a": 2.30, "op": 2.95, "b": 3.35, "eq": 3.85, "q": 4.45},
+}
+
+
+def measured(cid, est):
+    """[a, op, b, eq, q (, x)] as fractions of the clip - its measured times, else the estimate"""
+    m = MEASURED.get(cid); dur = clip_len(cid)
+    if not (m and dur):
+        return est
+    return [round(m[k] / dur, 3) for k in ("a", "op", "b", "eq", "q")] + ([round(m["x"] / dur, 3)] if "x" in m else [])
+
+
+def sub_cues(cid, a, b, n):
+    """"a में से b घटाने पर … यानी n" / "… हमें मिला n" - the equation's parts on a, में से, b, यानी / मिला, n (measured where it can)"""
+    t = VO[cid]; w = "यानी" if "यानी" in t[t.index(str(b)):] else "मिला"; ia = t.index(str(a))
+    est = [frac(cid, str(a)), frac(cid, "में से", after=t[:ia]), frac(cid, str(b), after=t[:ia] + str(a)),
+           frac(cid, w, after=t[:ia] + str(a) + " में से " + str(b)), frac(cid, str(n), after=w)]
+    return measured(cid, est)
+
+
 def eq_cues(cid, a, b, n, op="घटा"):
     """"... a घटा b बराबर n" - the equation's five parts lit as they are said ([Number Sync with VO])"""
     t = VO[cid]; ia = t.index(str(a))
@@ -281,9 +322,12 @@ for sl in slides:
     au = sl.get("audio", {})
     if au.get("correct") and VO[au["correct"]].startswith("शाबाश! "):
         au["correct_late"] = vo(au["correct"] + "_late", VO[au["correct"]][len("शाबाश! "):])
-
-for sl in slides:
-    au, d = sl["audio"], sl["data"]; cues = {}
+
+
+for sl in slides:
+
+    au, d = sl["audio"], sl["data"]; cues = {}
+
     if "a" not in d:
         continue
     a, b = d["a"], d["b"]; diff = a - b
@@ -298,7 +342,9 @@ for sl in slides:
     eqs = {}
     for role in ("eq", "correct", "correct_late"):
         if role in au and "बराबर" in VO[au[role]]:
-            eqs[role] = eq_cues(au[role], a, b, diff)
+            eqs[role] = measured(au[role], eq_cues(au[role], a, b, diff))
+        elif role in au and "में से" in VO[au[role]] and ("यानी" in VO[au[role]] or "मिला" in VO[au[role]]):   # (user 2026-11-10)
+            eqs[role] = sub_cues(au[role], a, b, diff)
     if eqs:
         cues["eqs"] = eqs
     if sl["type"] == "PV_SUB" and "build" in au:
@@ -367,6 +413,7 @@ for sl in slides:
             c["rm_tens"] = {"t": frac(au["rm_tens"], f"{at - 1} दहाई")}
         c["total"] = {"t": frac(au["total"], f"{rt} दहाई"), "o": frac(au["total"], f"{ro} इकाई"),
                       "n": frac(au["total"], "यानी", after="इकाई")}
+        c["total_eq"] = sub_cues(au["total"], a, b, diff)   # (user 2026-11-10: the answer goes into the equation on its word)
         if "story_a" in au:
             NW = {25: "पच्चीस", 6: "छः", 30: "तीस", 17: "सत्रह"}   # (the story lines say a and b in words)
             c["story"] = {"a": frac(au["story_a"], NW[a]), "b": frac(au["story_a"], NW[b]), "n": frac(au["story_a"], "बचे"),

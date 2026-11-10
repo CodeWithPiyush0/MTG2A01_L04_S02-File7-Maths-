@@ -1119,6 +1119,9 @@ const PVK = (function(){
                              { duration: n * 85, iterations: Infinity, easing: "steps(" + n + ")" });
     return svg;
   }
+  /* the answer's box: green as the right answer lands, then (1.2s) back to a plain number box like the others (user 2026-11-10,
+     as MTG2A01_L03_S01's settle) */
+  const settle = q =>{ setTimeout(()=>{ if(q.isConnected) q.classList.add("settled"); }, 1200); };
   /* (op: the sign, "+" by default - this lesson's "−") */
   function equation(sc, a, b, cx, y, h, op){
     const row = add(sc, "div", "pv-eq", "height:" + px(h) + ";--h:" + px(h));
@@ -1126,7 +1129,7 @@ const PVK = (function(){
       e.innerHTML = n == null ? "?" : numHTML(n); return e; };
     const sym = t =>{ const e = add(row, "span", "pv-op", "font-size:" + px(h * .78)); e.textContent = t; return e; };
     const E = { el: row, a: box(a, "pv-ea"), op: sym(op || "+"), b: box(b, "pv-eb"), eq: sym("="), q: box(null, "pv-q") }; E.plus = E.op;
-    E.fill = n =>{ E.q.innerHTML = numHTML(n); E.q.classList.add("filled"); pop(E.q); };
+    E.fill = n =>{ E.q.classList.remove("pv-split", "merge"); E.q.innerHTML = numHTML(n); E.q.classList.add("filled"); pop(E.q); settle(E.q); };
     setXY(row, cx, y); return E;
   }
   /* the equation spread out (the sibling's number-pad page): each part placed by its own centre - xs { a, op, b, eq, q } */
@@ -1134,7 +1137,7 @@ const PVK = (function(){
     const sym = (t, x)=>{ const e = add(sc, "div", "pv-op pv-sym", "font-size:" + px(h * .73)); e.textContent = t; setXY(e, x, y + h / 2 - h * .35); return e; };
     const E = { a: numCard(sc, a, xs.a, y, h, "pv-ea"), op: sym(op || "+", xs.op), b: numCard(sc, b, xs.b, y, h, "pv-eb"), eq: sym("=", xs.eq), q: numCard(sc, null, xs.q, y, h, "pv-q") };
     E.plus = E.op; E.spread = true;
-    E.fill = n =>{ E.q.innerHTML = numHTML(n); E.q.classList.add("filled"); pop(E.q); };
+    E.fill = n =>{ E.q.classList.remove("pv-split", "merge"); E.q.innerHTML = numHTML(n); E.q.classList.add("filled"); pop(E.q); settle(E.q); };
     return E;
   }
   /* ---- one person of a story page: the round portrait and the name under it ---- */
@@ -1148,7 +1151,7 @@ const PVK = (function(){
   }
 
   return { reduce, px, wait, ROD, CUBE, FIT, dashBox, kNow, add, setXY, xy, knock, pop, show, shake, repulse, softGlow, scene, ctx, run, block, glide, shift,
-           hand, centre, numHTML, numCard, lightDigit, equation, spreadEq, person };
+           hand, centre, numHTML, numCard, lightDigit, equation, spreadEq, person, settle };
 })();
 
 /* ---- [pv kit] the place-value table, block groups, moving blocks between tables, making a ten ---- */
@@ -1577,7 +1580,11 @@ Object.assign(PVK, (function(){
       const T = cfg.target;
       const ans = T || add(sc, "div", "pv-ans"); if(!T) setXY(ans, x0, cfg.y + 40);
       const slot = T || add(ans, "div", "pv-slot pv-slot-one", "width:" + px(slotW));
-      if(T) T.classList.add("pv-typein");
+      /* [place boxes] (user 2026-11-10: MTG2A01_L03_S01's answer box, its design only) a "?" made by placeSlots holds a दहाई box and an
+         इकाई box: the digits typed go in left to right - the first into the दहाई box, the second into the इकाई box; the box to
+         fill next glows blue with the "|"; right: the two light green, melt together and become one number */
+      const SPLIT = !!(T && T._slots && N === 2);
+      if(T && !SPLIT) T.classList.add("pv-typein");
       /* the pad: the sibling's 3 x 4 phone pad (MTG2A01_L03_S01, user 2026-10-22) - 1-9, then back 0 tick. It is tall
          (4 rows), so it stands beside the table column (cfg.padAt), else beside the box, level with its middle */
       const pad = add(sc, "div", "pv-pad pv-pad-3 pv-hide");
@@ -1607,6 +1614,10 @@ Object.assign(PVK, (function(){
       /* the tick: dim until a digit is in, pulsing once the box holds the whole answer */
       const okState = ()=>{ ok.classList.toggle("off", !typed.length); ok.classList.toggle("pulse", typed.length >= N && !over && !busy); };
       const render = ()=>{ const full = typed.length >= N || over;
+        if(SPLIT){ ["t", "o"].forEach((p, i)=>{ const c = T._slots[p], act = open && ready && !over && !busy && typed.length === i;
+            c.querySelector(".pv-pl-d").innerHTML = typed[i] != null ? '<span class="pv-ch">' + typed[i] + '</span>' : (act ? '<span class="pv-caret">|</span>' : "");
+            c.classList.toggle("on", act); c.classList.toggle("done", typed[i] != null); });
+          okState(); return; }
         if(T && !open && !typed.length){ if(ok) okState(); return; }          // (the "?" stays until the pad opens)
         slot.innerHTML = typed.map(d => '<span class="pv-ch">' + d + '</span>').join("") + (full ? "" : '<span class="pv-caret">|</span>');
         slot.classList.toggle("on", open && !full); if(ok) okState(); };
@@ -1625,8 +1636,10 @@ Object.assign(PVK, (function(){
           try{ XAPI.send("question_answered", { slide_id: slide.id, type: slide.type, phase: slide.phase }, { is_correct: true, attempt: wrong + 1, score: wrong === 0 ? 1 : 0, response: v }); }catch(e){}
           recordResult(slide, wrong === 0);
           GameBus.emit("numpad_correct", { slide_id: slide.id, phase: slide.phase, value: wrong === 0, first_try: wrong === 0, attempts: wrong + 1, latency_ms: Date.now() - state.slideStart });
-          sfxCorrect(); try{ confettiCannon(); }catch(e){} setSwMood("happy");
           pad.classList.add("pv-gone");   // the keypad goes as the answer goes up (review 2026-10-14)
+          if(SPLIT){ render(); T._slots.o.classList.add("okc"); await wait(300); T._slots.t.classList.add("okc"); await wait(420);   // [place boxes: aha]
+            T.style.width = T.offsetWidth + "px"; T.classList.add("merge"); await wait(460); }                 // (the two digits become one number - E.fill)
+          sfxCorrect(); try{ confettiCannon(); }catch(e){} setSwMood("happy");
           C.late = wrong > 0;                                            // (no "शाबाश" after a wrong answer - ctx right())
           if(cfg.onRight) await cfg.onRight(ans);
           await (cfg.sayCorrect ? cfg.sayCorrect() : C.say("correct")); if(cfg.after) await cfg.after(); await C.wait(500);
@@ -1648,9 +1661,10 @@ Object.assign(PVK, (function(){
         if(b._k === "✓"){ if(!typed.length) return; K.knock(); check().catch(()=>{}); return; }   // the answer goes in on the tick only
         if(typed.length >= N) return;
         typed.push(b._k); K.knock(); render(); pop(slot.querySelectorAll(".pv-ch")[typed.length - 1]);
+        if(SPLIT) pop(T._slots[typed.length === 1 ? "t" : "o"]);
         if(guide != null){ guide++; lightKey(); }
       }));
-      P.ready = ()=>{ ready = true; arm(); };   // the box pulses its cursor; the hand only after 7s idle (user 2026-10-15: "comes too early")
+      P.ready = ()=>{ ready = true; render(); arm(); };   // the box pulses its cursor; the hand only after 7s idle (user 2026-10-15: "comes too early")
       cfg.onReady && cfg.onReady(P);
     });
   }
@@ -1662,7 +1676,13 @@ Object.assign(PVK, (function(){
     ans.style.visibility = "hidden";    // the answer box goes up itself (review 2026-10-14)
     await glide(f, { x: b.x, y: b.y - 32 }, 620, true); f.remove(); E.fill(n);
   }
-  return { mcq, flyToQ, numpad, flyAnsToQ };
+  /* [place boxes] the equation's "?" card made into a दहाई box and an इकाई box (MTG2A01_L03_S01's design), as wide as the
+     question's own cards */
+  function placeSlots(q, w){ q.classList.add("pv-split"); q.style.minWidth = "0"; if(w) q.style.width = px(w);
+    const cell = k => '<div class="pv-pl pv-pl-' + k + '"><span class="pv-pl-d"></span></div>';
+    q.innerHTML = cell("t") + cell("o");
+    q._slots = { t: q.querySelector(".pv-pl-t"), o: q.querySelector(".pv-pl-o") }; return q._slots; }
+  return { mcq, flyToQ, numpad, flyAnsToQ, placeSlots };
 })());
 
 /* ---- [pv sub] the take-away kit (MTG2A01_L04_S01, review 2): build a number with the -/+ buttons, take blocks
@@ -1904,20 +1924,28 @@ Object.assign(PVK, (function(){
     }
     await C.wait(650);
   }
-  /* light the equation's parts one after another as the VO names them ("इसलिए 34 घटा 21 बराबर 13" - deck:
-     "[Number Sync with VO]"). The starts are spread by the words' spoken weight. */
-  function eqSync(C, E, role, weights){
-    const parts = [E.a, E.op, E.b, E.eq, E.q], w = weights || [3, 3, 2, 3, 3, 2];   // इसलिए | a | घटा | b | बराबर | c
-    const tot = w.reduce((s, x)=> s + x, 0); let acc = w[0];
-    const cues = parts.map((el, i)=>{ const f = .08 + .9 * acc / tot; acc += w[i + 1]; return [f, ()=>{ el.classList.remove("pv-say"); void el.offsetWidth; el.classList.add("pv-say"); }]; });
-    return C.cue(role, cues);
-  }
-
-  /* the equation lit part by part at the card's own times (lessons.py eq_cues: "… a घटा b बराबर n", measured from the clip) */
-  function eqSyncAt(C, E, role, fr, eqs){
-    if(eqs && C.right(role) !== role && eqs[C.right(role)]){ fr = eqs[C.right(role)]; role = C.right(role); }   // (the late line's own times)
+  /* the closing line ("… 53 घटा 14 बराबर 39", "42 में से 27 घटाने पर … यानी 15"): the equation's parts lit one at a time, left to
+     right, as the VO names them - a box a gold rim and a warm fill, a sign gold; each stays lit while it is being said, the next
+     takes over, all off at the end (user 2026-11-10, as MTG2A01_L03_S01's closing line). fr: [a, op, b, eq, q (, x: all off while
+     the line says something else)]; fillsQ: the answer goes into the "?" as it is said - its green is its light */
+  function lightCues(E, fr, fillsQ){
     const parts = [E.a, E.op, E.b, E.eq, E.q];
-    return C.cue(role, parts.map((el, i)=> [fr[i], ()=>{ el.classList.remove("pv-say"); void el.offsetWidth; el.classList.add("pv-say"); }]));
+    const lit = i => parts.forEach((e, j)=>{ if(e) e.classList.toggle("pv-lit", j === i); });
+    const cues = parts.map((e, i)=> [fr[i], ()=> lit(fillsQ && i === 4 ? -1 : i)]);
+    if(fr[5] != null) cues.push([fr[5], ()=> lit(-1)]);
+    return { cues, off: ()=> lit(-1) };
+  }
+  /* the starts spread by the words' spoken weight (a line the card has no times for) */
+  function eqSync(C, E, role, weights){
+    const w = weights || [3, 3, 2, 3, 3, 2];   // इसलिए | a | घटा | b | बराबर | c
+    const tot = w.reduce((s, x)=> s + x, 0); let acc = w[0];
+    const fr = [0, 1, 2, 3, 4].map(i =>{ const f = .08 + .9 * acc / tot; acc += w[i + 1]; return f; });
+    const L = lightCues(E, fr); return C.cue(role, L.cues).finally(L.off);
+  }
+  /* at the card's own times (lessons.py: measured on the clip); extra: the page's own cues on the line */
+  function eqSyncAt(C, E, role, fr, eqs, extra, fillsQ){
+    if(eqs && C.right(role) !== role && eqs[C.right(role)]){ fr = eqs[C.right(role)]; role = C.right(role); }   // (the late line's own times)
+    const L = lightCues(E, fr, fillsQ); return C.cue(role, [...L.cues, ...(extra || [])]).finally(L.off);
   }
 
   /* ---- [pv regroup] OPEN A TEN (MTG2A01_L04_S02): the ones are too few, so one rod of the दहाई column is brought into the
@@ -1970,7 +1998,7 @@ Object.assign(PVK, (function(){
   }
 
   return { headCount, liveHeads, dropBlock, beat, beatCol, popTable, hlTable, sparkles, sources, demoAdd, childBuild, takeAway, putBack, demoRemove, removeChild, copyLeft,
-           eqSync, eqSyncAt, left, bringTen, splitTen, openTen, openChild };
+           eqSync, eqSyncAt, lightCues, left, bringTen, splitTen, openTen, openChild };
 })());
 
 const PV_LAY = {
@@ -1991,6 +2019,7 @@ function pvPadPage(sc, L, d, hidden){
   T.move(0, Math.round(P.padY + P.padH / 2 - T.H / 2) - T.y, 0);
   const mid = h => T.x + h.offsetLeft + h.offsetWidth / 2, ca = mid(T.th), cb = mid(T.oh);   // (layout sizes: right during a slide-in too)
   const E = K.spreadEq(sc, d.a, d.b, "−", { a: ca, op: (ca + cb) / 2, b: cb, eq: 0, q: P.qx }, P.eqY, P.eqH);
+  if(String(d.a - d.b).length === 2) K.placeSlots(E.q, E.a.offsetWidth);   // [place boxes] (user 2026-11-10)
   K.setXY(E.eq, (cb + E.b.offsetWidth / 2 + P.qx - E.q.offsetWidth / 2) / 2, E.eq._y);
   return { T, E, padAt: { cx: P.qx, y: P.padY } };
 }
@@ -2166,7 +2195,7 @@ const PVModules = {
           await C.cue("story_a", [[cy.a, ()=>{ say(S.cA); K.beat(S.gA.all(), 25); }], [cy.b, ()=>{ say(S.cB); give(); }],
                                   [cy.n, ()=> K.beat(kept, 60)]]);
           await C.cue("story_b", [[0.12, ()=> S.cQ.classList.add("pulse")],
-                                  [d.fill_at || 0.5, ()=>{ S.cQ.classList.remove("pulse"); S.cQ.innerHTML = K.numHTML(d.a - d.b); S.cQ.classList.add("filled"); K.pop(S.cQ); sfxCorrect(); }]]);
+                                  [d.fill_at || 0.5, ()=>{ S.cQ.classList.remove("pulse"); S.cQ.innerHTML = K.numHTML(d.a - d.b); S.cQ.classList.add("filled"); K.pop(S.cQ); K.settle(S.cQ); sfxCorrect(); }]]);
           C.guard(); try{ confettiCannon(); }catch(e){} setSwMood("happy");
           if(C.has("story_c")) await C.cue("story_c", S.names(CU, "story_c", [[cy.c, ()=>{ K.beat(kept, 60); say(S.cQ); }]]));
         }
@@ -2260,19 +2289,14 @@ const PVModules = {
           await C.cue("tens_left", [[(CU.tens_left || { t: .8 }).t, bT]]);
         }
         H.el.remove();
-        const ct = CU.total || { t: .5, o: .7, n: .85 };
-        if(d.demo){
-          /* "= 19" beside the table (S01's T2) */
-          const midY = TA.y + TA.head + TA.pad + TA.inH / 2;
-          const eqS = K.add(sc, "div", "pv-op pv-sym pv-hide", "font-size:46px"); eqS.textContent = "="; K.setXY(eqS, TA.x + TA.W + 32, midY - 26);
-          const tot = K.numCard(sc, diff, TA.x + TA.W + 100, midY - 28, 56); tot.classList.add("pv-hide", "pv-total");
-          TA.extra.push(eqS, tot);
-          await C.cue("total", [[ct.t, bT], [ct.o, bO], [ct.n, ()=>{ K.show(eqS); K.show(tot); sfxPop(); }]]);
-        } else {
-          /* page 4's last mockup: "30 − 17 = 13" over the table */
-          await C.cue("total", [[ct.t, bT], [ct.o, bO], [ct.n, ()=>{ E.fill(diff); sfxCorrect(); }]]);
-          C.guard(); if(!C.has("story_a")){ try{ confettiCannon(); }catch(e){} setSwMood("happy"); }   // (with the story ending the confetti comes with its "?")
-        }
+        /* "…25 में से 6 घटाने पर हमें मिलीं, 1 दहाई और 9 इकाई, यानी 19।": 25, −, 6 light as they are said, the columns beat on
+           "1 दहाई" / "9 इकाई", and on "19" the 19 goes into the equation's "?" (user 2026-11-10: in the equation, not beside the
+           table) - green, then a plain number box. Page 4 the same ("30 − 17 = 13") */
+        const ct = CU.total || { t: .5, o: .7, n: .85 }, te = CU.total_eq;
+        const LC = te ? K.lightCues(E, te, true) : null, qAt = te ? te[4] : ct.n;
+        await C.cue("total", [...(LC ? LC.cues : []), [ct.t, bT], [ct.o, bO],
+                              [Math.max(0, qAt - 0.01), ()=>{ E.fill(diff); if(d.demo) sfxPop(); else sfxCorrect(); }]]).finally(()=>{ if(LC) LC.off(); });
+        if(!d.demo){ C.guard(); if(!C.has("story_a")){ try{ confettiCannon(); }catch(e){} setSwMood("happy"); } }   // (with the story ending the confetti comes with its "?")
         await C.wait(500);
         /* page 3's end - "Appear the first screen", as File6's T2 ends (user 2026-10-27): the table and the equation go, T1's
            story row comes back (Madhav, his 25, Aanya with none, 25 − 6 = ?). "…पच्चीस में से छः घटाए…" - his 25 beat; on "छः"
@@ -2318,7 +2342,7 @@ const PVModules = {
                                   [cy.n, ()=>{ (giving || Promise.resolve()).then(()=>{ if(C.alive()) K.beat(kept, 60); }); }]]));
           if(giving) await giving; C.guard();
           await C.cue("story_b", [[0.12, ()=> S.cQ.classList.add("pulse")],
-                                  [cy.fill, ()=>{ S.cQ.classList.remove("pulse"); S.cQ.innerHTML = K.numHTML(diff); S.cQ.classList.add("filled"); K.pop(S.cQ); sfxCorrect(); }]]);
+                                  [cy.fill, ()=>{ S.cQ.classList.remove("pulse"); S.cQ.innerHTML = K.numHTML(diff); S.cQ.classList.add("filled"); K.pop(S.cQ); K.settle(S.cQ); sfxCorrect(); }]]);
           C.guard(); try{ confettiCannon(); }catch(e){} setSwMood("happy");
           if(C.has("story_c")) await C.cue("story_c", S.names(CU, "story_c", [[cy.c, ()=>{ K.beat(kept, 60); say(S.cQ); }]]));
         }
@@ -2421,7 +2445,7 @@ const PVModules = {
         }
         await K.numpad(C, { answer: diff, x: L.cx, y: ansY, reask: "ask", target: E.q, padAt: PAD.padAt,
           onReady: P =>{ P.hide(true); C.cue("ask", [[0.55, ()=>{ P.hide(false); P.open(); }]]).then(()=> P.ready(), ()=>{}); },
-          onRight: ()=> E.fill(diff),
+          onRight: ()=> E.fill(diff), sayCorrect: EQS.correct ? ()=> K.eqSyncAt(C, E, "correct", EQS.correct, EQS) : null,
           ladder: async (n, P)=>{ if(n === 1) await recount(); else if(n === 2) await sayH2();
             else { await digitsUnder(); P.guideKeys(); await C.say("reveal"); } } });
       });
