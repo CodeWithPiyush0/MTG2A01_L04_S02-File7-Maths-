@@ -1584,6 +1584,10 @@ Object.assign(PVK, (function(){
          इकाई box: the digits typed go in left to right - the first into the दहाई box, the second into the इकाई box; the box to
          fill next glows blue with the "|"; right: the two light green, melt together and become one number */
       const SPLIT = !!(T && T._slots && N === 2);
+      /* (user 2026-11-17: "we write numbers from ones to tens") in the place boxes the FIRST digit typed is the इकाई digit, the
+         second the दहाई digit - typed[0] -> the इकाई box, typed[1] -> the दहाई box; the answer read back tens first. ORDER: the
+         digits in the order they are typed (the third layer lights the keys in that order: the ones digit, the tens digit, ✓) */
+      const ORDER = SPLIT ? [...digits].reverse() : digits, PL = ["o", "t"];
       if(T && !SPLIT) T.classList.add("pv-typein");
       /* the pad: the sibling's 3 x 4 phone pad (MTG2A01_L03_S01, user 2026-10-22) - 1-9, then back 0 tick. It is tall
          (4 rows), so it stands beside the table column (cfg.padAt), else beside the box, level with its middle */
@@ -1609,12 +1613,12 @@ Object.assign(PVK, (function(){
       /* the third layer: the right digit keys light one after the other, then the tick */
       /* every key locked but the one to tap now (user 2026-10-22: 45 - first only 4, then only 5, then the tick) */
       const lightKey = ()=>{ Object.values(keys).forEach(b =>{ b.classList.remove("hint-on"); if(guide != null) b.classList.add("locked"); });
-        if(guide == null || guide > N) return; const b = guide < N ? keys[digits[guide]] : ok; b.classList.remove("locked"); b.classList.add("hint-on"); };
+        if(guide == null || guide > N) return; const b = guide < N ? keys[ORDER[guide]] : ok; b.classList.remove("locked"); b.classList.add("hint-on"); };
         /* (user 2026-10-26: no yellow ring round the key to press - the others are off, it pulses) */   // the key lights (the decks' WA3 "highlight the correct digit buttons in sequence") - no hand
       /* the tick: dim until a digit is in, pulsing once the box holds the whole answer */
       const okState = ()=>{ ok.classList.toggle("off", !typed.length); ok.classList.toggle("pulse", typed.length >= N && !over && !busy); };
       const render = ()=>{ const full = typed.length >= N || over;
-        if(SPLIT){ ["t", "o"].forEach((p, i)=>{ const c = T._slots[p], act = open && ready && !over && !busy && typed.length === i;
+        if(SPLIT){ PL.forEach((p, i)=>{ const c = T._slots[p], act = open && ready && !over && !busy && typed.length === i;
             c.querySelector(".pv-pl-d").innerHTML = typed[i] != null ? '<span class="pv-ch">' + typed[i] + '</span>' : (act ? '<span class="pv-caret">|</span>' : "");
             c.classList.toggle("on", act); c.classList.toggle("done", typed[i] != null); });
           okState(); return; }
@@ -1630,7 +1634,7 @@ Object.assign(PVK, (function(){
       P.open = openPad;
       async function check(){
         busy = true; clearTimeout(idleT); stopNudge(); okState();
-        const v = typed.join("");
+        const v = SPLIT ? typed.slice().reverse().join("") : typed.join("");
         if(v === String(cfg.answer)){
           over = true; state.locked = true; ans.classList.add("ok"); Object.values(keys).forEach(b => b.classList.add("locked")); okState();
           try{ XAPI.send("question_answered", { slide_id: slide.id, type: slide.type, phase: slide.phase }, { is_correct: true, attempt: wrong + 1, score: wrong === 0 ? 1 : 0, response: v }); }catch(e){}
@@ -1660,8 +1664,9 @@ Object.assign(PVK, (function(){
         if(b._k === "⌫"){ typed.pop(); render(); return; }
         if(b._k === "✓"){ if(!typed.length) return; K.knock(); check().catch(()=>{}); return; }   // the answer goes in on the tick only
         if(typed.length >= N) return;
-        typed.push(b._k); K.knock(); render(); pop(slot.querySelectorAll(".pv-ch")[typed.length - 1]);
-        if(SPLIT) pop(T._slots[typed.length === 1 ? "t" : "o"]);
+        typed.push(b._k); K.knock(); render();
+        if(SPLIT){ const c = T._slots[PL[typed.length - 1]]; pop(c); pop(c.querySelector(".pv-ch")); }
+        else pop(slot.querySelectorAll(".pv-ch")[typed.length - 1]);
         if(guide != null){ guide++; lightKey(); }
       }));
       P.ready = ()=>{ ready = true; render(); arm(); };   // the box pulses its cursor; the hand only after 7s idle (user 2026-10-15: "comes too early")
