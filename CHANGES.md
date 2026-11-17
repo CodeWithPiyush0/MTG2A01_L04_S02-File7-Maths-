@@ -198,3 +198,9 @@ Verified, muted (`--mute-audio`), seconds from the greeting's start: glide 0.35,
 | The closing line "X − Y = Z" lit in sync with the VO | ✅ | `lightCues` / `eqSyncAt`: one part lit at a time (gold rim + warm fill on a box, a gold sign), left to right, all off at the end - replaces the short bounce. Word times measured on the clips (`MEASURED` in `tools/lessons.py`: every correct / correct_late line, G1's eq line, T2 / T4's total). New: G1's correct line ("42 में से 27 घटाने पर … यानी 15") and P1 / P2's ("74 में से 58 घटाने पर हमें मिला 16" - = on "मिला") light too |
 | Keypad + answer box design from MTG2A01_L03_S01 (not its logic) | ✅ | Keypad already her `pv-pad-3` (⌫ and ✓ kept for our logic). P1 / P2's "?" is her दहाई box (green) + इकाई box (peach); digits go in left to right, the box to fill glows blue with the "|"; right: both light green and melt into one number |
 Verified (scripted child, Chrome): T1-P4 + CEL play through, right and wrong paths (G2 / P2 / P3 wrong); 0 console errors. Re-measure `MEASURED` if any of those lines is re-recorded.
+
+## Celebration line from File4 — 2026-11-17 (same as File6)
+| Asked | Status | How it is built |
+|---|---|---|
+| The end celebration screen says the same line as File4 (MTG204_L01_S01) | ✅ | File4's own recording (`assets/Audio/vo_cel_prompt.ogg`, "बहुत बढ़िया, दोस्त! तुमने कमाल कर दिया!") saved as `_vo_source/vo_cel.wav` and finished like every clip here (`tools/build_vo.py` `finish`: pauses pulled in, 0.28 s lead / 0.36 s tail, −18.5 LUFS, Opus) → `assets/voiceover/vo_cel.ogg`; script text updated in `tools/lessons.py`; Swiftee's lip-sync re-measured on the build; manifest row "Copied (File4…)". Was "शाबाश! आपने दहाई खोलकर घटाना सीख लिया!" - the old WAV and clip kept in `_vo_source/_old/` |
+Verified: the celebration slide plays the new line, 0 console errors.

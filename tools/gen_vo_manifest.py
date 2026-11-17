@@ -197,6 +197,7 @@ DUR = {cid: duration(os.path.join(VO_DIR, cid + ".ogg")) for cid in heard}
 def status(cid):
     if not os.path.exists(os.path.join(VO_DIR, cid + ".ogg")):
         return "MISSING"
+    if cid == "vo_cel": return "Copied (File4 MTG204_L01_S01's vo_cel_prompt, 2026-11-17)"
     return "Copied (HI02H11, recorded voice)" if cid in COPIED else "TTS (Gemini, Kore)"
 
 manifest = []

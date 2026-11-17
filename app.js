@@ -3381,7 +3381,7 @@ const ASSET_SIZES = {
   "assets/sw_head_tryagain.webp": 48836,
   "assets/voiceover/sfx_celebrate.ogg": 8344,
   "assets/voiceover/vo_ask_pick.ogg": 11173,
-  "assets/voiceover/vo_cel.ogg": 18089,
+  "assets/voiceover/vo_cel.ogg": 12905,
   "assets/voiceover/vo_g1_build.ogg": 27730,
   "assets/voiceover/vo_g1_correct.ogg": 30536,
   "assets/voiceover/vo_g1_correct_late.ogg": 28172,

@@ -224,7 +224,7 @@ slides.append(mental("P4", 91, 14, [77, 83, 87]))
 
 # deck page 17 - the end
 slides.append({"id": "CEL", "phase": "practice", "eis": "enactive", "type": "CELEBRATION", "prompt_hi": "",
-               "audio": {"prompt": vo("vo_cel", "शाबाश! आपने दहाई खोलकर घटाना सीख लिया!")}, "data": {}})
+               "audio": {"prompt": vo("vo_cel", "बहुत बढ़िया, दोस्त! तुमने कमाल कर दिया!")}, "data": {}})   # user 2026-11-17: File4 MTG204_L01_S01's celebration line (its recording)
 
 # ---- checks: every number in the content is the subtraction it claims to be, and every one needs a regroup ----
 for s in slides:
