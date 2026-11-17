@@ -2407,3 +2407,6 @@ body.vo-busy #slideHost .pv-ans, body.vo-busy #navBtn{pointer-events:none !impor
 .pv-q.pv-split.merge .pv-pl{flex:0 0 42px;border-color:transparent;background:transparent;box-shadow:none;}
 .pv-q.pv-split.merge .pv-pl-d{font-size:70px;}   /* (the digits grow to the answer card's own size as they join - no jump at the end) */
 @media (prefers-reduced-motion:reduce){ .pv-pl.on{animation:none;} }
+.dev-nav-mute{font-size:16px;padding:5px 9px;}
+.dev-nav-mute.on{background:#b5452f;}
+.dev-nav-mute.on:hover{background:#cf5638;}

@@ -359,7 +359,7 @@ function playSfx(id, onEnd){
 /* ---------- game-feel: procedural SFX (no audio files) + success particle burst ----------
    WebAudio resumes on the first user tap (autoplay policy), so taps/answers always sound. */
 let _juiceAC = null;
-function _ac(){ if(!_juiceAC){ try{ _juiceAC = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){} }
+function _ac(){ if(window.__devMute) return null; if(!_juiceAC){ try{ _juiceAC = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){} }
   if(_juiceAC && _juiceAC.state === "suspended"){ try{ _juiceAC.resume(); }catch(e){} } return _juiceAC; }
 function _tone(freqs, type, dur, vol){ const c = _ac(); if(!c) return; const t0 = c.currentTime;
   freqs.forEach((f, i)=>{ const o = c.createOscillator(), g = c.createGain(); o.type = type; o.frequency.value = f;
@@ -4032,6 +4032,7 @@ function boot(){
   };
   var _actx = null;
   M.audio = function(){
+    if(window.__devMute) return null;   // dev nav mute
     try{
       var AC = window.AudioContext || window.webkitAudioContext; if(!AC) return null;
       _actx = _actx || new AC();
@@ -4724,6 +4725,26 @@ function boot(){
 /* [engine JS] DEV NAV — a review/QA slide navigator. Shows ONLY with ?dev=1 or ?nav=1 (children never
    see it). Jump to any slide by dropdown, step ◀▶, first/last, or back to the landing. Uses the
    engine's own mountSlide + state.idx; a light poll keeps the label synced when the game self-advances. */
+/* user 2026-11-17: a MUTE button on the dev nav, for testing in silence. Every clip still PLAYS (muted), so the VO-driven
+   flow, its cues and the lip-sync keep their timing; only the speaker is off. Covers the VO, the SFX pool, the music and
+   any other <audio>/Audio (play() is wrapped), and the two WebAudio tone makers (_ac, FLNMotion.audio). Remembered across
+   reloads (localStorage "devMute"). Dev nav only: without ?dev=1 / ?nav=1 none of this runs. */
+const _devMedia = new Set();
+function devMuteInit(){
+  if(devMuteInit.done) return; devMuteInit.done = true;
+  const play = HTMLMediaElement.prototype.play;
+  HTMLMediaElement.prototype.play = function(){ _devMedia.add(this); this.muted = !!window.__devMute; return play.apply(this, arguments); };
+  let on = false; try{ on = localStorage.getItem("devMute") === "1"; }catch(e){}
+  if(on) devSetMute(true);
+}
+function devSetMute(on){
+  window.__devMute = !!on;
+  try{ localStorage.setItem("devMute", on ? "1" : ""); }catch(e){}
+  const all = new Set(_devMedia);
+  try{ [voEl, BGM && BGM.el].concat(_sfxPool).forEach(m =>{ if(m) all.add(m); }); }catch(e){}
+  document.querySelectorAll("audio,video").forEach(m => all.add(m));
+  all.forEach(m =>{ try{ m.muted = !!on; }catch(e){} });
+}
 function buildDevNav(){
   if(document.getElementById("devNav")) return;
   const bar = document.createElement("div"); bar.id = "devNav"; bar.className = "dev-nav";
@@ -4740,7 +4761,11 @@ function buildDevNav(){
   land.onclick = ()=>{ const sg = $("startGate"); if(sg){ sg.classList.remove("hidden"); document.body.classList.add("is-start"); } };
   first.onclick = ()=> go(0); prev.onclick = ()=> go(cur() - 1); next.onclick = ()=> go(cur() + 1); last.onclick = ()=> go(CARD.slides.length - 1);
   sel.onchange = ()=> go(parseInt(sel.value, 10));
-  bar.append(land, first, prev, sel, lbl, next, last);
+  const mute = mk("", "mute / unmute all sound (dev only)"); mute.classList.add("dev-nav-mute");
+  const paintMute = ()=>{ mute.textContent = window.__devMute ? "\u{1F507}" : "\u{1F50A}"; mute.classList.toggle("on", !!window.__devMute); };
+  mute.onclick = ()=>{ devSetMute(!window.__devMute); paintMute(); };
+  devMuteInit(); paintMute();
+  bar.append(land, first, prev, sel, lbl, next, last, mute);
   document.body.appendChild(bar);
   setInterval(sync, 300); sync();
 }

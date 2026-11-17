@@ -210,3 +210,9 @@ Verified: the celebration slide plays the new line, 0 console errors.
 |---|---|---|
 | "we write numbers from ones to tens" - typing on the keypad should fill the इकाई box first | ✅ | `numpad` (place boxes): the first digit typed goes into the इकाई box (the "|" starts there), the second into the दहाई box; the answer is read tens-first for the check; ⌫ takes back the last digit typed. Third wrong attempt: the keys light the ones digit, then the tens digit, then ✓ |
 Verified: P1 / P2 right and wrong paths (45: 5 then 4; 50: hints 0, 5, ✓), the digits land in the right boxes; 0 console errors.
+
+## Dev menu: mute / unmute — 2026-11-17
+| Asked | Status | How it is built |
+|---|---|---|
+| "add mute and unmute button in the dev menu so that I can test it better" | ✅ | A 🔊 / 🔇 button at the end of the dev nav bar (`?dev=1` / `?nav=1` only; children never see it). Muting silences the VO, the SFX, the music and the WebAudio tones (confetti, sky burst). The clips still play muted, so the VO-driven flow, the cues and the lip-sync keep their timing. The choice is remembered across reloads (localStorage `devMute`) |
+Verified: mute, next slide, reload (stays muted), unmute; 0 console errors.
