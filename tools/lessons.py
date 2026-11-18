@@ -65,12 +65,12 @@ CAST = {"माधव": "madhav", "आन्या": "aanya", "मायरा":
 # deck page 2 - "कितने बचे?" 25 − 6 = ?, told as File6's story (user 2026-10-27: "the first page similar to my file6"):
 # Madhav with his 25 blocks, Aanya with none, the equation under them; File6's lines with 6 for 13, then the deck's line
 slides.append({
-    "id": "T1", "phase": "tutorial", "eis": "iconic", "type": "STORY_SUB", "prompt_hi": "कितने बचे?",
+    "id": "T1", "phase": "tutorial", "eis": "iconic", "type": "STORY_SUB", "prompt_hi": "",   # (no heading - as File6, user 2026-11-18)
     "audio": {"a": vo("vo_t1_a_madhav", "माधव के पास कुल पच्चीस ब्लॉक्स हैं,"),
               "b": vo("vo_t1_b6_madhav", "उनमें से छः ब्लॉक्स माधव ने आन्या को दिए हैं।"),
               "ask": vo("vo_t1_ask_madhav", "चलिए, पता करते हैं, माधव के पास अब कितने ब्लॉक्स बचे हैं?"),
               "learn": vo("vo_t1_learn", "आइए, ब्लॉक्स की सहायता से सीखते हैं कि 25 में से 6 घटाने पर कितने बचते हैं।")},
-    "data": {"mode": "ask", "a": 25, "b": 6, "people": [{"who": "madhav"}, {"who": "aanya"}]}})
+    "data": {"mode": "ask", "a": 25, "b": 6, "words": {"a": "पच्चीस", "b": "छः"}, "people": [{"who": "madhav"}, {"who": "aanya"}]}})
 
 # deck page 3 (+ the 2nd page 2: "Appear the first screen") - Swiftee builds 25, opens a ten, takes 6 away. The deck's heading
 # "पहले 25 बनाते हैं।" sat on the 25 card: left out, as on S01's T2 (S01 user 2026-10-17)
@@ -91,7 +91,7 @@ slides.append({
               "both_left": vo("vo_t2_both_left", "अब यहाँ 1 दहाई और 9 इकाई बचीं।"),
               "total": vo("vo_t2_total", "यानी 25 में से 6 घटाने पर हमें मिलीं, 1 दहाई और 9 इकाई, यानी 19।"),
               "story_a": vo("vo_t2_story_a", "यहाँ हमने पच्चीस में से छः घटाए हैं, तो बचे 19।"),
-              "story_b": vo("vo_t2_story_b", "अब इस डिब्बे में 19 आएगा।"),
+              # (user 2026-11-18: «अब इस डिब्बे में 19 आएगा।» removed - the 19 fills the box on «…तो बचे 19।»)
               "story_c": vo("vo_t2_story_c_madhav", "यानी माधव के पास 19 ब्लॉक्स बचे।")},   # (File6's closing line, user 2026-10-27)
     "data": {"a": 25, "b": 6, "demo": True}})
 
@@ -101,7 +101,7 @@ slides.append({
     "audio": {"a": vo("vo_t3s_a_madhav", "आइए, एक और उदाहरण करते हैं। माधव के पास कुल 30 ब्लॉक्स थे।"),
               "b": vo("vo_t3s_b_myra", "उनमें से 17 मायरा को दे दिए।"),
               "ask": vo("vo_t3s_ask_madhav", "चलिए, पता करते हैं, माधव के पास अब कितने ब्लॉक्स बचे?")},
-    "data": {"mode": "ask", "a": 30, "b": 17, "people": [{"who": "madhav"}, {"who": "myra"}]}})
+    "data": {"mode": "ask", "a": 30, "b": 17, "words": {"a": "30", "b": "17"}, "people": [{"who": "madhav"}, {"who": "myra"}]}})
 
 # deck page 4 (its lines are in the deck's cover-slide notes) - 30 − 17: the child builds 30, the ten opens with the VO,
 # the child takes 7 ones (counted) and 1 ten; "= 13" lands in the equation
@@ -121,7 +121,6 @@ slides.append({
               "total": vo("vo_t3_total", "30 में से 17 घटाने पर हमें मिलीं, 1 दहाई और 3 इकाई, यानी 13।"),
               # page 2's ending here too (user 2026-10-27): the story row of the second story page comes back
               "story_a": vo("vo_t4_story_a", "यहाँ हमने तीस में से सत्रह घटाए हैं, तो बचे 13।"),
-              "story_b": vo("vo_t4_story_b", "अब इस डिब्बे में 13 आएगा।"),
               "story_c": vo("vo_t4_story_c_madhav", "यानी माधव के पास 13 ब्लॉक्स बचे।"),
               **{k: v for k, v in RM.items()}},
     "data": {"a": 30, "b": 17, "demo": False, "idle_ms": 3000}})
@@ -293,6 +292,21 @@ MEASURED = {
 }
 
 
+# user 2026-11-18 (as File6): word times measured on the recordings (ffmpeg silencedetect -38dB/0.08s), in seconds -
+# story_a's answer ("…तो बचे | 19"), the take-away line's "… दहाई" / "… इकाई" (the table's words pulsate on them)
+WT = {"vo_t2_story_a": {"q": 3.93}, "vo_t4_story_a": {"q": 4.33},
+      "vo_t2_sub": {"o": 3.85},                      # "6 में | सिर्फ 6 इकाई होती हैं"
+      "vo_g1_sub": {"t": 3.05, "o": 4.42}}           # "27 में 2 दहाई | और 7 इकाई हैं"
+
+
+def wt(cid, cues):
+    """cues with the WT times of the clip (as fractions of it) put in"""
+    dur = clip_len(cid)
+    if cid in WT and dur:
+        cues.update({k: round(v / dur, 3) for k, v in WT[cid].items() if k in cues})
+    return cues
+
+
 def measured(cid, est):
     """[a, op, b, eq, q (, x)] as fractions of the clip - its measured times, else the estimate"""
     m = MEASURED.get(cid); dur = clip_len(cid)
@@ -357,7 +371,7 @@ for sl in slides:
             c.update({"t": frac(au["sub"], f"{bt} दहाई"), "o": frac(au["sub"], f"{bo} इकाई")})
         if "इसमें" in tx:
             c["this"] = frac(au["sub"], "इसमें")
-        cues["sub"] = c
+        cues["sub"] = wt(au["sub"], c)
         if "regroup" in au:
             cues["regroup"] = {"o": frac(au["regroup"], f"{ao} इकाई"), "t": frac(au["regroup"], "1 दहाई")}
         if "ones_now" in au:
@@ -368,8 +382,25 @@ for sl in slides:
         tx = VO[au["rm_tens"]]
         cues["rm_tens"] = {"t": frac(au["rm_tens"], f"{at - 1} दहाई") if f"{at - 1} दहाई" in tx else frac(au["rm_tens"], "दहाइयाँ")}
     if sl["type"] == "STORY_SUB" and "learn" in au:
-        cues["learn"] = {"a": frac(au["learn"], str(a)), "b": frac(au["learn"], str(b), after="में से"),
+        cues["learn"] = {"a": frac(au["learn"], str(a)), "op": frac(au["learn"], "में से"), "b": frac(au["learn"], str(b), after="में से"),
                          "q": frac(au["learn"], "कितने")}
+    if sl["type"] == "STORY_SUB" and "words" in d:
+        wa, wb = d["words"]["a"], d["words"]["b"]
+        cues["build"] = {"a": frac(au["a"], wa), "op": frac(au["b"], "उनमें से"), "b": frac(au["b"], wb), "eq": frac(au["ask"], "कितने"),
+                         "q": frac(au["ask"], "बचे")}
+    # user 2026-11-18 (as File6): a step line that names a column of a or b ("इन 15 इकाई में से 6 इकाई …") lights that digit of
+    # the equation as it is said: <role>_dg
+    for role in ("rm_ones", "rm_tens", "ones_left", "tens_left"):
+        if role not in au:
+            continue
+        txt = VO[au[role]]; used = set(); dg = []
+        for m in re.finditer(r"(\d+) (दहाई|इकाई)", txt):
+            n, pl = int(m.group(1)), ("t" if m.group(2) == "दहाई" else "o")
+            for w, (dt, do) in (("a", (at, ao)), ("b", (bt, bo))):
+                if (w, pl) not in used and (dt if pl == "t" else do) == n:
+                    used.add((w, pl)); dg.append([frac(au[role], m.group(0), after=txt[:m.start()] or None), w, pl]); break
+        if dg:
+            cues[role + "_dg"] = dg
     # File6: a portrait lights as its name is said (the story lines): role -> [[fraction, who], ...]
     if sl["type"] in ("STORY_SUB", "PV_REGROUP_DEMO"):
         names = {}
@@ -394,6 +425,7 @@ for sl in slides:
                     "q": frac(au["sub"], "घटाते")}
         if f"{bo} इकाई" in VO[au["sub"]]:
             c["sub"]["o"] = frac(au["sub"], f"{bo} इकाई", after="घटाते")
+        wt(au["sub"], c["sub"])
         if "cant" in au:   # "5 इकाई में से 6 इकाई नहीं…": the 5 of 25, then the 6 light in the equation (user 2026-10-27)
             c["cant"] = {"o": frac(au["cant"], f"{ao} इकाई"), "b": frac(au["cant"], f"{bo} इकाई", after="में से")}
         ot = VO[au["open"]]
@@ -417,7 +449,9 @@ for sl in slides:
         if "story_a" in au:
             NW = {25: "पच्चीस", 6: "छः", 30: "तीस", 17: "सत्रह"}   # (the story lines say a and b in words)
             c["story"] = {"a": frac(au["story_a"], NW[a]), "b": frac(au["story_a"], NW[b]), "n": frac(au["story_a"], "बचे"),
-                          "fill": frac(au["story_b"], str(diff)), "c": frac(au["story_c"], str(diff))}
+                          "q": WT.get(au["story_a"], {}).get("q", frac(au["story_a"], str(diff), after="बचे")), "c": frac(au["story_c"], str(diff))}
+            if WT.get(au["story_a"]) and clip_len(au["story_a"]):
+                c["story"]["q"] = round(WT[au["story_a"]]["q"] / clip_len(au["story_a"]), 3)
     if cues:
         d["cues"] = cues
 

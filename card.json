@@ -159,7 +159,6 @@
    "vo_t2_open": "assets/voiceover/vo_t2_open.ogg",
    "vo_t2_rm_ones": "assets/voiceover/vo_t2_rm_ones.ogg",
    "vo_t2_story_a": "assets/voiceover/vo_t2_story_a.ogg",
-   "vo_t2_story_b": "assets/voiceover/vo_t2_story_b.ogg",
    "vo_t2_story_c_madhav": "assets/voiceover/vo_t2_story_c_madhav.ogg",
    "vo_t2_sub": "assets/voiceover/vo_t2_sub.ogg",
    "vo_t2_tens": "assets/voiceover/vo_t2_tens.ogg",
@@ -181,7 +180,6 @@
    "vo_t3s_ask_madhav": "assets/voiceover/vo_t3s_ask_madhav.ogg",
    "vo_t3s_b_myra": "assets/voiceover/vo_t3s_b_myra.ogg",
    "vo_t4_story_a": "assets/voiceover/vo_t4_story_a.ogg",
-   "vo_t4_story_b": "assets/voiceover/vo_t4_story_b.ogg",
    "vo_t4_story_c_madhav": "assets/voiceover/vo_t4_story_c_madhav.ogg"
   },
   "audio_text": {
@@ -282,7 +280,6 @@
    "vo_t2_open": "तो हम 1 दहाई को यहाँ लाएँगे और इसको तोड़ेंगे, अब ये 1 दहाई, 10 इकाई में हो गई।",
    "vo_t2_rm_ones": "अब इसमें से 6 इकाई को हटाते हैं,",
    "vo_t2_story_a": "यहाँ हमने पच्चीस में से छः घटाए हैं, तो बचे 19।",
-   "vo_t2_story_b": "अब इस डिब्बे में 19 आएगा।",
    "vo_t2_story_c_madhav": "यानी माधव के पास 19 ब्लॉक्स बचे।",
    "vo_t2_sub": "अब 25 में से 6 घटाते हैं। 6 में सिर्फ 6 इकाई होती हैं।",
    "vo_t2_tens": "2 दहाई के लिए 2 बंडल रखते हैं।",
@@ -304,7 +301,6 @@
    "vo_t3s_ask_madhav": "चलिए, पता करते हैं, माधव के पास अब कितने ब्लॉक्स बचे?",
    "vo_t3s_b_myra": "उनमें से 17 मायरा को दे दिए।",
    "vo_t4_story_a": "यहाँ हमने तीस में से सत्रह घटाए हैं, तो बचे 13।",
-   "vo_t4_story_b": "अब इस डिब्बे में 13 आएगा।",
    "vo_t4_story_c_madhav": "यानी माधव के पास 13 ब्लॉक्स बचे।"
   }
  },
@@ -314,7 +310,7 @@
    "phase": "tutorial",
    "eis": "iconic",
    "type": "STORY_SUB",
-   "prompt_hi": "कितने बचे?",
+   "prompt_hi": "",
    "audio": {
     "a": "vo_t1_a_madhav",
     "b": "vo_t1_b6_madhav",
@@ -325,6 +321,10 @@
     "mode": "ask",
     "a": 25,
     "b": 6,
+    "words": {
+     "a": "पच्चीस",
+     "b": "छः"
+    },
     "people": [
      {
       "who": "madhav"
@@ -336,8 +336,16 @@
     "cues": {
      "learn": {
       "a": 0.472,
+      "op": 0.558,
       "b": 0.633,
       "q": 0.773
+     },
+     "build": {
+      "a": 0.443,
+      "op": 0.074,
+      "b": 0.237,
+      "eq": 0.593,
+      "q": 0.795
      },
      "names": {
       "a": [
@@ -388,7 +396,6 @@
     "both_left": "vo_t2_both_left",
     "total": "vo_t2_total",
     "story_a": "vo_t2_story_a",
-    "story_b": "vo_t2_story_b",
     "story_c": "vo_t2_story_c_madhav"
    },
    "data": {
@@ -396,6 +403,20 @@
     "b": 6,
     "demo": true,
     "cues": {
+     "rm_ones_dg": [
+      [
+       0.361,
+       "b",
+       "o"
+      ]
+     ],
+     "ones_left_dg": [
+      [
+       0.401,
+       "b",
+       "o"
+      ]
+     ],
      "names": {
       "story_c": [
        [
@@ -416,7 +437,7 @@
       "op": 0.199,
       "b": 0.29,
       "q": 0.342,
-      "o": 0.681
+      "o": 0.773
      },
      "cant": {
       "o": 0.041,
@@ -458,7 +479,7 @@
       "a": 0.219,
       "b": 0.444,
       "n": 0.717,
-      "fill": 0.519,
+      "q": 0.811,
       "c": 0.446
      }
     }
@@ -479,6 +500,10 @@
     "mode": "ask",
     "a": 30,
     "b": 17,
+    "words": {
+     "a": "30",
+     "b": "17"
+    },
     "people": [
      {
       "who": "madhav"
@@ -488,6 +513,13 @@
      }
     ],
     "cues": {
+     "build": {
+      "a": 0.667,
+      "op": 0.104,
+      "b": 0.306,
+      "eq": 0.63,
+      "q": 0.845
+     },
      "names": {
       "a": [
        [
@@ -531,7 +563,6 @@
     "tens_left": "vo_t3_tens_left",
     "total": "vo_t3_total",
     "story_a": "vo_t4_story_a",
-    "story_b": "vo_t4_story_b",
     "story_c": "vo_t4_story_c_madhav",
     "rm_ones_more": "vo_rm_ones_more",
     "rm_ones_less": "vo_rm_ones_less",
@@ -544,6 +575,34 @@
     "demo": false,
     "idle_ms": 3000,
     "cues": {
+     "rm_ones_dg": [
+      [
+       0.369,
+       "b",
+       "o"
+      ]
+     ],
+     "rm_tens_dg": [
+      [
+       0.656,
+       "b",
+       "t"
+      ]
+     ],
+     "ones_left_dg": [
+      [
+       0.402,
+       "b",
+       "o"
+      ]
+     ],
+     "tens_left_dg": [
+      [
+       0.465,
+       "b",
+       "t"
+      ]
+     ],
      "names": {
       "story_c": [
        [
@@ -603,7 +662,7 @@
       "a": 0.218,
       "b": 0.395,
       "n": 0.718,
-      "fill": 0.524,
+      "q": 0.873,
       "c": 0.446
      }
     }
@@ -693,8 +752,8 @@
      },
      "sub": {
       "b": 0.133,
-      "t": 0.576,
-      "o": 0.742
+      "t": 0.55,
+      "o": 0.797
      },
      "regroup": {
       "o": 0.239,
@@ -711,7 +770,28 @@
      },
      "rm_tens": {
       "t": 0.381
-     }
+     },
+     "rm_ones_dg": [
+      [
+       0.265,
+       "b",
+       "o"
+      ]
+     ],
+     "rm_tens_dg": [
+      [
+       0.653,
+       "b",
+       "t"
+      ]
+     ],
+     "ones_left_dg": [
+      [
+       0.401,
+       "b",
+       "o"
+      ]
+     ]
     }
    }
   },
@@ -792,7 +872,14 @@
      },
      "rm_tens": {
       "t": 0.236
-     }
+     },
+     "rm_ones_dg": [
+      [
+       0.346,
+       "b",
+       "o"
+      ]
+     ]
     }
    }
   },
@@ -868,7 +955,14 @@
      },
      "rm_tens": {
       "t": 0.248
-     }
+     },
+     "rm_ones_dg": [
+      [
+       0.346,
+       "b",
+       "o"
+      ]
+     ]
     }
    }
   },
@@ -941,7 +1035,14 @@
      },
      "rm_tens": {
       "t": 0.247
-     }
+     },
+     "rm_ones_dg": [
+      [
+       0.534,
+       "b",
+       "o"
+      ]
+     ]
     }
    }
   },

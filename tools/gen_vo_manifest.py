@@ -38,17 +38,17 @@ def duration(path):
 # ---- what each role is and when it plays (the build's behaviour) ----
 ROLE = {
     # T1 (deck page 2, told as File6's story)
-    ("T1", "a"): ("story - Madhav's blocks", "as the page opens; Madhav's picture and his 25 blocks come in, the card 25; his picture lights on «माधव»"),
-    ("T1", "b"): ("story - 6 given to Aanya", "next; Aanya's picture comes in, then − 6; the pictures light on «माधव» / «आन्या»"),
-    ("T1", "ask"): ("story - the question", "next; = ? comes in and pulses; Madhav's picture lights on «माधव»"),
-    ("T1", "learn"): ("what we will learn", "next; 25 and 6 light as they are said, the ? pulses; then the next button"),
+    ("T1", "a"): ("story - Madhav's blocks", "as the page opens (no heading); Madhav's picture and his 25 blocks come in, 25 on «पच्चीस»; his picture lights on «माधव»"),
+    ("T1", "b"): ("story - 6 given to Aanya", "next; Aanya's picture comes in; − on «उनमें से», 6 on «छः»; the pictures light on the names"),
+    ("T1", "ask"): ("story - the question", "next; = on «कितने», ? on «बचे» (it pulses); Madhav's picture lights on «माधव»"),
+    ("T1", "learn"): ("what we will learn", "next; 25, −, 6 and ? light as they are said; then the next button"),
     # T2 (deck page 3) - Swiftee shows it
-    ("T2", "intro"): ("demo - build 25", "after the 25 card; the empty table and the + box come in"),
-    ("T2", "digits"): ("demo - 25 = 2 tens 5 ones", "next; the digits and the + halves light / pulse on «2 दहाई» / «5 इकाई»"),
+    ("T2", "intro"): ("demo - build 25", "after the 25 card; the empty table comes in"),
+    ("T2", "digits"): ("demo - 25 = 2 tens 5 ones", "next; the digits light, the columns beat on «2 दहाई» / «5 इकाई»; the + box comes in after it"),
     ("T2", "tens"): ("demo - the tens", "Swiftee's hand taps the rod + twice"),
     ("T2", "ones"): ("demo - the ones", "Swiftee's hand taps the cube + five times"),
     ("T2", "built"): ("demo - 25 is built", "the table pops"),
-    ("T2", "sub"): ("demo - take 6 away", "25 − 6 = ? comes in part by part with the words; 6 lights on «6 इकाई»"),
+    ("T2", "sub"): ("demo - take 6 away", "25 − 6 comes in part by part with the words, centred (no «= ?» yet); on «6 इकाई» 6 lights and the इकाई word pulses"),
     ("T2", "cant"): ("demo - too few ones", "the 5 of 25 lights (and the ones beat) on «5 इकाई», the 6 on «6 इकाई»"),
     ("T2", "open"): ("demo - open a ten", "a rod moves into the ones on «1 दहाई को…लाएँगे», opens into 10 cubes on «तोड़ेंगे» (the dashed ring)"),
     ("T2", "ones_now"): ("demo - 15 ones", "the ones column beats"),
@@ -57,29 +57,29 @@ ROLE = {
     ("T2", "ones_left"): ("demo - ones left", "the ones column beats on «9 इकाई»"),
     ("T2", "tens_note"): ("demo - the ten left", "the tens column beats on «1 दहाई»"),
     ("T2", "both_left"): ("demo - what is left", "the tens, then the ones beat"),
-    ("T2", "total"): ("demo - the result", "the columns beat; = 19 comes in beside the table on «यानी 19»"),
-    ("T2", "story_a"): ("story's answer", "T1's story row comes back; on «छः» one of Madhav's rods opens into 10 cubes and 6 fly into Aanya's picture (his grey); his 19 beat"),
+    ("T2", "total"): ("demo - the result", "«= ?» joins the row on «हमें मिलीं» (the row glides left, still centred); 25, −, 6 light, the columns beat; 19 goes into the ? on «19»"),
+    ("T2", "story_a"): ("story's answer", "T1's story row comes back; on «छः» one of Madhav's rods opens into 10 cubes and 6 fly into Aanya's picture (his grey); his 19 beat; on «19» the 19 fills the ?; confetti"),
     ("T2", "story_b"): ("story's answer - the box", "the ? becomes 19 on «19 आएगा»; confetti"),
     ("T2", "story_c"): ("story's answer - the end", "his 19 beat, Madhav's picture lights on «माधव»; then the next button"),
     # T3 - the second story page (user 2026-10-27)
-    ("T3", "a"): ("story - another example, Madhav's blocks", "as the page opens; Madhav's picture and his 30 blocks come in, the card 30; his picture lights on «माधव»"),
-    ("T3", "b"): ("story - 17 given to Myra", "next; Myra's picture comes in, then − 17; her picture lights on «मायरा»"),
-    ("T3", "ask"): ("story - the question", "next; = ? comes in and pulses; Madhav's picture lights on «माधव»; then the next button"),
+    ("T3", "a"): ("story - another example, Madhav's blocks", "as the page opens; Madhav's picture and his 30 blocks come in, 30 on «30»; his picture lights on «माधव»"),
+    ("T3", "b"): ("story - 17 given to Myra", "next; Myra's picture comes in; − on «उनमें से», 17 on «17»"),
+    ("T3", "ask"): ("story - the question", "next; = on «कितने», ? on «बचे»; Madhav's picture lights on «माधव»; then the next button"),
     # T4 (deck page 4) - the child builds and takes away
     ("T4", "sub0"): ("the question", "as the page opens; 30 − 17 = ? comes in part by part"),
-    ("T4", "intro"): ("build 30", "the equation goes, the 30 card, the empty table and the + box come in"),
-    ("T4", "digits"): ("30 = 3 tens 0 ones", "the digits and the + halves light on «3 दहाई» / «0 इकाई»"),
+    ("T4", "intro"): ("build 30", "the equation goes, the 30 card and the empty table come in"),
+    ("T4", "digits"): ("30 = 3 tens 0 ones", "the digits light, the columns beat on «3 दहाई» / «0 इकाई»; the + box comes in after it, the hand on the rod +"),
     ("T4", "tens"): ("the child builds", "then the rod + pulses; the child taps it 3 times (it goes off at 3)"),
     ("T4", "built"): ("30 is built", "the table pops"),
-    ("T4", "sub"): ("take 17 away", "30 − 17 = ? comes in part by part with the words"),
+    ("T4", "sub"): ("take 17 away", "30 − 17 comes in part by part with the words, centred (no «= ?» yet)"),
     ("T4", "open"): ("open a ten", "a rod moves into the ones on «1 दहाई को…लाएँगे», opens into 10 cubes on «तोड़ेंगे»"),
     ("T4", "rm_ones"): ("the child takes the ones", "the ones pulse; the child taps 7 of them"),
     ("T4", "num"): ("the count", "one per one the child takes: «एक» … «सात» (the next tap waits for it)"),
     ("T4", "ones_left"): ("ones left", "the ones column beats on «3 इकाई»"),
     ("T4", "rm_tens"): ("the child takes a ten", "the tens pulse; the child taps one (the hand after 3s)"),
     ("T4", "tens_left"): ("tens left", "the tens column beats on «1 दहाई»"),
-    ("T4", "total"): ("the result", "the columns beat; the ? becomes 13 on «यानी 13»"),
-    ("T4", "story_a"): ("story's answer", "T3's story row comes back; on «सत्रह» one of Madhav's rods opens into 10 cubes and 1 rod + 7 cubes fly into Myra's picture (his grey); his 13 beat"),
+    ("T4", "total"): ("the result", "«= ?» joins the row on «हमें मिलीं»; the columns beat; the ? becomes 13 on «यानी 13»"),
+    ("T4", "story_a"): ("story's answer", "T3's story row comes back; on «सत्रह» one of Madhav's rods opens into 10 cubes and 1 rod + 7 cubes fly into Myra's picture (his grey); his 13 beat; on «13» the 13 fills the ?; confetti"),
     ("T4", "story_b"): ("story's answer - the box", "the ? becomes 13 on «13 आएगा»; confetti"),
     ("T4", "story_c"): ("story's answer - the end", "his 13 beat, Madhav's picture lights on «माधव»; then the next button"),
     # the guided / practice pages
@@ -142,7 +142,7 @@ def page_rows(i, s):
             add(au.get(r), (sid, r))
         if au.get("rm_tens"):
             add("vo_idle_rm_t", "idle_rm")
-        for r in ("tens_left", "total", "story_a", "story_b", "story_c"):
+        for r in ("tens_left", "total", "story_a", "story_c"):
             add(au.get(r), (sid, r))
     elif ty == "PV_SUB":
         add(au.get("prompt"), "prompt")

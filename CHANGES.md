@@ -216,3 +216,27 @@ Verified: P1 / P2 right and wrong paths (45: 5 then 4; 50: hints 0, 5, ✓), the
 |---|---|---|
 | "add mute and unmute button in the dev menu so that I can test it better" | ✅ | A 🔊 / 🔇 button at the end of the dev nav bar (`?dev=1` / `?nav=1` only; children never see it). Muting silences the VO, the SFX, the music and the WebAudio tones (confetti, sky burst). The clips still play muted, so the VO-driven flow, the cues and the lip-sync keep their timing. The choice is remembered across reloads (localStorage `devMute`) |
 Verified: mute, next slide, reload (stays muted), unmute; 0 console errors.
+
+## File6's lead-review changes, where they fit this lesson — 2026-11-18
+| From File6 | Here | How it is built |
+|---|---|---|
+| The table's ones further apart, a bigger tap area; only the दहाई / इकाई word lights (not the head strip) | ✅ | `table`, `headCount`, `beatCol` / `beatHead` are File6's (identical code before) |
+| The + box only when blocks are to be added; the hand on the + to press (and on inactivity) | ✅ | T2 / T4: after the digits line; G1 / G2: after the build line. `childBuild`, `sources` are File6's |
+| The hand on inactivity on every take-away step (and on opening a ten); on T2 / T4 the hand on the blocks as soon as «… हटाइए» ends | ✅ | `removeChild` is File6's (with this lesson's counting kept); `openChild`'s idle hand on every page; `handNow` on T4's ones / ten |
+| The numbers light with the blocks | ✅ | `<role>_dg` cues (lessons.py): «इन 15 इकाई में से 6 इकाई …» lights 6's digit, «2 दहाई में से 1 दहाई» 17's 1 … (rm_ones, ones_left, rm_tens, tens_left) |
+| The दहाई / इकाई words pulse with «… में X दहाई और Y इकाई» | ✅ | T2 («6 में सिर्फ 6 इकाई»), G1 («27 में 2 दहाई और 7 इकाई») - word times measured (`WT`); G2 / G3 / T4's take-away lines name no columns |
+| T1 / T3 as File6's reference picture: no heading, the equation built with the VO, centred | ✅ | `pvStoryScene` and the STORY page are File6's - **without** the fading blocks (lead review: that is for File6 only) |
+| T2 / T4: «25 − 6» centred; «= ?» joins on «हमें मिलीं» and the row glides left, still centred | ✅ | `eqIn` / `growEq`; the page-4 question (sub0) keeps its «= ?» |
+| T2 / T4: «अब इस डिब्बे में 19 आएगा» removed - 19 fills the box on «…तो बचे 19» | ✅ | `story_b` gone (vo_t2_story_b / vo_t4_story_b unused); measured 3.93s / 4.33s |
+| The options' idle pulse (soft, slow); MTG2A01_L03_S01's keypad with its hand | ✅ | `mcq` / `numpad` are File6's (this lesson's «शाबाश»-less line after a wrong answer kept); P1 / P2 `split: true` |
+| A bigger table where nothing is built (G3, P1-P4) | ✅ | `PV_LAY.big`; the keypad pages' table as wide as its tens |
+| Parts already on screen never pop again when the line changes | ✅ | `show()` |
+| Not brought here (File6 only) | — | T3 / T4 made from G1, G1 deleted, the guided pages renamed, Rohan / Moni, Edge TTS lines, T4 built by the child (here it already is), the bundle opening on «एक बंडल में 10 …» (no such line here), the fading blocks |
+Verified: every page (T1-T4, G1-G3, P1-P4) run through, right and wrong paths; 0 console errors.
+
+
+## User fix — 2026-11-18 (2)
+| # | Asked | Status | How it is built |
+|---|---|---|---|
+| 1 | "when we break the rod the group border made is smaller than actual group so fix it" | ✅ | the dashed ring round the opened ten (`app.js` `ring`) was sized with the old gap between cubes (`g`); the ones now stand further apart (`og`, from File6's 2026-11-17 change), so the ring held only 4 of each row's 5. It is sized with `og` now (the table keeps `og` beside `g`) |
+Verified, muted (`--mute-audio`): T3's opened ten - all 10 cubes inside the ring, an even ~5.6 px margin on every side; 0 console errors. Cache stamp `?v=20261118b`.

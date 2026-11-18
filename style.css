@@ -2412,3 +2412,29 @@ body.vo-busy #slideHost .pv-ans, body.vo-busy #navBtn{pointer-events:none !impor
 .dev-nav-mute{font-size:16px;padding:5px 9px;}
 .dev-nav-mute.on{background:#b5452f;}
 .dev-nav-mute.on:hover{background:#cf5638;}
+
+/* ===== from File6 (MTG2A01_L04_S01), 2026-11-18 - the same changes for this lesson ===== */
+/* ===== user 2026-11-17 (lead review: "only the दहाई / इकाई labels should pulsate, not the entire table cell" - as MTG2A01_L03_S01) =====
+   the head's word is its own span (.pv-tag): a beat / a highlight lights the word - a warm glow and a pop - and the head strip
+   stays as it is */
+.pv-th.hl{animation:none;}
+.pv-tag{display:inline-block;transition:text-shadow .25s;}
+.pv-th.hl .pv-tag{animation:pvTagOn .4s cubic-bezier(.3,1.5,.5,1) forwards;}
+.pv-tag.pv-tag-hl{animation:pvTagGlow 1.1s ease-out 1;}
+@keyframes pvTagOn{0%{scale:1;text-shadow:none;}100%{scale:1.16;text-shadow:0 0 10px rgba(255,200,60,.9);}}
+@keyframes pvTagGlow{0%{text-shadow:none;}25%{text-shadow:0 0 12px rgba(255,200,60,.95),0 0 3px rgba(255,255,255,.9);}100%{text-shadow:none;}}
+@media (prefers-reduced-motion:reduce){ .pv-th.hl .pv-tag,.pv-tag.pv-tag-hl{animation:none;} }
+/* user 2026-11-17: the ones further apart (app.js table og) and a bigger tap area round each one - 7px of invisible padding
+   (half the gap), the picture where it was (the margin takes it back) */
+.pv-blk.pv-cube.pv-tap{padding:7px;margin:-7px;}
+/* user 2026-11-17: MTG2A01_L03_S01's keypad logic - one digit per box: the pad shows its digits only (no back / tick), popping open
+   beside the box it fills */
+.pv-pad.pv-pad-digits .pv-back,.pv-pad.pv-pad-digits .pv-ok{visibility:hidden;pointer-events:none;}
+.pv-pad.pv-pad-digits{transition:opacity .22s;transform-origin:50% 50%;}
+.pv-pl.on{cursor:pointer;}
+.pv-pl.hint-on{border-style:solid;border-color:#FFC21A;box-shadow:0 0 0 5px rgba(255,194,26,.38);}
+/* user 2026-11-17: the answer cards pulse on inactivity - the आगे button's own pulse (pvBtnPulse) */
+/* (user 2026-11-17: "too much - reduce its speed and pulse") a gentle, slow breath: 4 % at its fullest, 2.2s a beat */
+.mq-opts.in .mq-opt.idle-pulse{animation:mdPop .45s cubic-bezier(.3,1.6,.5,1) forwards,mqIdlePulse 2.2s ease-in-out infinite;}
+@keyframes mqIdlePulse{0%,100%{scale:1;}50%{scale:1.04;}}
+@media (prefers-reduced-motion:reduce){ .mq-opts.in .mq-opt.idle-pulse{animation:none;} }

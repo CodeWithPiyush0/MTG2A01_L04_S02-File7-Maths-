@@ -970,7 +970,7 @@ const PVK = (function(){
   const pop = e =>{ if(!e) return; e.classList.remove("pv-pop"); void e.offsetWidth; e.classList.add("pv-pop");
     const end = ev =>{ if(!/^pv(Btn|Rod)?Pop$/.test(ev.animationName)) return; e.removeEventListener("animationend", end); e.classList.remove("pv-pop"); };
     e.addEventListener("animationend", end); };
-  const show = (e, on)=>{ if(!e) return; e.classList.toggle("pv-hide", on === false); if(on !== false) pop(e); };
+  const show = (e, on)=>{ if(!e) return; const was = e.classList.contains("pv-hide"); e.classList.toggle("pv-hide", on === false); if(on !== false && was) pop(e); };   // (only what was hidden pops in - an equation already up never blinks when the line changes, user 2026-11-17)
   /* the lateral buzz of the FLN kit (recipes 11/20): +-9px decaying, .4s, on `translate` */
   /* the decks' idle cue ("if idle, pulsate again"): the pulse restarts from its start, with the nudge chime - no hand
      (user 2026-10-15: match the decks; their hand nudges are only the answer counter's and the ghost drags) */
@@ -1165,37 +1165,37 @@ Object.assign(PVK, (function(){
     /* Q: the table's layout size; G: its blocks - o.blk (each screen's layout sets it as big as its room allows, review
        2026-10-14 "make the cubes look bigger"), else core FIT of Q. o.pad: the inner margin (tight screens trim it) */
     const Q = o.cube, G = o.blk || Q * K.FIT;
-    const g = Math.max(4, Math.round(Q * .2)), rW = G, rH = G * ROD.ar, rg = Math.max(6, Math.round(rW * .5));
+    const g = Math.max(4, Math.round(Q * .2)), og = Math.max(12, Math.round(Q * .5)), rW = G, rH = G * ROD.ar, rg = Math.max(6, Math.round(rW * .5));
     const pad = o.pad != null ? o.pad : Math.round(Q * .45) + 4, head = Math.round(Q * .55 + 30), cH = G * CUBE.ar;   // (+8: room for bigger words, user 2026-10-22)
     const rows = Math.max(2, Math.ceil((o.onesMax || 9) / 5)), tSlots = Math.max(o.tensMax || 5, 3);
     /* the two columns are always the same width: the wider one's need sets both (blocks centre in their column) */
     /* a table that can reach ten ones keeps a rod lane at the right of its इकाई column: the new ten forms there,
        inside the table, and waits there until it is put in the tens column */
     const lane = (o.onesMax || 9) >= 10 ? rW + 2 * g : 0;
-    const onesNeed = 5 * G + 4 * g + lane + 2 * pad, colW = Math.max(onesNeed, tSlots * rW + (tSlots - 1) * rg + 2 * pad);
+    const onesNeed = 5 * G + 4 * og + lane + 2 * pad, colW = Math.max(onesNeed, tSlots * rW + (tSlots - 1) * rg + 2 * pad);
     const onesW = colW, tensW = colW, onesIn = (colW - onesNeed) / 2;
     /* rows after the first two (the ten-frame) stand TF lower, so they clear its dashed ring (review 2026-10-14) */
-    const TF = 12, rowsH = r => r ? r * cH + (r - 1) * g + (r > 2 ? TF : 0) : 0;
+    const TF = 12, rowsH = r => r ? r * cH + (r - 1) * og + (r > 2 ? TF : 0) : 0;
     const inH = Math.max(rH, rowsH(rows)), H = head + inH + 2 * pad, W = tensW + onesW;
     const x = o.cx - W / 2, y = o.y, fs = Math.round(head * .6);
     const el = add(sc, "div", "pv-table", "width:" + px(W) + ";height:" + px(H) + ";--head:" + px(head));
-    el.innerHTML = '<div class="pv-th pv-th-t" style="width:' + px(tensW) + ';height:' + px(head) + ';font-size:' + px(fs) + '">दहाई</div>' +
-                   '<div class="pv-th pv-th-o" style="left:' + px(tensW) + ';right:0;height:' + px(head) + ';font-size:' + px(fs) + '">इकाई</div>' +
+    el.innerHTML = '<div class="pv-th pv-th-t" style="width:' + px(tensW) + ';height:' + px(head) + ';font-size:' + px(fs) + '"><span class="pv-tag pv-tag-t">दहाई</span></div>' +
+                   '<div class="pv-th pv-th-o" style="left:' + px(tensW) + ';right:0;height:' + px(head) + ';font-size:' + px(fs) + '"><span class="pv-tag pv-tag-o">इकाई</span></div>' +
                    '<i class="pv-div" style="left:' + px(tensW - 1.5) + '"></i>';
     setXY(el, x, y);
-    const T = { sc, el, x, y, W, H, G, g, rH, rW, rg, pad, head, inH, tensW, onesW, cH, rods: [], cubes: [], ghosts: [], extra: [],
+    const T = { sc, el, x, y, W, H, G, g, og, rH, rW, rg, pad, head, inH, tensW, onesW, cH, rods: [], cubes: [], ghosts: [], extra: [],
                 th: el.querySelector(".pv-th-t"), oh: el.querySelector(".pv-th-o") };
     /* every group stands in the CENTRE of its column (review 2026-10-14), for the blocks there NOW (n, default the list's
        length): the rods side by side; the cubes in rows of five (the first two a ten-frame); a new ten waiting in the
        इकाई column (T.laneRod) stands left of its cubes, the two centred together. T.relayout() re-centres after a change. */
     T.tensXY = (j, n)=>{ n = Math.max(n == null ? T.rods.length : n, j + 1, 1); const grp = n * rW + (n - 1) * rg;
       return { x: T.x + (tensW - grp) / 2 + j * (rW + rg), y: T.y + head + pad + (inH - rH) / 2 }; };
-    T.onesBox = (n, rod)=>{ const cols = Math.min(n, 5), rows = Math.ceil(n / 5), bw = cols ? cols * G + (cols - 1) * g : 0,
+    T.onesBox = (n, rod)=>{ const cols = Math.min(n, 5), rows = Math.ceil(n / 5), bw = cols ? cols * G + (cols - 1) * og : 0,
       bh = rowsH(rows), gap = rod && n ? Math.max(10, 2 * g) : 0, tw = (rod ? rW : 0) + gap + bw,
       x0 = T.x + tensW + (onesW - tw) / 2, top = T.y + head + pad;
       return { rx: x0, ry: top + (inH - rH) / 2, cx: x0 + (rod ? rW + gap : 0), cy: top + (inH - bh) / 2 }; };
     T.onesXY = (i, n)=>{ const b = T.onesBox(Math.max(n == null ? T.cubes.length : n, i + 1), !!T.laneRod);
-      const r = Math.floor(i / 5); return { x: b.cx + (i % 5) * (G + g), y: b.cy + r * (cH + g) + (r >= 2 ? TF : 0) }; };
+      const r = Math.floor(i / 5); return { x: b.cx + (i % 5) * (G + og), y: b.cy + r * (cH + og) + (r >= 2 ? TF : 0) }; };
     T.laneRod = null;
     T.slot = (kind, i, n)=> kind === "t" ? T.tensXY(i, n) : T.onesXY(i, n);
     /* glide every block not in flight to its centred place (one in flight re-settles when it lands) */
@@ -1250,7 +1250,7 @@ Object.assign(PVK, (function(){
     e.classList.remove("hl"); void e.offsetWidth; e.classList.add("hl"); setTimeout(()=> e.classList.remove("hl"), 1900); }, i * (step == null ? 110 : step))); }
   /* the dashed ring round the first ten cubes of a table (the ten-frame's two rows) */
   function ring(T, on){
-    if(!T._ring){ const w = 5 * T.G + 4 * T.g + 14, h = 2 * T.cH + T.g + 14;
+    if(!T._ring){ const w = 5 * T.G + 4 * T.og + 14, h = 2 * T.cH + T.og + 14;   // (the ones' own gap, og - user 2026-11-18: the ring was smaller than the ten once the ones moved further apart)
       T._ring = add(T.sc, "div", "pv-ring pv-hide", "width:" + px(w) + ";height:" + px(h)); K.dashBox(T._ring, w, h, 4, 14, 11, 8, true);
       T.extra.push(T._ring); }
     if(on !== false){ const p = T.onesXY(0); setXY(T._ring, p.x - 7, p.y - 7); }      // round the first ten where they stand now
@@ -1517,8 +1517,12 @@ Object.assign(PVK, (function(){
         ready(){ busy = false; arm(); },
         lock(){ layer3 = true; els.forEach(x =>{ if(x !== right){ x.classList.add("faded", "locked"); x.disabled = true; } });
           right.classList.add("hint-on"); K.softGlow(right); } };   // highlighted + the others faded (the decks' WA3) - no hand
+      /* user 2026-11-17: "where we have to choose from options, add a pulse (as the next button's) on the options in case of
+         inactivity" - after the idle time the cards still in play pulse with the आगे button's pulse until one is tapped */
+      const idlePulse = on => els.forEach(x => x.classList.toggle("idle-pulse", !!on && !x.classList.contains("locked") && !x.classList.contains("pv-gone")));
       const arm = ()=>{ clearTimeout(idleT); idleT = setTimeout(()=>{
         if(!C.alive() || busy || over) return;
+        idlePulse(true);
         busy = true; C.say(cfg.reask || "ask").then(()=>{ busy = false; arm(); }, ()=>{}); }, IDLE_MS); };
       async function onWrong(o){
         wrong++; busy = true; clearTimeout(idleT);
@@ -1539,9 +1543,9 @@ Object.assign(PVK, (function(){
         recordResult(slide, wrong === 0);
         GameBus.emit("mcq_correct", { slide_id: slide.id, phase: slide.phase, value: wrong === 0, first_try: wrong === 0, attempts: wrong + 1, latency_ms: Date.now() - state.slideStart });
         sfxCorrect(); try{ confettiCannon(); }catch(e){} setSwMood("happy");
-        C.late = wrong > 0;                                              // (no "शाबाश" after a wrong answer - ctx right())
         if(cfg.onRight) await cfg.onRight(o);
         els.forEach(x => x.classList.add("pv-gone"));   // the answer now stands in the equation: the cards below go
+        C.late = wrong > 0;                                              // (no "शाबाश" after a wrong answer - ctx right())
         await (cfg.sayCorrect ? cfg.sayCorrect() : C.say("correct"));   // (S02: "शाबाश! 53 घटा 14 बराबर 39।" - the equation lit in sync)
         if(cfg.after) await cfg.after();
         await C.wait(500);
@@ -1550,7 +1554,7 @@ Object.assign(PVK, (function(){
       }
       els.forEach(o => o.addEventListener("click", ()=>{
         if(busy || over || !C.alive() || o.classList.contains("locked")) return;
-        stopNudge(); clearTimeout(idleT);
+        stopNudge(); clearTimeout(idleT); idlePulse(false);
         if(o === right) onRight(o).catch(()=>{}); else onWrong(o).catch(()=>{});
       }));
       C.mcq = M;
@@ -1572,104 +1576,139 @@ Object.assign(PVK, (function(){
      pad with a back key and a tick: the answer is checked when the tick is tapped (review 2026-10-14).
      cfg: { answer, x (the answer box's centre), y, ladder: async n =>, onRight: async => } */
   function numpad(C, cfg){
+    /* user 2026-11-17 ("extract the exact same numpad and its logic from ananya's file", lead review "apply the same logic (addition
+       file) to the keypad"): MTG2A01_L03_S01's numpad, as it is - the "?" made into a दहाई box and an इकाई box (placeSlots), the
+       इकाई box first: it pulses; a tap opens the digits-only pad beside it; a digit fills it and the pad goes; then the दहाई box the
+       same; both in: checked (no tick). 3rd layer: the pad opens by itself at the box to fill with only its digit lit.
+       Her hand too: on the box to fill as its turn starts, again when idle (user 2026-11-17 "you forgot hand nudge"). This engine's
+       own: the closing line is cfg.sayCorrect (this lesson's equation lights) */
+    const holdTurn = ()=>{}, voQuietLeft = ()=> isPlaying ? IDLE_MS : 0, sfxTap = ()=> PVSFX.tap();
     return new Promise(res =>{
       const slide = C.slide, sc = C.sc, digits = String(cfg.answer).split(""), N = digits.length;
-      const slotW = Math.max(120, N * 30 + 60), ansW = slotW + 26;
+      /* cfg.target (user 2026-10-15): the child types straight into the equation's "?" - no separate answer box - and the
+         pad stands alone at the centre under the tables. Else the old way: an answer box with the pad beside it. */
+      const T = cfg.target, slotW = Math.max(120, N * 30 + 60), ansW = slotW + 26;
       const x0 = cfg.x - ansW / 2;                                   // the answer box stands at the centre
-      /* cfg.target (the sibling's layout, user 2026-10-22): no answer box - the child types into the equation's "?" */
-      const T = cfg.target;
-      const ans = T || add(sc, "div", "pv-ans"); if(!T) setXY(ans, x0, cfg.y + 40);
+      const ans = T || add(sc, "div", "pv-ans"); if(!T) setXY(ans, x0, cfg.y);   // (user 2026-10-15: the box at the bottom centre, the pad under it)
       const slot = T || add(ans, "div", "pv-slot pv-slot-one", "width:" + px(slotW));
-      /* [place boxes] (user 2026-11-10: MTG2A01_L03_S01's answer box, its design only) a "?" made by placeSlots holds a दहाई box and an
-         इकाई box: the digits typed go in left to right - the first into the दहाई box, the second into the इकाई box; the box to
-         fill next glows blue with the "|"; right: the two light green, melt together and become one number */
-      const SPLIT = !!(T && T._slots && N === 2);
-      /* (user 2026-11-17: "we write numbers from ones to tens") in the place boxes the FIRST digit typed is the इकाई digit, the
-         second the दहाई digit - typed[0] -> the इकाई box, typed[1] -> the दहाई box; the answer read back tens first. ORDER: the
-         digits in the order they are typed (the third layer lights the keys in that order: the ones digit, the tens digit, ✓) */
-      const ORDER = SPLIT ? [...digits].reverse() : digits, PL = ["o", "t"];
-      if(T && !SPLIT) T.classList.add("pv-typein");
-      /* the pad: the sibling's 3 x 4 phone pad (MTG2A01_L03_S01, user 2026-10-22) - 1-9, then back 0 tick. It is tall
-         (4 rows), so it stands beside the table column (cfg.padAt), else beside the box, level with its middle */
-      const pad = add(sc, "div", "pv-pad pv-pad-3 pv-hide");
+      /* the pad: two rows (1-5 + back, 6-0) - it stays on the stage under the tables (review 2026-10-14 "place the
+         calculator correctly"; the 4-row pad ran past the stage's bottom) */
+      const P3 = cfg.cols === 3;                                    // the 3 x 4 phone pad (user's art, 2026-10-15): 1-9, back 0 tick
+      const pad = add(sc, "div", "pv-pad " + (P3 ? "pv-pad-3" : "pv-pad-2") + " pv-hide"); setXY(pad, x0 + ansW + 40, cfg.y + 40 + 51 - 78);
       const keys = {};
       /* review 2026-10-14: a backspace ARROW (the ⌫ glyph read as a cross) and a green tick that sends the answer */
       const ICON = { "⌫": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5.5M11 5.5 4.5 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
                      "✓": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>' };
-      ICON["⌫"] = '<svg viewBox="0 0 40 26" aria-hidden="true"><path d="M13 2h23a2.5 2.5 0 0 1 2.5 2.5v17A2.5 2.5 0 0 1 36 24H13L2 13z" fill="#fff" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/>' +
+      if(P3) ICON["⌫"] = '<svg viewBox="0 0 40 26" aria-hidden="true"><path d="M13 2h23a2.5 2.5 0 0 1 2.5 2.5v17A2.5 2.5 0 0 1 36 24H13L2 13z" fill="#fff" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/>' +
         '<path d="M19 8.5l9 9M28 8.5l-9 9" stroke="#E5282E" stroke-width="3.4" stroke-linecap="round"/></svg>';
-      ["1","2","3","4","5","6","7","8","9","⌫","0","✓"].forEach(k =>{
+      (P3 ? ["1","2","3","4","5","6","7","8","9","⌫","0","✓"] : ["1","2","3","4","5","⌫","6","7","8","9","0","✓"]).forEach(k =>{
         const b = add(pad, "button", "pv-key" + (k === "⌫" ? " pv-back" : k === "✓" ? " pv-ok off" : "")); b.type = "button";
         if(ICON[k]){ b.innerHTML = ICON[k]; b.setAttribute("aria-label", k === "⌫" ? "मिटाएँ" : "जाँचें"); } else b.textContent = k;
         b._k = k; keys[k] = b; });
       const ok = keys["✓"];
-      if(cfg.padAt) setXY(pad, cfg.padAt.cx != null ? cfg.padAt.cx - pad.offsetWidth / 2 : cfg.padAt.x, cfg.padAt.y);
-      else setXY(pad, x0 + ansW + 40, cfg.y + 40 + ans.offsetHeight / 2 - pad.offsetHeight / 2);
-      let typed = [], wrong = 0, busy = false, open = false, over = false, idleT = 0, guide = null, ready = false;
-      (C.waits = C.waits || []).push({ live: ()=> ready && !over, busy: ()=> busy });
+      /* [place boxes] cfg.split with a target made by placeSlots: one digit per box, the ones first - the "|" and the hand on the इकाई box,
+         a tap brings the pad in beside it, a digit fills it and the pad goes; then the दहाई box the same; both in: checked */
+      const SPLIT = !!(cfg.split && T && T._slots && N === 2);
+      if(SPLIT) pad.classList.add("pv-pad-digits");
+      if(T && !SPLIT){ T.classList.add("pv-typein"); if(cfg.padAt) setXY(pad, cfg.padAt.x, cfg.padAt.y); else setXY(pad, cfg.x - pad.offsetWidth / 2, cfg.y + 6); }
+      else setXY(pad, cfg.x - pad.offsetWidth / 2, cfg.y + ans.offsetHeight + 12);   // centred under the answer box
+      let typed = [], wrong = 0, busy = false, open = false, over = false, idleT = 0, guide = null, reasking = false;
+      (C.waits = C.waits || []).push({ live: ()=> started && !over, busy: ()=> busy });
+      let place = "o", started = false, stepping = false; const vals = { t: null, o: null };
+      const cellOf = p => T._slots[p], digitFor = p => p === "o" ? digits[N - 1] : digits[N - 2];
+      const hush = ()=>{ if(reasking){ reasking = false; stopAudio(); } };   // a tap during the idle reminder cuts it short and counts
       const P = { ans, pad,
         hide(on){ if(!T) ans.classList.toggle("pv-hide", on !== false); pad.classList.toggle("pv-hide", on !== false || !open); },
-        guideKeys(){ guide = 0; Object.values(keys).forEach(b => b.classList.add("locked")); lightKey(); } };
+        guideKeys(){ guide = 0; Object.values(keys).forEach(b => b.classList.add("locked")); if(SPLIT) lightSplit(); else { openPad(); lightKey(); } } };
+      /* the third layer, split (user 2026-11-09: "in the 3rd wrong attempt hand nudge is not required, directly show this highlighted number
+         in numpad"): no hand at all - the pad opens by itself at the box to fill (the इकाई first, then the दहाई) with only its right digit key
+         lit; a digit in, the pad comes back at the next box with that one's key lit. (It used to light the box with the hand on it, the
+         key only once the box was tapped.) */
+      const lightSplit = quiet =>{ Object.values(keys).forEach(b =>{ b.classList.remove("hint-on"); b.classList.add("locked"); });
+        ["t", "o"].forEach(p => cellOf(p).classList.remove("hint-on"));
+        if(guide == null || over) return;
+        if(!open){ if(P.openAt) P.openAt(place); return; }                // (openAt lights the key as the pad opens)
+        else { const b = keys[digitFor(place)]; b.classList.remove("locked"); b.classList.add("hint-on"); } };   // (SME review 2026-11-09: "on the third incorrect attempt ... the hand nudge is not required here. Simply highlight the correct digit" - the key lit, no hand on the pad)
+      const padTo = p =>{ const c = K.centre(cellOf(p), sc), w = pad.offsetWidth || 332;
+        setXY(pad, Math.max(20, Math.min(1333 - 20 - w, c.x - w / 2)), cfg.padAt ? cfg.padAt.y : pad._y); };
+      const cuePlace = ()=>{ render(); const quiet = place === "t"; if(guide != null){ lightSplit(quiet); return; }   // (the chime only as an attempt starts, at the इकाई box)
+        setTimeout(()=>{ if(C.alive() && started && !open && !busy && !over && !stepping) placeNudge(cellOf(place), quiet); }, 450); };   // (the hand on the box to fill - user 2026-11-17, as hers)
       /* the third layer: the right digit keys light one after the other, then the tick */
-      /* every key locked but the one to tap now (user 2026-10-22: 45 - first only 4, then only 5, then the tick) */
-      const lightKey = ()=>{ Object.values(keys).forEach(b =>{ b.classList.remove("hint-on"); if(guide != null) b.classList.add("locked"); });
-        if(guide == null || guide > N) return; const b = guide < N ? keys[ORDER[guide]] : ok; b.classList.remove("locked"); b.classList.add("hint-on"); };
-        /* (user 2026-10-26: no yellow ring round the key to press - the others are off, it pulses) */   // the key lights (the decks' WA3 "highlight the correct digit buttons in sequence") - no hand
+      const lightKey = ()=>{ Object.values(keys).forEach(b =>{ b.classList.remove("hint-on"); if(guide != null) b.classList.add("locked"); });   // (a key already used locks again - SME review)
+        if(guide == null || guide > N) return; const b = guide < N ? keys[digits[guide]] : ok; b.classList.remove("locked"); b.classList.add("hint-on");
+        };   // the key lights (the decks' WA3 "highlight the correct digit buttons in sequence") - no hand on it (SME review 2026-11-09; it had one from 2026-11-04)
       /* the tick: dim until a digit is in, pulsing once the box holds the whole answer */
       const okState = ()=>{ ok.classList.toggle("off", !typed.length); ok.classList.toggle("pulse", typed.length >= N && !over && !busy); };
-      const render = ()=>{ const full = typed.length >= N || over;
-        if(SPLIT){ PL.forEach((p, i)=>{ const c = T._slots[p], act = open && ready && !over && !busy && typed.length === i;
-            c.querySelector(".pv-pl-d").innerHTML = typed[i] != null ? '<span class="pv-ch">' + typed[i] + '</span>' : (act ? '<span class="pv-caret">|</span>' : "");
-            c.classList.toggle("on", act); c.classList.toggle("done", typed[i] != null); });
-          okState(); return; }
+      const render = ()=>{
+        if(SPLIT){ ["t", "o"].forEach(p =>{ const c = cellOf(p), dEl = c.querySelector(".pv-pl-d"), act = started && !over && !busy && place === p && vals[p] == null;
+            /* (SME review 2026-11-09: "when the counter first appears, only the counter should pulsate. The cursor should become active only
+               after the child taps the counter and the number pad appears. Also, when the hand nudge is displayed, the cursor should not be
+               visible inside the counter") the box to fill pulses (.on); its "|" only while the pad is open - the hand is only ever on a closed box */
+            dEl.innerHTML = vals[p] != null ? vals[p] : (act && open ? '<span class="pv-caret">|</span>' : "");
+            c.classList.toggle("on", act); c.classList.toggle("done", vals[p] != null); }); return; }
+        const full = typed.length >= N || over;
         if(T && !open && !typed.length){ if(ok) okState(); return; }          // (the "?" stays until the pad opens)
         slot.innerHTML = typed.map(d => '<span class="pv-ch">' + d + '</span>').join("") + (full ? "" : '<span class="pv-caret">|</span>');
         slot.classList.toggle("on", open && !full); if(ok) okState(); };
       render();                                                    // the cursor shows from the start
-      const arm = ()=>{ clearTimeout(idleT); idleT = setTimeout(()=>{ if(!C.alive() || busy || over) return;
-        if(!open) placeNudge(ans); else if(guide != null) lightKey(); else if(typed.length >= N) K.repulse(ok);   // the answer counter's hand (the decks)
-        busy = true; C.say(cfg.reask || "prompt").then(()=>{ busy = false; arm(); }, ()=>{}); }, IDLE_MS); };
+      const arm = ()=>{ clearTimeout(idleT); idleT = setTimeout(function tick(){ if(!C.alive() || busy || over) return;
+        const q = voQuietLeft(); if(q > 30){ idleT = setTimeout(tick, q); return; }   // (7s of quiet after the last line - a speaker replay included: never cut, never straight after it - Capacity BUG_05)
+        if(SPLIT){ if(guide != null){ lightSplit(true); arm(); return; } if(!open && started) placeNudge(cellOf(place)); }
+        else if(!open) placeNudge(ans); else if(guide != null){ lightKey(); arm(); return; } else if(typed.length >= N) K.repulse(ok);   // the answer counter's hand (the decks); the hand on the keys: no idle line
+        reasking = true; C.say(cfg.reask || "prompt").then(()=>{ if(reasking){ reasking = false; arm(); } }, ()=>{}); }, IDLE_MS); };   // (never locks the pad)
       const openPad = ()=>{ if(open || over) return; open = true; stopNudge(); pad.classList.remove("pv-hide"); pop(pad); ans.classList.add("open"); render(); arm(); };
-      ans.onclick = ()=>{ if(!C.alive() || busy) return; if(!open) PVSFX.tap(); openPad(); };
-      P.open = openPad;
+      if(!SPLIT){ ans.onclick = ()=>{ if(!C.alive() || busy) return; hush(); openPad(); }; P.open = openPad; }
+      else {
+        const openAt = p =>{ if(open || over) return; open = true; stopNudge(); padTo(p); pad.classList.remove("pv-hide"); pop(pad); render(); if(guide != null) lightSplit(true); arm(); };
+        ["t", "o"].forEach(p =>{ cellOf(p).onclick = ()=>{ if(!C.alive() || busy || over || !started || stepping || open || p !== place) return; hush(); openAt(p); }; });
+        P.open = ()=>{};   // (user 2026-11-05: "only after the VO is complete the screen should be enabled") nothing lights during the line
+        P.openAt = openAt;   // (the third layer opens the pad itself)
+      }
       async function check(){
-        busy = true; clearTimeout(idleT); stopNudge(); okState();
-        const v = SPLIT ? typed.slice().reverse().join("") : typed.join("");
+        busy = true; clearTimeout(idleT); stopNudge(); okState(); holdTurn(true);   // [your turn] Swiftie's
+        const v = SPLIT ? (vals.t || "") + (vals.o || "") : typed.join("");
         if(v === String(cfg.answer)){
           over = true; state.locked = true; ans.classList.add("ok"); Object.values(keys).forEach(b => b.classList.add("locked")); okState();
           try{ XAPI.send("question_answered", { slide_id: slide.id, type: slide.type, phase: slide.phase }, { is_correct: true, attempt: wrong + 1, score: wrong === 0 ? 1 : 0, response: v }); }catch(e){}
           recordResult(slide, wrong === 0);
           GameBus.emit("numpad_correct", { slide_id: slide.id, phase: slide.phase, value: wrong === 0, first_try: wrong === 0, attempts: wrong + 1, latency_ms: Date.now() - state.slideStart });
+          if(!SPLIT) sfxCorrect(); setSwMood("happy"); try{ confettiCannon(); }catch(e){}                 // (split: the correct sound as the two digits become one - user 2026-11-05)
           pad.classList.add("pv-gone");   // the keypad goes as the answer goes up (review 2026-10-14)
-          if(SPLIT){ render(); T._slots.o.classList.add("okc"); await wait(300); T._slots.t.classList.add("okc"); await wait(420);   // [place boxes: aha]
-            T.style.width = T.offsetWidth + "px"; T.classList.add("merge"); await wait(460); }                 // (the two digits become one number - E.fill)
-          sfxCorrect(); try{ confettiCannon(); }catch(e){} setSwMood("happy");
-          C.late = wrong > 0;                                            // (no "शाबाश" after a wrong answer - ctx right())
+          if(SPLIT){ cellOf("o").classList.add("okc"); await K.wait(300); cellOf("t").classList.add("okc"); await K.wait(420);
+            const w = T.offsetWidth; T.style.width = w + "px"; T.classList.add("merge"); await K.wait(460);
+            T.classList.remove("pv-split", "merge"); T.innerHTML = K.numHTML(cfg.answer); sfxCorrect(); }   // [place boxes: aha] the two digits become one number - and only now the correct sound
           if(cfg.onRight) await cfg.onRight(ans);
-          await (cfg.sayCorrect ? cfg.sayCorrect() : C.say("correct")); if(cfg.after) await cfg.after(); await C.wait(500);
+          C.late = wrong > 0;                                            // (no "शाबाश" after a wrong answer - ctx right())
+          await (cfg.sayCorrect ? cfg.sayCorrect() : C.say("correct")); if(cfg.after) await cfg.after(); await C.wait(300);
+          await C.wait(500);
           completeSlide(wrong === 0); res(); return;
         }
         wrong++;
         try{ XAPI.send("question_answered", { slide_id: slide.id, type: slide.type, phase: slide.phase }, { is_correct: false, attempt: wrong, score: 0, response: v }); }catch(e){}
         GameBus.emit("answer_wrong", { slide_id: slide.id, phase: slide.phase, attempts: wrong });
         sfxWrongSoft(); setSwMood("tryagain"); ans.classList.add("wrong"); shake(ans, 9);
-        await C.wait(800); ans.classList.remove("wrong"); typed = []; render();
-        /* (QA BUG_06: Swiftee stays sad through the whole wrong-answer sequence - the hint too; back to normal after it) */
+        await C.wait(800); ans.classList.remove("wrong"); typed = []; vals.t = vals.o = null; place = "o"; render();
+        setSwMood("hint");
         await cfg.ladder(wrong, P);
-        if(C.alive() && !over){ busy = false; setSwMood("point"); render(); arm(); }
+        if(C.alive() && !over){ busy = false; holdTurn(false); setSwMood("point"); render(); if(SPLIT) cuePlace(); arm(); }
       }
       Object.values(keys).forEach(b => b.addEventListener("click", ()=>{
         if(!C.alive() || busy || over || !open || b.classList.contains("locked")) return;
-        stopNudge(); arm(); PVSFX.tap();
+        stopNudge(); hush(); arm();
+        if(SPLIT){ if(b._k === "⌫" || b._k === "✓" || stepping) return;
+          vals[place] = b._k; sfxTap(); stepping = true; render(); pop(cellOf(place).querySelector(".pv-pl-d"));
+          Object.values(keys).forEach(x => x.classList.remove("hint-on"));
+          setTimeout(()=>{ if(!C.alive() || over) return; open = false; pad.classList.add("pv-hide"); stopNudge();
+            if(place === "o"){ place = "t"; setTimeout(()=>{ stepping = false; if(C.alive() && !over) cuePlace(); }, 380); }
+            else setTimeout(()=>{ stepping = false; if(C.alive() && !over) check().catch(()=>{}); }, 380); }, 300);
+          return; }
         if(b._k === "⌫"){ typed.pop(); render(); return; }
-        if(b._k === "✓"){ if(!typed.length) return; K.knock(); check().catch(()=>{}); return; }   // the answer goes in on the tick only
+        if(b._k === "✓"){ if(!typed.length) return; sfxTap(); check().catch(()=>{}); return; }   // the answer goes in on the tick only
         if(typed.length >= N) return;
-        typed.push(b._k); K.knock(); render();
-        if(SPLIT){ const c = T._slots[PL[typed.length - 1]]; pop(c); pop(c.querySelector(".pv-ch")); }
-        else pop(slot.querySelectorAll(".pv-ch")[typed.length - 1]);
+        typed.push(b._k); sfxTap(); render();   // (a key: its soft tick - the block pop is for blocks) pop(slot.querySelectorAll(".pv-ch")[typed.length - 1]);
         if(guide != null){ guide++; lightKey(); }
       }));
-      P.ready = ()=>{ ready = true; render(); arm(); };   // the box pulses its cursor; the hand only after 7s idle (user 2026-10-15: "comes too early")
+      P.ready = ()=>{ holdTurn(false); if(SPLIT && !started && !over){ started = true; cuePlace(); } arm(); };   // (split: the pulse and the hand in the इकाई box only now, the VO over - user 2026-11-05; its "|" once the pad is open - SME review 2026-11-09)   // [your turn] the answer box waits for the child   // the box pulses its cursor; the hand only after 7s idle (user 2026-10-15: "comes too early")
       cfg.onReady && cfg.onReady(P);
     });
   }
@@ -1703,7 +1742,7 @@ Object.assign(PVK, (function(){
   /* the table heads can carry a count: "दहाई" -> "3 दहाई" (deck page 11: "the table and the text header will reflect
      the correct remaining numbers"; page 3: "1 दहाई" / "2 इकाई" on the answer table) */
   /* the table heads show their word only (SME review 3: "remove the numerals written in the cell") - n is ignored */
-  function headCount(T, kind, n){ const h = kind === "t" ? T.th : T.oh; if(h.textContent !== W_[kind]) h.textContent = W_[kind]; }
+  function headCount(T, kind, n){ const h = kind === "t" ? T.th : T.oh, w = h.querySelector(".pv-tag") || h; if(w.textContent !== W_[kind]) w.textContent = W_[kind]; }
   const left = (T, kind)=> T.list(kind).filter(b => !b._removed);
   function liveHeads(T){ T.counts = ()=>{}; headCount(T, "t"); headCount(T, "o"); }
   function dropBlock(T, kind){ const b = T.list(kind).pop(); if(!b) return; PVSFX.unpop(); b.classList.add("pv-gone"); setTimeout(()=> b.remove(), 450); if(T.relayout) T.relayout(260); }
@@ -1712,7 +1751,10 @@ Object.assign(PVK, (function(){
     e.animate([{ scale: "1" }, { scale: "1.16" , offset: .32 }, { scale: ".96", offset: .62 }, { scale: "1.06", offset: .8 }, { scale: "1" }],
               { duration: 560, delay: i * (step == null ? 70 : step), easing: "ease-out" }); }); }
   /* a column of a table beats: its head and the blocks still standing in it */
-  function beatCol(T, kind){ beat([kind === "t" ? T.th : T.oh], 0); beat(left(T, kind), kind === "t" ? 90 : 60); }
+  const headWord = T => T.querySelector(".pv-tag") || T;   // (user 2026-11-17: only the word lights, not the head strip)
+  /* user 2026-11-18: only the column's word pulsates (glow + pop) - "13 में 1 दहाई और 3 इकाई" names the columns, not the blocks */
+  function beatHead(T, kind){ const w = headWord(kind === "t" ? T.th : T.oh); w.classList.remove("pv-tag-hl"); void w.offsetWidth; w.classList.add("pv-tag-hl"); beat([w], 0); }
+  function beatCol(T, kind){ const w = headWord(kind === "t" ? T.th : T.oh); w.classList.remove("pv-tag-hl"); void w.offsetWidth; w.classList.add("pv-tag-hl"); beat([w], 0); beat(left(T, kind), kind === "t" ? 90 : 60); }
   /* the whole table pops (it and every block on it, together) */
   /* the whole table lights (its frame glows a moment) and pops - "इसमें" (SME review 4) */
   function hlTable(T){ T.el.classList.remove("pv-table-hl"); void T.el.offsetWidth; T.el.classList.add("pv-table-hl");
@@ -1770,15 +1812,17 @@ Object.assign(PVK, (function(){
       const sync = ()=>{ const nx = next();
         ["t", "o"].forEach(k =>{ const g = S[k], full = cnt(k) >= want[k]; g.plus.classList.toggle("off", full); g.classList.toggle("pv-done", full);
           g.classList.toggle("pulse", k === nx); }); };
-      const arm = ()=>{ clearTimeout(idleT); idleT = setTimeout(()=>{ if(!C.alive() || fin) return; const k = next(); if(k) K.repulse(S[k]); arm(); }, IDLE_MS); };
+      const handOn = ()=>{ if(!C.alive() || fin) return; const k = next(); if(k) placeNudge(S[k].dot || S[k].plus); };
+      const arm = ()=>{ clearTimeout(idleT); idleT = setTimeout(()=>{ if(!C.alive() || fin) return; const k = next(); if(k){ K.repulse(S[k]); handOn(); } arm(); }, IDLE_MS); };
       const check = ()=>{ if(next() || fin) return; fin = true; clearTimeout(idleT); stopNudge(); vo.stop();
         ["t", "o"].forEach(k =>{ S[k].plus.onclick = null; S[k].classList.remove("pulse"); });
         setTimeout(res, 450); };
       ["t", "o"].forEach(k =>{ const g = S[k];
         g.plus.onclick = ()=>{ if(!C.alive() || fin || cnt(k) >= want[k]) return; stopNudge(); PVSFX.tap(); T.addBlock(k);
-          GameBus.emit("pv_block_added", { slide_id: C.slide.id, kind: k, count: cnt(k) }); sync(); check(); arm(); vo.arm(); };
+          GameBus.emit("pv_block_added", { slide_id: C.slide.id, kind: k, count: cnt(k) }); sync(); check(); arm(); vo.arm();
+          if(cnt(k) >= want[k] && next()) setTimeout(handOn, 350); };   // (its column full: the hand moves on to the other +)
       });
-      sync(); arm(); vo.arm(); check();
+      sync(); arm(); vo.arm(); check(); setTimeout(handOn, 350);
     });
   }
 
@@ -1854,7 +1898,7 @@ Object.assign(PVK, (function(){
         (guided[b._kind] ? left(T, b._kind).filter(x => x._allowed) : left(T, b._kind)).forEach(x => x.classList.add("pulse")); return b; };
       const unpulse = ()=> all().forEach(b => b.classList.remove("pulse"));
       const arm = ()=>{ clearTimeout(idleT); idleT = setTimeout(()=>{ if(!C.alive() || fin || busy) return;
-        const b = nextBlock(); if(b){ (guided[b._kind] ? left(T, b._kind).filter(x => x._allowed) : left(T, b._kind)).forEach(x => K.repulse(x)); if(cfg.hand) placeNudge(b); }
+        const b = nextBlock(); if(b){ (guided[b._kind] ? left(T, b._kind).filter(x => x._allowed) : left(T, b._kind)).forEach(x => K.repulse(x)); placeNudge(b); }
         arm(); }, cfg.idle || IDLE_MS); };
       const done = ()=>{ fin = true; clearTimeout(idleT); clearTimeout(settleT); stopNudge(); unpulse(); sync(); vo.stop();
         all().forEach(b =>{ b.onclick = null; b.classList.remove("pv-dim", "pv-allowed"); });
@@ -1913,6 +1957,7 @@ Object.assign(PVK, (function(){
         };
       });
       sync(); pulseNext(); arm(); vo.arm();
+      if(cfg.handNow) setTimeout(()=>{ if(C.alive() && !fin && !busy){ const b = nextBlock(); if(b) placeNudge(b); } }, 300);
       if(cfg.sayStep && need.o > 0){ busy = true; sync();
         sayId("vo_idle_rm_o").then(()=>{ busy = false; if(!C.alive() || fin) return; sync(); pulseNext(); arm(); vo.arm(); }); }
       if(need.o === 0) onesStep();
@@ -1992,7 +2037,7 @@ Object.assign(PVK, (function(){
       (C.waits = C.waits || []).push({ live: ()=> !fin, busy: ()=> false });   // [QA BUG_09] waiting for the child: the speaker may replay
       const vo = idleVo(C, ()=> fin ? null : "vo_idle_open");
       const arm = ()=>{ clearTimeout(idleT); idleT = setTimeout(()=>{ if(!C.alive() || fin) return;
-        rods.forEach(r => K.repulse(r)); if(cfg.hand) placeNudge(rods[rods.length - 1]); arm(); }, cfg.idle || IDLE_MS); };
+        rods.forEach(r => K.repulse(r)); placeNudge(rods[rods.length - 1]); arm(); }, cfg.idle || IDLE_MS); };   // (the hand on inactivity on every page - user 2026-11-18)
       rods.forEach(r =>{ r.classList.add("pv-tap", "pulse");
         r.onclick = async ()=>{ if(fin || !C.alive()) return; fin = true; clearTimeout(idleT); vo.stop(); stopNudge(); PVSFX.tap();
           rods.forEach(x =>{ x.onclick = null; x.classList.remove("pv-tap", "pulse"); });
@@ -2002,7 +2047,7 @@ Object.assign(PVK, (function(){
     });
   }
 
-  return { headCount, liveHeads, dropBlock, beat, beatCol, popTable, hlTable, sparkles, sources, demoAdd, childBuild, takeAway, putBack, demoRemove, removeChild, copyLeft,
+  return { headCount, liveHeads, dropBlock, beat, beatCol, beatHead, popTable, hlTable, sparkles, sources, demoAdd, childBuild, takeAway, putBack, demoRemove, removeChild, copyLeft,
            eqSync, eqSyncAt, lightCues, left, bringTen, splitTen, openTen, openChild };
 })());
 
@@ -2011,15 +2056,18 @@ const PV_LAY = {
      (the sibling's review 2026-10-14 "make the cubes look bigger"; a rod is 6.7 blocks tall). eqY / eqH: this lesson's
      take-away row on the tutorial card stands where its number cards do */
   tut:  { numY: 142, numH: 84, eqY: 142, eqH: 84, tableY: 250, sumY: 476, cube: 29, blk: 28, pad: 10, cxL: 451, cxR: 881, cx: 666 },   // inside the tutorial card
-  main: { eqY: 166, eqH: 62, tableY: 254, sumY: 466, cube: 29, blk: 28, pad: 10, cxL: 410, cxR: 922, cx: 666 }    // under the header band
+  main: { eqY: 166, eqH: 62, tableY: 254, sumY: 466, cube: 29, blk: 28, pad: 10, cxL: 410, cxR: 922, cx: 666 },   // under the header band
+  /* user 2026-11-18 (as File6): "screens where we don't add blocks with the + buttons - increase the size of the table" */
+  big:  { eqY: 166, eqH: 62, tableY: 254, sumY: 466, cube: 33, blk: 34, pad: 12, cxL: 410, cxR: 922, cx: 666 }
 };
 const pvSplit = n =>({ t: Math.floor(n / 10), o: n % 10 });
 /* the keypad pages (P1, P4) in the sibling's layout (MTG2A01_L03_S01 PV_NUMPAD, user 2026-10-22): the one table on the left,
    level with the 3 x 4 pad's middle; the pad on the right under the "?"; the equation spread over them - a over the दहाई
    column, b over the इकाई column, the − between, the "=" midway to the "?" - and the child types into the "?" */
-const PV_PADL = { eqY: 162, eqH: 100, tcx: 470, qx: 1100, padY: 296, padH: 356 };
+const PV_PADL = { eqY: 162, eqH: 100, tcx: 452, qx: 1100, padY: 296, padH: 356 };   // (tcx: the bigger table clears the pad - user 2026-11-17)
 function pvPadPage(sc, L, d, hidden){
-  const K = PVK, P = PV_PADL, T = pvTable(sc, L, P.tcx, L.tableY);
+  /* (user 2026-11-17: the bigger table - here as wide as its own tens need, so it clears the pad) */
+  const K = PVK, P = PV_PADL, T = pvTable(sc, Object.assign({}, L, { blk: Math.min(L.blk, 31) }), P.tcx, L.tableY, Math.max(pvSplit(d.a).t, 5));
   if(hidden) T.el.classList.add("pv-hide");      // (before anything is measured: no fade-out flash - user 2026-10-23)
   T.move(0, Math.round(P.padY + P.padH / 2 - T.H / 2) - T.y, 0);
   const mid = h => T.x + h.offsetLeft + h.offsetWidth / 2, ca = mid(T.th), cb = mid(T.oh);   // (layout sizes: right during a slide-in too)
@@ -2029,7 +2077,29 @@ function pvPadPage(sc, L, d, hidden){
   return { T, E, padAt: { cx: P.qx, y: P.padY } };
 }
 /* every table of the lesson is the same size (SME review 3): its tens column is wide enough for nine rods */
-const pvTable = (sc, L, cx, y)=> PVK.table(sc, { cx, y, cube: L.cube, blk: L.blk, pad: L.pad, tensMax: 9, tensFinal: 0, onesMax: 9 });
+const pvTable = (sc, L, cx, y, tensMax)=> PVK.table(sc, { cx, y, cube: L.cube, blk: L.blk, pad: L.pad, tensMax: tensMax || 9, tensFinal: 0, onesMax: 9 });
+/* user 2026-11-17: "when we're syncing the VO with highlighting the blocks, then highlight the numbers also" - a line that names a
+   column of a number on the screen ("5 इकाई में से 3 इकाई हटाते हैं") lights that digit of it in the equation as it is said (card
+   cues <role>_dg: [[fraction, "a" | "b", "t" | "o"], ...], one digit at a time; all off at the line's end). Returns cues + off. */
+function pvDigLights(E, list){
+  const off = ()=> [E.a, E.b].forEach(c =>{ if(c){ PVK.lightDigit(c, "t", false); PVK.lightDigit(c, "o", false); } });
+  return { cues: (list || []).map(([f, w, p])=> [f, ()=>{ off(); if(E[w]) PVK.lightDigit(E[w], p); }]), off };
+}
+/* C.cue(role) with the role's digit lights (cues <role>_dg) added to its own cues */
+function pvCueDg(C, E, CU, role, own){
+  const L = pvDigLights(E, (CU || {})[role + "_dg"]);
+  return C.cue(role, [...(own || []), ...L.cues]).finally(()=> setTimeout(L.off, 700));
+}
+/* (from File6) the equation's parts light one at a time on their cues - c: { a, op, b, eq, q, x } */
+function pvEqLights(E, c, fillsQ){
+  const parts = [E.a, E.op, E.b, E.eq, E.q], at = [c.a, c.op, c.b, c.eq, c.q];
+  const lit = i => parts.forEach((e, j)=>{ if(e) e.classList.toggle("pv-lit", j === i); });
+  /* (c.x: the b's phrase over, the light off while the line says something else - "…13 घटाने पर | हमें मिलीं 1 दहाई…";
+     fillsQ: the answer goes into the "?" as it is said - its green is its light, no gold over it) */
+  const cues = parts.map((e, i)=> [at[i], ()=> lit(fillsQ && i === 4 ? -1 : i)]);
+  if(c.x != null) cues.push([c.x, ()=> lit(-1)]);
+  return { cues: cues.filter(x => x[0] != null), off: ()=> lit(-1) };
+}
 function pvReplay(C){ state.replayAudio = ()=>{ if(!isPlaying && C.cur && C.alive()) C.say(C.cur).catch(()=>{}); };
   /* [QA BUG_09 / 04 / 07, as HI02H11_L02_S02] the speaker of the page: it takes a tap only when the page is WAITING FOR THE CHILD
      (a build / take-away / cards / keypad step that is not itself talking) or its flow has ended - never while the page
@@ -2060,50 +2130,57 @@ function pvCelebrate(){ sfxCorrect(); try{ confettiCannon(); }catch(e){} setSwMo
    her 25 blocks beside her (the cubes a little apart), some space, then Aman's portrait with no blocks; the equation
    25 − 13 = ? under the row, in the middle. gB: the places beside Aman where blocks given to him stand (made, hidden). */
 function pvStoryScene(sc, d, dy){
-  dy = dy || 0;                                                 // (T2's ending stands dy higher - SME review 5)
-  const K = PVK, AV = 124, MIDY = 318 + dy, BH = 190, BOT = MIDY + BH / 2, GAP = 6, EY = 452 + dy, EH = 72;   // (user 2026-10-23: up - the equation was on the next button)
-  const XA = 400, XB = 830, BX = 150;                       // the two portraits' centres; their blocks BX to the right
+  /* user 2026-11-17 (the reference picture): the two portraits side by side at the top, the giver's blocks under the giver, nothing
+     under the other; the equation spread along the bottom - a under the giver's blocks, − between, b under the other child, = and
+     the "?" to the right. No heading. dy: T2's ending stands dy higher. */
+  dy = dy || 0;
+  const K = PVK, AV = 112, PY = 168 + dy, BH = 190, BOT = 436 + dy, GAP = 6, EY = 486 + dy, EH = 74;
+  /* (user 2026-11-18: the equation row was right of centre) everything 106px left: 25 ... ? centred on the card (666) */
+  const XA = 439, XB = 684, XE = 799, XQ = 894;            // the two portraits' centres; the "=" and the "?"
   const [P0, P1] = d.people, diff = d.a - d.b;
-  const S = { BOT, BH, diff, amanAt: { x: XB, y: MIDY } };
-  S.pA = K.person(sc, P0.who, P0.name, XA, MIDY - AV / 2, AV); S.pB = K.person(sc, P1.who, P1.name, XB, MIDY - AV / 2, AV);
-  S.gA = K.group(sc, d.a, XA + BX, BOT, BH, GAP).make();
-  S.gB = K.group(sc, d.b, XB + BX, BOT, BH, GAP);
-  S.gAm = S.gB.make(); S.gAm.all().forEach(x => x.style.visibility = "hidden");      // (Aman has no blocks of his own)
+  const S = { BOT, BH, diff, amanAt: { x: XB, y: PY } };
+  S.pA = K.person(sc, P0.who, P0.name, XA, PY - AV / 2, AV); S.pB = K.person(sc, P1.who, P1.name, XB, PY - AV / 2, AV);
+  S.gA = K.group(sc, d.a, XA, BOT, BH, GAP).make();
+  S.gB = K.group(sc, d.b, XB, BOT, BH, GAP);
+  S.gAm = S.gB.make(); S.gAm.all().forEach(x => x.style.visibility = "hidden");      // (the other child holds no blocks)
   S.cs = S.gA.cs;
-  const E = K.equation(sc, d.a, d.b, 666, EY, EH, "−");
+  const E = K.spreadEq(sc, d.a, d.b, "−", { a: XA, op: (XA + XB) / 2, b: XB, eq: XE, q: XQ }, EY, EH);
   S.E = E; S.cA = E.a; S.minus = E.op; S.cB = E.b; S.eqs = E.eq; S.cQ = E.q;
+  /* the blocks that are given away: the last rods and cubes of the giver's (b of them) */
+  const rods = S.gA.all().filter(x => x._kind === "t"), cubes = S.gA.all().filter(x => x._kind === "o"), B = pvSplit(d.b);
+  S.goes = [...rods.slice(rods.length - B.t), ...cubes.slice(cubes.length - B.o)];
   S.parts = ()=> [S.pA, S.pB, ...S.gA.all(), S.cA, S.minus, S.cB, S.eqs, S.cQ];
-  /* user 2026-10-23: when the VO says "मीरा" / "अमन" that child's portrait lights (a ring of light, a beat) */
+  /* user 2026-10-23: when the VO says a child's name that child's portrait lights (a ring of light, a beat) */
   S.hl = who =>{ const e = who === P1.who ? S.pB : S.pA; if(!e) return; e.classList.remove("pv-person-hl"); void e.offsetWidth; e.classList.add("pv-person-hl"); };
-  /* the card's name cues for a role, added to that role's own cues */
   S.names = (cues, role, list)=> (list || []).concat(((cues && cues.names) || {})[role] ? cues.names[role].map(([f, who])=> [f, ()=> S.hl(who)]) : []);
   return S;
 }
 const PVModules = {
   STORY_SUB: {
-    /* deck page 2 / "Appear the first screen" - "कितने बचे?", in the sibling's STORY page: the two people's round
-       portraits over their blocks and the number cards under them (its COL / sizes). Meera (the sibling's girl, Tara's art)
-       has 25 blocks; on "उनमें से तेरह ब्लॉक्स मीरा ने अमन को दिए हैं।" Aman's 13 (1 rod + 3 cubes) come in under him, grey,
-       and Meera keeps all her 25 in view (SME review 3); the cards follow the VO ("Sync the numbers and signs with the VO"): 25, − 13, = ?.
-       mode "answer": the page as it was left; "…तो बचे 12।" lights Meera's blocks; on "अब इस डिब्बे में 12 आएगा।" a copy of
-       them moves into the third column and the "?" becomes 12. data: { mode, a, b, people:[{who}, {who}], fill_at }.
-       audio: a, b, ask, learn | a, b, c. */
+    /* T1 / T3 (user 2026-11-17, the reference picture): no heading; the giver's portrait and blocks come in with "मीरा के पास कुल
+       पच्चीस ब्लॉक्स हैं," - 25 on "पच्चीस"; "उनमें से तेरह ब्लॉक्स मीरा ने अमन को दिए हैं।" - the − on "उनमें से", 13 on "तेरह" and
+       the other child on "अमन" (File7: no blocks fade - the lead review keeps that to File6); = ? on "कितने" of the ask line; the "learn" line lights 25, −, 13 and the ? as they are said.
+       T3 starts with its head line ("आइए, एक और उदाहरण करते हैं।"). data: { a, b, words, people }. audio: (head), a, b, ask, learn. */
     mount(host, slide){
       const d = slide.data, K = PVK, sc = K.scene(host), C = K.ctx(slide, sc);
       state.ownsAudio = true; setNavActive(false); pvReplay(C);
-      const S = pvStoryScene(sc, d), { pA, pB, gA, cA, minus, cB, eqs, cQ } = S, CU = d.cues || {};
-      const say = e =>{ e.classList.remove("pv-say"); void e.offsetWidth; e.classList.add("pv-say"); };
+      const S = pvStoryScene(sc, d), { pA, pB, gA, cA, minus, cB, eqs, cQ } = S, CU = d.cues || {}, cb = CU.build || {};
+      const inn = (...els)=>{ els.forEach(e => K.show(e)); sfxPop(); };
       S.parts().forEach(e => e.classList.add("pv-hide"));
       K.run(C, async ()=>{
         await C.wait(250);
-        await C.cue("a", S.names(CU, "a", [[0.05, ()=>{ K.show(pA); gA.all().forEach((x, i)=> setTimeout(()=>{ if(C.alive()){ K.show(x); if(i % 3 === 0) PVSFX.appear(); } }, 120 + i * 55)); }],
-                          [0.6, ()=>{ K.show(cA); sfxPop(); }]]));
-        await C.cue("b", S.names(CU, "b", [[0.05, ()=>{ K.show(pB); sfxPop(); }], [0.72, ()=>{ K.show(minus); K.show(cB); sfxPop(); }]]));
+        if(C.has("head")) await C.say("head");
+        await C.cue("a", S.names(CU, "a", [[0.02, ()=>{ K.show(pA); gA.all().forEach((x, i)=> setTimeout(()=>{ if(C.alive()){ K.show(x); if(i % 3 === 0) PVSFX.appear(); } }, 120 + i * 45)); }],
+                          [cb.a != null ? cb.a : 0.6, ()=> inn(cA)]]));
+        await C.cue("b", S.names(CU, "b", [[0.02, ()=>{ K.show(pB); }], [cb.op != null ? cb.op : 0.1, ()=> inn(minus)],
+                          [cb.b != null ? cb.b : 0.25, ()=>inn(cB)]]));
         C.guard();
-        await C.cue("ask", S.names(CU, "ask", [[0.15, ()=> K.show(eqs)], [0.6, ()=>{ K.show(cQ); cQ.classList.add("pulse"); }]]));
-        const cl = CU.learn || { a: .3, b: .5, q: .8 };                      // (S02: the times measured from the clip)
-        if(C.has("learn"))                                                   // (the second story page has no "learn" line - user 2026-10-27)
-          await C.cue("learn", [[cl.a, ()=> say(cA)], [cl.b, ()=> say(cB)], [cl.q, ()=>{ cQ.classList.remove("pulse"); void cQ.offsetWidth; cQ.classList.add("pulse"); }]]);
+        await C.cue("ask", S.names(CU, "ask", [[cb.eq != null ? cb.eq : 0.5, ()=> inn(eqs)], [cb.q != null ? cb.q : 0.75, ()=>{ inn(cQ); cQ.classList.add("pulse"); }]]));
+        [eqs, cQ].forEach(e => K.show(e));
+        const cl = CU.learn;
+        if(cl){ const L = pvEqLights(S.E, { a: cl.a, op: cl.op, b: cl.b, q: cl.q });
+          await C.cue("learn", L.cues).finally(L.off); }
+        else await C.say("learn");
         setNavActive(true);
       });
     }
@@ -2232,11 +2309,20 @@ const PVModules = {
       const inn = (...els)=>{ els.forEach(e => K.show(e)); sfxPop(); };
       const bT = ()=> K.beatCol(TA, "t"), bO = ()=> K.beatCol(TA, "o");
       /* each part of "a − b = ?" in as it is said (S01's T2): a, − on "में से", b, "= ?" on "घटाते" */
+      /* user 2026-11-18 (as File6): on the take-away line only "a − b" comes in, centred; "= ?" joins the row with the result line
+         ("…घटाने पर हमें मिलीं …") and the row glides left, still centred. The page-4 question (sub0) keeps its "= ?" */
       const eqIn = async role =>{ eqP.forEach(e => e.classList.add("pv-hide")); K.show(E.el);
+        const late = role === "sub"; [E.eq, E.q].forEach(e => e.style.display = late ? "none" : "");
         const cs = CU[role] || { a: .12, op: .2, b: .3, q: .4 };
-        await C.cue(role, [[cs.a, ()=> inn(E.a)], [cs.op, ()=> inn(E.op)], [cs.b, ()=> inn(E.b)], [cs.q, ()=> inn(E.eq, E.q)],
-                           [cs.o, ()=> K.lightDigit(E.b, "o")]]);
-        eqP.forEach(e => K.show(e)); K.lightDigit(E.b, "o", false); };
+        await C.cue(role, [[cs.a, ()=> inn(E.a)], [cs.op, ()=> inn(E.op)], [cs.b, ()=> inn(E.b)], ...(late ? [] : [[cs.q, ()=> inn(E.eq, E.q)]]),
+                           [cs.t, ()=>{ K.lightDigit(E.b, "t"); K.beatHead(TA, "t"); }], [cs.o, ()=>{ K.lightDigit(E.b, "t", false); K.lightDigit(E.b, "o"); K.beatHead(TA, "o"); }]]);
+        (late ? [E.a, E.op, E.b] : eqP).forEach(e => K.show(e)); K.lightDigit(E.b, "t", false); K.lightDigit(E.b, "o", false); };
+      const growEq = ()=>{ if(E.q.style.display !== "none") return; const keep = [E.a, E.op, E.b], sc0 = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--scale")) || 1;
+        const x0 = keep.map(e => e.getBoundingClientRect().left);
+        [E.eq, E.q].forEach(e => e.style.display = "");
+        keep.forEach((e, i)=>{ const dx = (x0[i] - e.getBoundingClientRect().left) / sc0;
+          if(Math.abs(dx) > 1 && !K.reduce()) e.animate([{ translate: dx + "px 0" }, { translate: "0 0" }], { duration: 520, easing: "cubic-bezier(.3,.7,.3,1)" }); });
+        K.show(E.eq); K.show(E.q); sfxPop(); };
       K.run(C, async ()=>{
         await C.wait(250);
         const H = K.hand(sc);
@@ -2244,12 +2330,13 @@ const PVModules = {
         else K.pop(card);                                                       // page 3: "On screen, only 25 is shown"
         const src = K.sources(sc, TA, TA.y + TA.H + 14), ci = CU.intro || { n: .5 };
         await C.cue("intro", [[0.05, ()=>{ if(!E.el.classList.contains("pv-hide")){ E.el.classList.add("pv-hide"); card.classList.remove("pv-hide"); K.pop(card); } }],
-                              [Math.max(.45, ci.n), ()=>{ K.showTable(TA); src.show(); }]]);
+                              [Math.max(.45, ci.n), ()=> K.showTable(TA)]]);
         if(d.demo) [src.t, src.o].forEach(g => g.classList.add("demo", "off"));
         const cd = CU.digits || { t: .3, o: .6 };
-        await C.cue("digits", [[cd.t, ()=>{ K.lightDigit(card, "t"); K.beat([src.t], 0); }],
-                               [cd.o, ()=>{ K.lightDigit(card, "t", false); K.lightDigit(card, "o"); K.beat([src.o], 0); }]]);
+        await C.cue("digits", [[cd.t, ()=>{ K.lightDigit(card, "t"); K.beatCol(TA, "t"); }],
+                               [cd.o, ()=>{ K.lightDigit(card, "t", false); K.lightDigit(card, "o"); K.beatCol(TA, "o"); }]]);
         await C.wait(200); K.lightDigit(card, "o", false);
+        src.show(); await C.wait(450);                                       // (user 2026-11-18: the + buttons only now, to add the blocks)
         if(d.demo){
           await Promise.all([C.say("tens"), C.wait(700).then(()=> K.demoAdd(C, H, src.t, TA, A.t, "t"))]);
           await Promise.all([C.say("ones"), C.wait(700).then(()=> K.demoAdd(C, H, src.o, TA, A.o, "o"))]);
@@ -2281,17 +2368,17 @@ const PVModules = {
           await K.demoRemove(C, H, TA, "o", B.o, null, j => C.sayNum(j + 1));
           H.off();
         } else {
-          await C.cue("rm_ones", [[0.4, bO]]);
-          await K.removeChild(C, TA, { t: 0, o: B.o }, { only: "o", count: true, settle: 0, idle: d.idle_ms || 3000, hand: true }); C.guard();
+          await pvCueDg(C, E, CU, "rm_ones", [[0.4, bO]]);
+          await K.removeChild(C, TA, { t: 0, o: B.o }, { only: "o", count: true, settle: 0, idle: d.idle_ms || 3000, hand: true, handNow: true }); C.guard();   // (the hand on the ones as "… हटाइए" ends - user 2026-11-18)
         }
         K.ring(TA, false);
-        await C.cue("ones_left", [[(CU.ones_left || { o: .8 }).o, bO]]);
+        await pvCueDg(C, E, CU, "ones_left", [[(CU.ones_left || { o: .8 }).o, bO]]);
         if(C.has("tens_note")) await C.cue("tens_note", [[(CU.tens_note || { t: .7 }).t, bT]]);
         if(C.has("both_left")){ const c = CU.both_left || { t: .4, o: .7 }; await C.cue("both_left", [[c.t, bT], [c.o, bO]]); }
         if(C.has("rm_tens")){
-          await C.cue("rm_tens", [[(CU.rm_tens || { t: .7 }).t, bT]]);
-          await K.removeChild(C, TA, { t: B.t, o: B.o }, { only: "t", idle: d.idle_ms || 3000, settle: 0, hand: true }); C.guard();
-          await C.cue("tens_left", [[(CU.tens_left || { t: .8 }).t, bT]]);
+          await pvCueDg(C, E, CU, "rm_tens", [[(CU.rm_tens || { t: .7 }).t, bT]]);
+          await K.removeChild(C, TA, { t: B.t, o: B.o }, { only: "t", idle: d.idle_ms || 3000, settle: 0, hand: true, handNow: true }); C.guard();
+          await pvCueDg(C, E, CU, "tens_left", [[(CU.tens_left || { t: .8 }).t, bT]]);
         }
         H.el.remove();
         /* "…25 में से 6 घटाने पर हमें मिलीं, 1 दहाई और 9 इकाई, यानी 19।": 25, −, 6 light as they are said, the columns beat on
@@ -2299,7 +2386,8 @@ const PVModules = {
            table) - green, then a plain number box. Page 4 the same ("30 − 17 = 13") */
         const ct = CU.total || { t: .5, o: .7, n: .85 }, te = CU.total_eq;
         const LC = te ? K.lightCues(E, te, true) : null, qAt = te ? te[4] : ct.n;
-        await C.cue("total", [...(LC ? LC.cues : []), [ct.t, bT], [ct.o, bO],
+        const showQ = te && te[5] != null ? te[5] : .3;                       // ("= ?" on "हमें मिलीं" - the lights-off point x)
+        await C.cue("total", [...(LC ? LC.cues : []), [showQ, growEq], [ct.t, bT], [ct.o, bO],
                               [Math.max(0, qAt - 0.01), ()=>{ E.fill(diff); if(d.demo) sfxPop(); else sfxCorrect(); }]]).finally(()=>{ if(LC) LC.off(); });
         if(!d.demo){ C.guard(); if(!C.has("story_a")){ try{ confettiCannon(); }catch(e){} setSwMood("happy"); } }   // (with the story ending the confetti comes with its "?")
         await C.wait(500);
@@ -2312,7 +2400,7 @@ const PVModules = {
         if(SD && C.has("story_a")){
           TA.fade(); E.el.classList.add("pv-gone"); PVSFX.move();
           await C.wait(550); C.guard();
-          const S = pvStoryScene(sc, SD, -34), all = S.parts();
+          const S = pvStoryScene(sc, SD, -12), all = S.parts();
           all.forEach(e => e.classList.add("pv-hide"));
           all.forEach((e, i)=> setTimeout(()=>{ if(C.alive()){ K.show(e); if(i % 4 === 0) PVSFX.appear(); } }, i * 30));
           await C.wait(all.length * 30 + 450); C.guard();
@@ -2341,13 +2429,14 @@ const PVModules = {
                 c.animate([{ scale: "1", opacity: 1 }, { scale: ".2", opacity: 0 }], { duration: 260, easing: "ease-in" }).onfinish = ()=> c.remove();
                 if(n === 0 || n === goR.length + goC.length - 1) K.beat([S.pB], 0); }); }))); };
           let giving = null;
+          const fillQ = ()=>{ S.cQ.classList.remove("pulse"); S.cQ.innerHTML = K.numHTML(diff); S.cQ.classList.add("filled"); K.pop(S.cQ); K.settle(S.cQ); sfxCorrect(); };
           const cy = CU.story || { a: .25, b: .45, n: .78, fill: .5, c: .6 };
           await C.cue("story_a", S.names(CU, "story_a", [[cy.a, ()=>{ say(S.cA); K.beat(S.gA.all(), 25); }],
                                   [cy.b, ()=>{ say(S.cB); giving = (A.o < B.o ? openRod() : Promise.resolve()).then(()=> C.alive() && give()); }],
-                                  [cy.n, ()=>{ (giving || Promise.resolve()).then(()=>{ if(C.alive()) K.beat(kept, 60); }); }]]));
+                                  [cy.n, ()=>{ (giving || Promise.resolve()).then(()=>{ if(C.alive()) K.beat(kept, 60); }); }],
+                                  ...(C.has("story_b") ? [] : [[Math.max(0, (cy.q != null ? cy.q : .88) - .02), fillQ]])]));
           if(giving) await giving; C.guard();
-          await C.cue("story_b", [[0.12, ()=> S.cQ.classList.add("pulse")],
-                                  [cy.fill, ()=>{ S.cQ.classList.remove("pulse"); S.cQ.innerHTML = K.numHTML(diff); S.cQ.classList.add("filled"); K.pop(S.cQ); K.settle(S.cQ); sfxCorrect(); }]]);
+          if(C.has("story_b")) await C.cue("story_b", [[0.12, ()=> S.cQ.classList.add("pulse")], [cy.fill, fillQ]]);
           C.guard(); try{ confettiCannon(); }catch(e){} setSwMood("happy");
           if(C.has("story_c")) await C.cue("story_c", S.names(CU, "story_c", [[cy.c, ()=>{ K.beat(kept, 60); say(S.cQ); }]]));
         }
@@ -2368,7 +2457,7 @@ const PVModules = {
        data: { a, b, answer, options, build, steps, right_table }. audio: prompt, build, sub, remove | rm_ones + rm_tens,
        ask, try_again, reveal, correct, eq + rm_ones_more, rm_ones_less, rm_tens_more, rm_guide. */
     mount(host, slide){
-      const d = slide.data, K = PVK, sc = K.scene(host), C = K.ctx(slide, sc), L = PV_LAY.main, PAD = d.answer === "numpad" ? pvPadPage(sc, L, d) : null;
+      const d = slide.data, K = PVK, sc = K.scene(host), C = K.ctx(slide, sc), L = d.build ? PV_LAY.main : PV_LAY.big, PAD = d.answer === "numpad" ? pvPadPage(sc, L, d) : null;
       state.ownsAudio = true; state.locked = false; setNavActive(false); $("navBtn").style.display = "none"; setSwMood("point"); pvReplay(C);
       const A = pvSplit(d.a), B = pvSplit(d.b), diff = d.a - d.b, R = pvSplit(diff);
       const E = PAD ? PAD.E : K.equation(sc, d.a, d.b, L.cx, L.eqY, L.eqH, "−");
@@ -2400,9 +2489,10 @@ const PVModules = {
         if(d.build){
           const src = K.sources(sc, TA, TA.y + TA.H + 14), cb = CU.build || { t: .62, o: .82 };
           /* "…जिसमें 3 दहाई और 4 इकाई होते हैं": the rod + pops on "3 दहाई", the cube + on "4 इकाई" (SME review 3) */
-          await C.cue("build", [[0.12, ()=> src.show()], [cb.t, ()=>{ K.lightDigit(E.a, "t"); K.beat([src.t], 0); }],
-                                [cb.o, ()=>{ K.lightDigit(E.a, "t", false); K.lightDigit(E.a, "o"); K.beat([src.o], 0); }]]);
+          await C.cue("build", [[cb.t, ()=>{ K.lightDigit(E.a, "t"); K.beatCol(TA, "t"); }],
+                                [cb.o, ()=>{ K.lightDigit(E.a, "t", false); K.lightDigit(E.a, "o"); K.beatCol(TA, "o"); }]]);
           K.lightDigit(E.a, "o", false);
+          src.show(); await C.wait(400);                                     // (user 2026-11-18: the + buttons only now, to add the blocks)
           await K.childBuild(C, TA, d.a, src); C.guard();
           GameBus.emit("pv_build_done", { slide_id: slide.id });
           src.fade(); await C.wait(300); K.popTable(TA);
@@ -2411,7 +2501,7 @@ const PVModules = {
         let cfg = { to, settle: 1100, onesFirst: true, sayStep: !d.steps };   // (every page: only the ones can be tapped until they are done - SME review 4)
         if(C.has("sub")){ const c = CU.sub || { b: .05, t: .6, o: .82 };
           await C.cue("sub", [...(c.this != null ? [[c.this, ()=> K.hlTable(TA)]] : []), [c.b, ()=> K.pop(E.b)],
-                              [c.t, ()=> K.lightDigit(E.b, "t")], [c.o, ()=>{ K.lightDigit(E.b, "t", false); K.lightDigit(E.b, "o"); }]]); }
+                              [c.t, ()=>{ K.lightDigit(E.b, "t"); K.beatHead(TA, "t"); }], [c.o, ()=>{ K.lightDigit(E.b, "t", false); K.lightDigit(E.b, "o"); K.beatHead(TA, "o"); }]]); }
         K.lightDigit(E.b, "o", false);
         const sweepO = ()=> K.beatCol(TA, "o"), sweepT = ()=> K.beatCol(TA, "t");
         /* S02 - the ones are too few: the child opens a ten first (taps a rod: it comes into the इकाई column and opens into
@@ -2423,11 +2513,11 @@ const PVModules = {
           if(C.has("ones_now")) await C.cue("ones_now", [[(CU.ones_now || { o: .5 }).o, sweepO]]);
         }
         if(d.count) cfg.count = true;                                          // "1, 2, 3, ..." on each one taken (deck pages 5-7)
-        if(d.steps){ await C.cue("rm_ones", CU.rm_ones ? [[CU.rm_ones.o, sweepO]] : []);
+        if(d.steps){ await pvCueDg(C, E, CU, "rm_ones", CU.rm_ones ? [[CU.rm_ones.o, sweepO]] : []);
           if(B.o === 0 && C.has("zero")) await C.say("zero");                // SME review 5: "शून्य यानी कुछ नहीं।"
           cfg.onOnes = async ()=>{ if(TA._ring) K.ring(TA, false);
-            if(C.has("ones_left")) await C.cue("ones_left", [[(CU.ones_left || { o: .8 }).o, sweepO]]);
-            await C.cue("rm_tens", CU.rm_tens ? [[CU.rm_tens.t, sweepT]] : []); }; }
+            if(C.has("ones_left")) await pvCueDg(C, E, CU, "ones_left", [[(CU.ones_left || { o: .8 }).o, sweepO]]);
+            await pvCueDg(C, E, CU, "rm_tens", CU.rm_tens ? [[CU.rm_tens.t, sweepT]] : []); }; }
         else if(C.has("remove")) await C.cue("remove", CU.remove ? [[CU.remove.o, sweepO], [CU.remove.t, sweepT]] : []);
         const wrongMoves = await K.removeChild(C, TA, { t: B.t, o: B.o }, cfg); C.guard();
         state.removeWrongs = wrongMoves;
@@ -2448,7 +2538,7 @@ const PVModules = {
               else { await digitsUnder(dy => M.moveTo(ansY + dy)); M.lock(); if(d.reveal_hand) setTimeout(()=>{ if(C.alive()) placeNudge(M.right); }, 300); await C.say("reveal"); } } });
           return;
         }
-        await K.numpad(C, { answer: diff, x: L.cx, y: ansY, reask: "ask", target: E.q, padAt: PAD.padAt,
+        await K.numpad(C, { answer: diff, x: L.cx, y: ansY, reask: "ask", target: E.q, padAt: PAD.padAt, cols: 3, split: true,
           onReady: P =>{ P.hide(true); C.cue("ask", [[0.55, ()=>{ P.hide(false); P.open(); }]]).then(()=> P.ready(), ()=>{}); },
           onRight: ()=> E.fill(diff), sayCorrect: EQS.correct ? ()=> K.eqSyncAt(C, E, "correct", EQS.correct, EQS) : null,
           ladder: async (n, P)=>{ if(n === 1) await recount(); else if(n === 2) await sayH2();
@@ -2468,7 +2558,7 @@ const PVModules = {
       const d = slide.data, K = PVK, sc = K.scene(host), C = K.ctx(slide, sc), CU = d.cues || {};
       state.ownsAudio = true; state.locked = false; setNavActive(false); $("navBtn").style.display = "none"; setSwMood("point"); pvReplay(C);
       const diff = d.a - d.b, pad = d.answer === "numpad", A = pvSplit(d.a), B = pvSplit(d.b), R = pvSplit(diff);
-      const L = PV_LAY.main, PAD = pad ? pvPadPage(sc, L, d, true) : null;    // the keypad page: the sibling's layout (its table hidden till the 2nd help)
+      const L = PV_LAY.big, PAD = pad ? pvPadPage(sc, L, d, true) : null;    // the keypad page: the sibling's layout (its table hidden till the 2nd help)
       const GAP = 26, Y0 = 452;                                                // the cards' first place
       /* the table of the 2nd help: a number pad under its box needs a shorter table (90 = nine rods) */
       const TY = L.tableY;
