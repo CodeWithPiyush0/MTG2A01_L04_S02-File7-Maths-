@@ -2063,7 +2063,9 @@ body.is-start .sg-sky{
    as a cold sticker on S01's all-warm courtyard (user 2026-10-16 "is the blue matching?") */
 .sg-content .sg-title.sg-wall{top:-34px;color:transparent !important;text-shadow:none !important;line-height:0;}
 .sg-title.sg-wall .sgw-arc{display:block;margin:0 auto;overflow:visible;filter:drop-shadow(0 3px 4px rgba(90,30,8,.28));}
-.sg-title.sg-wall .sgw-t{fill:url(#sgPaint);stroke:#fff;stroke-width:9px;stroke-linejoin:round;paint-order:stroke fill;letter-spacing:1px;}
+.sg-title.sg-wall .sgw-o{fill:#fff;stroke:#fff;stroke-width:9px;stroke-linejoin:round;letter-spacing:1px;}
+/* (user 2026-11-17: "the title style should be same" - MTG2A01_L03_S01's title: the white outline its own layer under the whole title) */
+.sg-title.sg-wall .sgw-t{fill:url(#sgPaint);stroke:none;letter-spacing:1px;}
 .sg-title.sg-wall .sgw-b{fill:#5E2410;stroke:#5E2410;stroke-width:9px;stroke-linejoin:round;letter-spacing:1px;}
 .sg-title.sg-wall .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
 /* review 2026-10-14: "all the buttons' pop up effect should be an exact replication of the front screen play button" -

@@ -2682,20 +2682,163 @@ const PVLanding = {
          terracotta paint, edged like S02's title (user 2026-10-16 "just the 2 outline effect"): a white ring and,
          under it, a dark one dropped 4.8px (.sgw-b - S02's text-shadow rings, in deep brown here; pv.css). The arc is sized to the words once the font is in. */
       const txt = ttl.textContent.trim(), NS = "http://www.w3.org/2000/svg";
-      ttl.innerHTML = '<svg class="sgw-arc" xmlns="' + NS + '" aria-hidden="true"><defs>' +
-        '<pattern id="sgPaint" patternUnits="userSpaceOnUse" width="21" height="80" patternTransform="rotate(7)">' +
+      /* (user 2026-11-05: "there is a glitch in the line between स and ख ... the ा should come under the line only") the words are no
+         longer set along a textPath - that placed and turned every letter on its own, so the top bars met at little steps and the ा stood
+         tilted up out of the line. The title is set as one straight line, shaped as the font draws it, and the whole line is then bent
+         into the same arc (#sgBend: each column of it lifted by the arc's height there) - one smooth top bar, every letter upright */
+      /* (SME review 2026-11-09: "the title font appears upright, while the strokes ... are slightly tilted ... tilt the font slightly to
+         align with these strokes") the letters lean 7deg (.sgw-slant: skewX(-7) about the letters' middle), the brush streaks' own
+         angle - the paint is drawn in the slanted letters' space, so its streaks keep that 7deg on screen and run with the stems */
+      /* (user 2026-11-09: "the 1st title is still not looking good ... the curve is not perfect as the 3 title word - do pattern
+         recognition so that a better repositioning of the title can happen") the arch of MTG2A03_L01_S03's title: whole words on one
+         circle. Each word is set straight, as the font draws it (its top bar one unbroken line, the slant, both rims and the paint its
+         own), its centre on a circle of radius ARC above the title's middle, turned to the circle's slope there - the outer words lower
+         and turned out, the middle one highest. Before, the whole line was bent (#sgBend, then on a canvas), which leaned each letter by a
+         different amount so the words read as warped rather than set on a curve. Plain vector now: crisp at any size, nothing to smooth. */
+      const PAINT = '<pattern id="sgPaint" patternUnits="userSpaceOnUse" width="21" height="80">' +
         '<rect width="7" height="80" fill="#A93816"/><rect x="7" width="3" height="80" fill="#932C10"/>' +
-        '<rect x="10" width="7" height="80" fill="#B4421C"/><rect x="17" width="4" height="80" fill="#9E3214"/></pattern>' +
-        '<path id="sgArc"/></defs>' +
-        '<text class="sgw-b" transform="translate(0 4.8)"><textPath href="#sgArc" startOffset="50%" text-anchor="middle"></textPath></text>' +
-        '<text class="sgw-t"><textPath href="#sgArc" startOffset="50%" text-anchor="middle"></textPath></text></svg>' +
-        '<span class="sr-only"></span>';
-      ttl.querySelectorAll("textPath").forEach(p => p.textContent = txt); ttl.lastChild.textContent = txt;
-      const fit = ()=>{ const svg = ttl.firstChild, t = svg.querySelector("text"), fs = parseFloat(getComputedStyle(ttl).fontSize) || 60;
-        const len = t.getComputedTextLength() || txt.length * fs * .45, pad = 14, W = len + 2 * pad + 8, sag = Math.round(W * .045);
-        const base = fs * 1.05 + sag + pad;                                     // the ends' baseline; the middle rises by sag
-        svg.setAttribute("width", W.toFixed(0)); svg.setAttribute("height", (base + fs * .38 + pad).toFixed(0));
-        svg.querySelector("#sgArc").setAttribute("d", "M " + pad + " " + base + " Q " + (W / 2) + " " + (base - 2 * sag) + " " + (W - pad) + " " + base); };
+        '<rect x="10" width="7" height="80" fill="#B4421C"/><rect x="17" width="4" height="80" fill="#9E3214"/></pattern>';
+      const WORDS = txt.split(/\s+/);
+      ttl.innerHTML = '<svg class="sgw-arc" xmlns="' + NS + '" aria-hidden="true"><defs>' + PAINT + '</defs><g class="sgw-all">' +
+        WORDS.map(()=> '<g class="sgw-word"><g class="sgw-slant"><text class="sgw-b" text-anchor="middle"></text>' +
+          '<text class="sgw-o" text-anchor="middle"></text><text class="sgw-t" text-anchor="middle"></text></g></g>').join("") +
+        '</g></svg><span class="sr-only"></span>';
+      /* (user 2026-11-05, "this is still not coming inside the line" - ख्याओं) in Baloo 2 a vowel letter (अ ... औ) after another letter does
+         not reach back to it: the top bar stops at the ा and starts again a little to the right, over the 3 of ओ. Each such vowel is set
+         in its own tspan, pulled back .08em (fit) - its bar meets the one before it, its body still clear of the ा's stem */
+      const groups = [...ttl.querySelectorAll(".sgw-word")];
+      groups.forEach((g, k)=>{ const parts = WORDS[k].split(/(?<=[ऀ-ॿ])(?=[अ-औ])/u);
+        g.querySelectorAll("text").forEach(p =>{ p.textContent = parts[0];
+          parts.slice(1).forEach(s =>{ const t = document.createElementNS(NS, "tspan"); t.setAttribute("class", "sgw-join"); t.textContent = s; p.appendChild(t); }); }); });
+      ttl.lastChild.textContent = txt;
+      /* SLANT (user 2026-11-10: "analyse and see what is wrong with the title and fix it"): the 7deg lean of the SME review (2026-11-09: the
+         letters to run with the paint's streaks) went on top of the arch's own turn - at the arch's left end the letters then leaned BACK
+         ~9deg, at its right end over ~23deg: the left word looked to fall back, the right one to tip over. On the arch the streaks are now
+         set along each letter's own stem (no extra lean): stems and streaks turn together with the curve, out to the left and out to the
+         right, the same both sides - the SME's point (letters running with the streaks) kept, the arch even */
+      const ARC = 760, SLANT = 0, TAN = Math.tan(SLANT * Math.PI / 180);   // (ARC: S03's radius, at the same 64px title size)
+      const fit = ()=>{ const svg = ttl.firstChild, all = svg.querySelector(".sgw-all"), fs = parseFloat(getComputedStyle(ttl).fontSize) || 60;
+        groups.forEach(g =>{ g.removeAttribute("transform");
+          g.querySelectorAll("text").forEach((e, i)=>{ e.setAttribute("x", "0"); e.setAttribute("y", i ? "0" : "4.8"); });   // (the dark ring dropped 4.8px)
+          g.querySelectorAll(".sgw-join").forEach(t => t.setAttribute("dx", (-.08 * fs).toFixed(1)));
+          /* (SME review 2026-11-09: "the title font appears upright, while the strokes ... are slightly tilted ... tilt the font slightly to
+             align with these strokes") the paint is drawn in each word's own (slanted by SLANT) space, so its streaks run with the stems */
+          g.querySelector(".sgw-slant").setAttribute("transform", "translate(" + (-TAN * .35 * fs).toFixed(2) + " 0) skewX(" + (-SLANT).toFixed(2) + ")"); });
+        /* (user 2026-11-05: "i want a line above this also 3") Baloo 2 draws the 3 of अ / आ / ओ / औ with a round top of its own and a notch
+           before the stem, where its top bar starts. A bar is laid over the 3 too, at the font's own top bar - its top .619em above the
+           baseline, .117em thick (measured off Baloo 2 800's अ) - from the 3's left (.047em into the letter) across the notch to the stem
+           (.5em), in each layer: the dark ring, the white edge, the paint. */
+        svg.querySelectorAll(".sgw-bar").forEach(r => r.remove());
+        groups.forEach((g, k)=>{ const tx = g.querySelectorAll("text");
+          [...WORDS[k]].forEach((ch, i)=>{ if(!/[अआओऔ]/.test(ch)) return;
+            let e; try{ e = tx[2].getExtentOfChar(i); }catch(_){ return; } const x = e.x + .047 * fs, w = (.5 - .047) * fs;
+            tx.forEach((t, j)=>{ const r = document.createElementNS(NS, "rect");
+              r.setAttribute("class", t.getAttribute("class") + " sgw-bar"); r.setAttribute("x", x.toFixed(1)); r.setAttribute("width", w.toFixed(1));
+              r.setAttribute("y", ((j ? 0 : 4.8) - .619 * fs).toFixed(1)); r.setAttribute("height", (.117 * fs).toFixed(1)); r.setAttribute("rx", (.035 * fs).toFixed(1));
+              t.after(r); }); }); });
+        /* the line as the font sets it (each word's width, the space between words), then each word's centre onto the circle */
+        const wd = groups.map((g, k)=> g.querySelector(".sgw-t").getComputedTextLength() || WORDS[k].length * fs * .45);
+        let sp = fs * .28; { const m = document.createElementNS(NS, "text"); m.setAttribute("class", "sgw-t"); all.appendChild(m);
+          m.textContent = "क क"; const two = m.getComputedTextLength(); m.textContent = "कक"; const one = m.getComputedTextLength(); m.remove();
+          if(two > one) sp = two - one; }
+        const total = wd.reduce((a, b)=> a + b, 0) + sp * (wd.length - 1);   // (the straight line's length)
+        /* where each word stands: [x of its centre, y of its baseline, turn]. S03's pattern - the middle word level at the top of the arch,
+           the outer words turned out by the same angle - here with the words' own lengths (संख्याओं is three times का): the middle word
+           centred, each outer word turned TILT about its inner end, which sits LIFT under the middle word's line, beside it as the font
+           spaces them. (S03's own placement - a circle centred on the title's middle - put the top of the arch between संख्याओं and का,
+           so का already sloped down and जोड़ fell away at 12deg.) Any other number of words: on a circle centred on the middle word. */
+        const TILT = 8 * Math.PI / 180, LIFT = 3, P = [];
+        if(groups.length === 3){ const a = wd[1] / 2 + sp;
+          P[0] = [-a - Math.cos(TILT) * wd[0] / 2, LIFT + Math.sin(TILT) * wd[0] / 2, -TILT]; P[1] = [0, 0, 0]; P[2] = [a + Math.cos(TILT) * wd[2] / 2, LIFT + Math.sin(TILT) * wd[2] / 2, TILT]; }
+        else { const m = Math.floor((groups.length - 1) / 2); let at = -wd.slice(0, m).reduce((a, b)=> a + b + sp, 0) - wd[m] / 2;
+          groups.forEach((g, k)=>{ const x = at + wd[k] / 2, th = Math.asin(Math.max(-.5, Math.min(.5, x / ARC))); P[k] = [x, ARC * (1 - Math.cos(th)), th]; at += wd[k] + sp; }); }
+        groups.forEach((g, k)=> g.setAttribute("transform", "translate(" + P[k][0].toFixed(2) + " " + P[k][1].toFixed(2) + ") rotate(" + (P[k][2] * 180 / Math.PI).toFixed(3) + ")"));
+        /* the picture's box: everything the words cover (their rims too), centred where the title was. On the page it keeps the old
+           title's height (fs * 1.43 + its arc + 2 pads) - the taller picture spills evenly over it - so nothing under it moves */
+        const bb = all.getBBox(), pad = 14, W = bb.width + 2 * pad, H = bb.height + 2 * pad;
+        all.setAttribute("transform", "translate(" + (pad - bb.x).toFixed(2) + " " + (pad - bb.y).toFixed(2) + ")");
+        svg.setAttribute("width", W.toFixed(0)); svg.setAttribute("height", H.toFixed(0));
+        const len = total, Wold = len + 2 * pad + 8, Hold = fs * 1.43 + Math.round(Wold * .045) + 2 * pad, mv = ((Hold - H) / 2).toFixed(1) + "px";
+        svg.style.marginTop = mv; svg.style.marginBottom = mv;
+        curve(wd.map((w, i)=> -total / 2 + wd.slice(0, i).reduce((a, b)=> a + b + sp, 0) + w / 2), Hold); };
+      /* (user 2026-11-10: "the 1st word of title is straight, why? it should be curved") the word arch above sets each word straight - the
+         long संख्याओं then reads as a straight tilted bar. So the whole line now rides ONE circle (radius CURVE_R, its top at the line's
+         middle): every column of the straight line is turned to the circle's radius there and set on it - each word bends with the arch,
+         its top bar one smooth curve, its letters fanning a little as arched lettering does, the slant and the paint going along. SVG
+         cannot bend Devanagari that way (a textPath sets every letter on its own - steps in the top bar; a filter bend came out in
+         stair-steps), so the straight line - exactly as the SVG draws it, its font embedded with it - is drawn at 2-4x the screen's pixels
+         and each pixel of the arch is read off it with smoothing (bilinear, on premultiplied colour). If any step fails (a browser that
+         will not draw or read the picture back), the word arch stays on screen. */
+      const CURVE_R = 760;   // (user 2026-11-10 "a little more curved": S03's own radius - the ends 15.6deg round, ~28px down)
+      let cTok = 0, fontURL = null;
+      const curve = (line, Hold)=>{ const tok = ++cTok;
+        try{
+          const svg = ttl.querySelector("svg.sgw-arc"), all = svg.querySelector(".sgw-all");
+          const k = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--scale")) || 1;
+          const SS = Math.min(4, Math.max(2, Math.ceil((window.devicePixelRatio || 1) * k * 2)));
+          /* the straight line: each word at its place on it, not turned - copied out with its looks written on (the page's CSS does not
+             reach an SVG drawn as a picture); then the word arch is put back */
+          const arch = groups.map(g => g.getAttribute("transform")), archAll = all.getAttribute("transform");
+          groups.forEach((g, i)=> g.setAttribute("transform", "translate(" + line[i].toFixed(2) + " 0)")); all.removeAttribute("transform");
+          const bb = all.getBBox(), pad = 14, sw = bb.width + 2 * pad, sh = bb.height + 2 * pad;
+          const c = svg.cloneNode(true), PROPS = ["fill", "stroke", "stroke-width", "stroke-linejoin", "stroke-linecap", "letter-spacing", "font-family", "font-size", "font-weight", "font-style"];
+          const src = svg.querySelectorAll("text, rect.sgw-bar"), dst = c.querySelectorAll("text, rect.sgw-bar");
+          src.forEach((e, i)=>{ const cs = getComputedStyle(e);
+            dst[i].setAttribute("style", PROPS.map(q => q + ":" + cs.getPropertyValue(q).replace(/url\((["']?)[^#"')]*#/, "url($1#")).join(";")); });
+          const wt = String(getComputedStyle(src[0]).fontWeight || "800");
+          groups.forEach((g, i)=> g.setAttribute("transform", arch[i])); if(archAll) all.setAttribute("transform", archAll);
+          c.querySelector(".sgw-all").setAttribute("transform", "translate(" + (pad - bb.x).toFixed(2) + " " + (pad - bb.y).toFixed(2) + ")");
+          c.removeAttribute("style"); c.removeAttribute("class");
+          const Ws = Math.round(sw * SS), Hs = Math.round(sh * SS);
+          c.setAttribute("viewBox", "0 0 " + sw.toFixed(2) + " " + sh.toFixed(2)); c.setAttribute("width", Ws); c.setAttribute("height", Hs);
+          const file = "assets/fonts/baloo2-" + (/^[678]00$/.test(wt) ? wt : "800") + ".woff2";
+          if(!fontURL) fontURL = fetch(typeof Assets !== "undefined" && Assets.url ? Assets.url(file) : file).then(r => r.blob())
+            .then(b => new Promise((ok, no)=>{ const fr = new FileReader(); fr.onload = ()=> ok(fr.result); fr.onerror = no; fr.readAsDataURL(b); }));
+          fontURL.then(furl =>{ if(tok !== cTok) return;
+            const st = document.createElementNS(NS, "style");
+            st.textContent = "@font-face{font-family:'Baloo 2';font-style:normal;font-weight:" + wt + ";src:url(" + furl + ") format('woff2');}";
+            c.querySelector("defs").prepend(st);
+            const img = new Image();
+            img.onload = ()=>{ if(tok !== cTok) return;
+              const draw = ()=>{ if(tok !== cTok) return;
+                try{
+                  const A = document.createElement("canvas"); A.width = Ws; A.height = Hs; const ax = A.getContext("2d"); ax.drawImage(img, 0, 0, Ws, Hs);
+                  const sd = ax.getImageData(0, 0, Ws, Hs).data;
+                  /* the circle: radius R (picture pixels), its top on the line's baseline at the line's middle (x0) */
+                  const R = CURVE_R * SS, x0 = (pad - bb.x) * SS, yb = (pad - bb.y) * SS;
+                  let mx = 0, top = Infinity, bot = -Infinity;                // (the arch's box: the straight picture's edges set on the circle)
+                  const at = (x, y)=>{ const th = (x - x0) / R, r = R + (yb - y), X = r * Math.sin(th), Y = -r * Math.cos(th);
+                    mx = Math.max(mx, Math.abs(X)); top = Math.min(top, Y); bot = Math.max(bot, Y); };
+                  for(let i = 0; i <= 64; i++){ at(Ws * i / 64, 0); at(Ws * i / 64, Hs); }
+                  for(let j = 0; j <= 16; j++){ at(0, Hs * j / 16); at(Ws, Hs * j / 16); }
+                  const Wo = Math.ceil(2 * mx) + 2, Ho = Math.ceil(bot - top) + 2, cx = Wo / 2, cy = -top + 1;
+                  const cv = ttl.querySelector("canvas.sgw-arc") || document.createElement("canvas");
+                  cv.width = Wo; cv.height = Ho;
+                  const ox = cv.getContext("2d"), out = ox.createImageData(Wo, Ho), od = out.data;
+                  for(let Y = 0; Y < Ho; Y++){ const dy = Y + .5 - cy;
+                    for(let X = 0; X < Wo; X++){ const dx = X + .5 - cx, r = Math.sqrt(dx * dx + dy * dy), th = Math.atan2(dx, -dy);
+                      const u = x0 + th * R - .5, v = yb - (r - R) - .5;
+                      if(u < -1 || v < -1 || u > Ws || v > Hs) continue;
+                      const xi = Math.floor(u), yi = Math.floor(v), fx = u - xi, fy = v - yi;
+                      let a = 0, rr = 0, gg = 0, bl = 0;
+                      for(let n = 0; n < 4; n++){ const sx = xi + (n & 1), sy = yi + (n >> 1);
+                        if(sx < 0 || sy < 0 || sx >= Ws || sy >= Hs) continue;
+                        const w = ((n & 1) ? fx : 1 - fx) * ((n >> 1) ? fy : 1 - fy), q = (sy * Ws + sx) * 4, al = sd[q + 3] * w;
+                        if(!al) continue; a += al; rr += sd[q] * al; gg += sd[q + 1] * al; bl += sd[q + 2] * al; }
+                      if(a > .5){ const o = (Y * Wo + X) * 4; od[o] = rr / a; od[o + 1] = gg / a; od[o + 2] = bl / a; od[o + 3] = a; } } }
+                  ox.putImageData(out, 0, 0);
+                  /* on the page: the title's size; it keeps the old title's height in the layout (the arch spills evenly over it) */
+                  const cw = Wo / SS, ch = Ho / SS, m = ((Hold - ch) / 2).toFixed(1) + "px";
+                  cv.className = "sgw-arc"; cv.setAttribute("aria-hidden", "true");
+                  cv.style.width = cw.toFixed(1) + "px"; cv.style.height = ch.toFixed(1) + "px"; cv.style.marginTop = m; cv.style.marginBottom = m;
+                  if(!cv.isConnected) svg.after(cv);
+                  svg.style.cssText = "position:absolute;left:0;top:0;visibility:hidden;pointer-events:none";   // (kept, unseen, for the next fit to measure)
+                }catch(e){} };
+              draw(); setTimeout(draw, 600); };   // (drawn again once the picture's own font has surely settled - some browsers draw an SVG picture before its font)
+            img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(new XMLSerializer().serializeToString(c));
+          }).catch(()=>{});
+        }catch(e){}
+      };
       fit(); if(document.fonts && document.fonts.ready) document.fonts.ready.then(fit); }
     const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
     const kids = [...root.querySelectorAll(".sgp-kid")], pcs = [...root.querySelectorAll(".sgp-pc")];
