@@ -2351,10 +2351,10 @@ const PVModules = {
         src.fade(); card.classList.add("pv-gone"); prompt.classList.add("pv-gone");
         await C.wait(350);
         await eqIn("sub");
-        /* "5 इकाई में से 6 इकाई नहीं घटाई जा सकती…": the 5 of 25 lights on "5 इकाई", the 6 on "6 इकाई"; both stay lit through the
+        /* "5 इकाई में से 6 इकाई नहीं घटाई जा सकती…": the 5 of 25 lights on "5 इकाई", the 6 on "6 इकाई" - each for 1.1s as it is said (user 2026-11-18; they used to stay lit through the
            line (user 2026-10-27) */
         if(C.has("cant")){ const c = CU.cant || { o: .05, b: .25 };
-          await C.cue("cant", [[c.o, ()=>{ K.lightDigit(E.a, "o"); bO(); }], [c.b, ()=> K.lightDigit(E.b, "o")]]);
+          await C.cue("cant", [[c.o, ()=>{ K.lightDigit(E.a, "o", true, 1100); bO(); }], [c.b, ()=>{ K.lightDigit(E.a, "o", false); K.lightDigit(E.b, "o", true, 1100); }]]);   // (each lit as it is said, 1.1s - user 2026-11-18; they stayed lit through the line)
           K.lightDigit(E.a, "o", false); K.lightDigit(E.b, "o", false); }
         /* the ten: brought in on "हम 1 दहाई को यहाँ लाएँगे", opened on "तोड़ेंगे" */
         const co = CU.open || { bring: .3, split: .55 };

@@ -245,4 +245,4 @@ Verified, muted (`--mute-audio`): T3's opened ten - all 10 cubes inside the ring
 | Asked | Status | How it is built |
 |---|---|---|
 | «… X दहाई और Y इकाई …»: the ones digit stayed highlighted for seconds (the tens digit was fine) | ✅ | The tens digit went off as the ones digit lit, but the ones digit stayed on to the end of the line (and 0.7s after a step line). `lightDigit(card, which, on, ms)`: the ones digit (and each digit a step line lights) is now on for 1.1s - as long as the tens digit is. Measured on T2: tens 1.13s, ones 1.10s |
-File7 only: «5 इकाई में से 6 इकाई नहीं घटाई जा सकती» keeps both digits lit through its line (by design, 2026-10-27)
+«5 इकाई में से 6 इकाई नहीं घटाई जा सकती» too (user 2026-11-18): the 5 lights 1.1s on «5 इकाई», then the 6 for 1.1s on «6 इकाई» (they stayed lit through the whole line).
