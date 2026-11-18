@@ -260,6 +260,12 @@ function setPlaying(on){
   // tut frame, so the in-card .tut-audio is the only visible affordance and must react to VO too).
   isPlaying=on;
   document.body.classList.toggle("vo-busy", !!on);   // user 2026-10-26: while a voice line plays nothing on the page takes a tap (style.css)
+  /* user 2026-11-18 (File4 MTG204_L01_S01's speaker logic, its round 19): every speaker - the cover's, the header chip, the teaching
+     card's - is greyed and takes no tap while a voice plays (body.spk-busy), and stays so 0.7s after it stops, so it never flashes
+     blue in the short gap between two lines of one sequence */
+  clearTimeout(setPlaying._spkT);
+  if(on) document.body.classList.add("spk-busy");
+  else setPlaying._spkT = setTimeout(()=>{ if(!isPlaying) document.body.classList.remove("spk-busy"); }, 700);
   bgmDuck();
   /* [QA 05] only the chip the audio is actually coming FROM animates, and only one at a time.
      It used to pulse every chip for every sound - option words, feedback, the count-aloud. */
@@ -1512,7 +1518,9 @@ Object.assign(PVK, (function(){
       let wrong = 0, busy = true, idleT = 0, layer3 = false, over = false;
       (C.waits = C.waits || []).push({ live: ()=> !over, busy: ()=> busy });
       const M = { box, els, right,
-        open(){ box.classList.add("in"); },
+        /* checklist 2026-11-18: "options come one by one accompanied with some SFX" - a soft pop with each card as it pops in
+           (the cards' own stagger: 0, .12s, .24s) */
+        open(){ box.classList.add("in"); els.forEach((o, i)=> setTimeout(()=>{ if(C.alive() && box.classList.contains("in") && !box.classList.contains("pv-hide")) PVSFX.appear(); }, i * 120)); },
         hide(on){ box.classList.toggle("pv-hide", on !== false); },
         moveTo(y){ box.style.top = px(y); },
         ready(){ busy = false; arm(); },
@@ -2102,6 +2110,7 @@ function pvEqLights(E, c, fillsQ){
   return { cues: cues.filter(x => x[0] != null), off: ()=> lit(-1) };
 }
 function pvReplay(C){ state.replayAudio = ()=>{ if(!isPlaying && C.cur && C.alive()) C.say(C.cur).catch(()=>{}); };
+  if(C.seq === undefined) C.seq = true;   // (user 2026-11-18: the page is "talking" from its first frame - its speaker never blinks blue before its first line)
   /* [QA BUG_09 / 04 / 07, as HI02H11_L02_S02] the speaker of the page: it takes a tap only when the page is WAITING FOR THE CHILD
      (a build / take-away / cards / keypad step that is not itself talking) or its flow has ended - never while the page
      talks (its opening lines and the pauses between them, a hint sequence, the lines after a right answer), and never
@@ -4037,6 +4046,7 @@ function boot(){
     b.setAttribute("aria-disabled", ready ? "false" : "true");
     if(img) img.src = ready ? "assets/btn-play-round.svg" : "assets/btn-play-round-waiting.svg";   // HI02H11_L01_S01's round play button (review 2026-10-06)
     if(!ready){ disarmStartPulse(); b.classList.remove("sg-pop"); return; }
+    b.classList.add("sg-shown");   // (user 2026-11-18: once it has been shown it stays on screen - a replay greys it, File4's rule)
     if(!was){ b.classList.remove("sg-pop"); void b.offsetWidth; b.classList.add("sg-pop");
       setTimeout(()=> b.classList.remove("sg-pop"), 900); }
     armStartPulse();
@@ -4057,6 +4067,9 @@ function boot(){
     /* review 2026-10-05: "why is the sound box getting disabled - this should not happen anywhere in the game": the
        speaker is never greyed out (the QA checklist's disabled-while-the-greeting-speaks state is gone). A tap while the
        greeting is still playing is ignored, as on every speaker (replayTap), so it never restarts the line mid-way. */
+    /* user 2026-11-18 (File4 MTG204_L01_S01, its round 26): a replay of the greeting from the speaker turns the play button into
+       the grey disabled disc (it stays on screen) until the line ends; then it is live again, popping and pulsing */
+    if(_greetingHeard) setStartBtnReady(false);
     play(landSrc, ()=>{ if(voEl.ended){ _greetingHeard = true; releaseStart(); } });
   };
   // any tap on the landing restarts the 5s idle timer (only once the button is live)

@@ -253,3 +253,23 @@ Verified, muted (`--mute-audio`): T3's opened ten - all 10 cubes inside the ring
 | P4 / P5: the question's numbers light as it is said, only at the start | ✅ | P3 / P4 here: «84 में से 46 घटाइए …» lights 84 then 46 (each 1.1s; measured 0.28s / 1.36s), «91 में से 14 …» 91 then 14 (0.28s / 1.44s); the 7s reminder says it without lights (`PROMPT_AT`) |
 | A digit said as a word («शून्य इकाई») lights too | ✅ | T4 «यहाँ शून्य इकाई हैं …»: 30's 0 lights (1.1s) as the ones column beats. The other step lines here say their digits as numerals, so they already light |
 Verified in the browser (on/off logged): P3 84 → 46, P4 91 → 14, T4 0 at «शून्य इकाई»; 0 console errors.
+
+## Checklist fixes — 2026-11-18
+| Checklist pointer | Status | How it is built |
+|---|---|---|
+| Title screen: the standard speaker button, 70 px | ✅ | `.sg-vo` 70 x 70 (was 58), its centre where it was |
+| Title screen: the speaker is disabled (slightly greyish) while the VO is spoken, enabled again when it is over | ✅ | `.sg-vo.playing`: greyed, takes no tap; blue and live once the greeting ends. If autoplay is blocked nothing plays, so it stays live (its tap starts the greeting). Replaces the 2026-10-05 "never disabled" rule |
+| Options come one by one accompanied with some SFX | ✅ | `mcq` `open()`: a soft pop with each card as it pops in (0, 0.12s, 0.24s - the cards' own stagger) |
+Verified in the browser: 70x70 at the same place; greyed + untappable during the greeting, blue after; autoplay-blocked: live, greys on its tap; three pops 0.12s apart as the cards come in.
+
+## The speakers are not tappable while a voice plays (File4's logic) — 2026-11-18
+| Asked | Status | How it is built |
+|---|---|---|
+| "The speaker button should not be tappable while VO is playing" - as File4 (MTG204_L01_S01) | ✅ | File4's rule (its rounds 19 / 20): `body.spk-busy` - on while any clip plays (setPlaying), off 0.7s after it stops - greys every speaker (the cover's, the header chip, the teaching card's: opacity .45, greyscale) and takes its taps away; the gap between two lines never flashes it blue. A page that is still talking between its lines, or is solved, keeps it grey too (.chip-wait). Blue - and a tap replays the line - only while the page waits for the child. The page counts as talking from its first frame (no blue blink before its first line). The cover's earlier "grey while playing" rule is replaced by this |
+Verified (speaker state traced every 40ms against the voice): cover - grey through the greeting, blue 0.7s after; G1 - grey through every line, blue only at the build / take-away / answer steps, grey once answered; no blink as a page opens.
+
+## The play button greys while the greeting is replayed (File4's logic) — 2026-11-18
+| Asked | Status | How it is built |
+|---|---|---|
+| As File4 (MTG204_L01_S01): once the greeting has ended the play button is there; tapping the speaker greys the play button until the line ends | ✅ | File4's round 26: the play button still appears for the first time when the greeting is over; after that a replay from the speaker turns it into the grey disabled disc (btn-play-round-waiting.svg - on screen, no tap, no pulse) together with the grey speaker; when the line ends it is live again (pop + pulse). `playLanding` + `.sg-btn.sg-shown.sg-waiting` |
+Verified: live and pulsing → speaker tapped: grey disc, a tap on it does nothing → line over: live and pulsing again (both files).

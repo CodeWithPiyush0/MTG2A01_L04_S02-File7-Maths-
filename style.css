@@ -2438,3 +2438,25 @@ body.vo-busy #slideHost .pv-ans, body.vo-busy #navBtn{pointer-events:none !impor
 .mq-opts.in .mq-opt.idle-pulse{animation:mdPop .45s cubic-bezier(.3,1.6,.5,1) forwards,mqIdlePulse 2.2s ease-in-out infinite;}
 @keyframes mqIdlePulse{0%,100%{scale:1;}50%{scale:1.04;}}
 @media (prefers-reduced-motion:reduce){ .mq-opts.in .mq-opt.idle-pulse{animation:none;} }
+
+/* ===== checklist 2026-11-18 - the title screen's speaker =====
+   "Standard Swiftee ... with the standard speaker button on the bottom with the button's size 70 px": 70 x 70 (was 58), its centre
+   where it was (left 96 + 29, bottom -16 + 29). "The speaker button remains disabled when the VO is spoken ... shown in a slightly
+   greyish tone": while the greeting (or its replay) plays the speaker is greyed and takes no tap; with the line over it is blue and
+   live again (autoplay blocked: nothing is playing, so it stays live - the tap that starts the greeting). This replaces the
+   2026-10-05 "never disabled" rule. */
+.sg-vo{width:70px;height:70px;left:90px;bottom:-22px;}
+/* (user 2026-11-18: File4's logic - see the block below) */
+
+/* ===== user 2026-11-18 - the speakers are not tappable while a voice plays (File4 MTG204_L01_S01, its rounds 19 / 20) =====
+   body.spk-busy (app.js setPlaying: on while any clip plays, off 0.7s after) and a page's own "not now" (.chip-wait: the page is
+   still talking between its lines, or it is solved) both grey every speaker - the cover's, the header chip, the teaching card's -
+   and take its taps away. Waiting for the child, the speaker is blue and replays the line. */
+body.spk-busy .audio-chip, body.spk-busy .tut-audio, body.spk-busy .sg-vo,
+.audio-chip.chip-wait, .tut-audio.chip-wait{pointer-events:none !important;cursor:default;opacity:.45;filter:grayscale(.75);}
+.audio-chip, .tut-audio, .sg-vo{transition:opacity .25s ease, filter .25s ease;}
+
+/* user 2026-11-18 (File4 MTG204_L01_S01, its round 26): the play button appears for the first time when the greeting is over; after
+   that a replay of the greeting no longer hides it - it stays on screen as the grey disabled disc (btn-play-round-waiting.svg, no tap,
+   no pulse) until the line ends */
+.sg-btn.sg-shown.sg-waiting{visibility:visible !important;pointer-events:none !important;animation:none;}
