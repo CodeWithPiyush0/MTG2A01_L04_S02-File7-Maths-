@@ -299,6 +299,10 @@ WT = {"vo_t2_story_a": {"q": 3.93}, "vo_t4_story_a": {"q": 4.33},
       "vo_g1_sub": {"t": 3.05, "o": 4.42}}           # "27 में 2 दहाई | और 7 इकाई हैं"
 
 
+# the question's two numbers in the recordings (s), from their loudness: "चौरासी | में से | छियालीस घटाइए…", "इक्यानवे | में से | चौदह …"
+PROMPT_AT = {"vo_p3_prompt": {"a": 0.28, "b": 1.36}, "vo_p4_prompt": {"a": 0.28, "b": 1.44}}
+
+
 def wt(cid, cues):
     """cues with the WT times of the clip (as fractions of it) put in"""
     dur = clip_len(cid)
@@ -351,6 +355,10 @@ for sl in slides:
                       "t": frac(au["h2"], f"{rt} दहाई"), "o": frac(au["h2"], f"{ro} इकाई")}
     if "recount" in au:
         cues["recount"] = {"t": frac(au["recount"], "दहाई"), "o": frac(au["recount"], "इकाई")}
+    if sl["type"] == "MENTAL_SUB" and "prompt" in au:   # user 2026-11-18 (as File6): the question's numbers light as it is said
+        pa = PROMPT_AT.get(au["prompt"]); dur = clip_len(au["prompt"])
+        cues["prompt"] = ({k: round(v / dur, 3) for k, v in pa.items()} if pa and dur else
+                          {"a": frac(au["prompt"], str(a)), "b": frac(au["prompt"], str(b), after="में से")})
     if "order" in au:
         cues["order"] = {"o": frac(au["order"], "इकाई"), "t": frac(au["order"], "दहाई")}
     eqs = {}

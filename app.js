@@ -2359,7 +2359,7 @@ const PVModules = {
         /* the ten: brought in on "हम 1 दहाई को यहाँ लाएँगे", opened on "तोड़ेंगे" */
         const co = CU.open || { bring: .3, split: .55 };
         let opening = null;
-        await C.cue("open", [[co.o, bO], [co.bring, ()=>{ opening = K.bringTen(C, TA); }],
+        await C.cue("open", [[co.o, ()=>{ bO(); K.lightDigit(E.a, "o", true, 1100); }],   // (user 2026-11-18: "शून्य इकाई" - 30's 0 lights too) [co.bring, ()=>{ opening = K.bringTen(C, TA); }],
                              [co.split, ()=>{ opening = (opening || K.bringTen(C, TA)).then(()=> C.alive() && K.splitTen(C, TA)); }]]);
         if(opening) await opening; C.guard();
         if(TA.laneRod) await K.splitTen(C, TA);
@@ -2600,7 +2600,9 @@ const PVModules = {
         await C.wait(300);
         if(!pad){
           await K.mcq(C, { options: d.options, answer: diff, y: Y0, reask: "prompt",
-            onReady: M =>{ M.open(); C.say("prompt").then(()=> M.ready(), ()=>{}); },
+            onReady: M =>{ M.open(); const cp = CU.prompt || {}, lit = e =>{ [E.a, E.b].forEach(x => x.classList.remove("pv-lit")); e.classList.add("pv-lit");
+                clearTimeout(e._litT); e._litT = setTimeout(()=> e.classList.remove("pv-lit"), 1100); };   // (user 2026-11-18, as File6: each lit 1.1s as the question says it - not on the idle reminder)
+              C.cue("prompt", [[cp.a, ()=> lit(E.a)], [cp.b, ()=> lit(E.b)]]).then(()=> M.ready(), ()=>{}); },
             onRight: o => K.flyToQ(C, o, E),
             sayCorrect: (CU.eqs || {}).correct ? ()=> K.eqSyncAt(C, E, "correct", CU.eqs.correct, CU.eqs) : null,
             ladder: async (n, M)=>{

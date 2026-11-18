@@ -246,3 +246,10 @@ Verified, muted (`--mute-audio`): T3's opened ten - all 10 cubes inside the ring
 |---|---|---|
 | «… X दहाई और Y इकाई …»: the ones digit stayed highlighted for seconds (the tens digit was fine) | ✅ | The tens digit went off as the ones digit lit, but the ones digit stayed on to the end of the line (and 0.7s after a step line). `lightDigit(card, which, on, ms)`: the ones digit (and each digit a step line lights) is now on for 1.1s - as long as the tens digit is. Measured on T2: tens 1.13s, ones 1.10s |
 «5 इकाई में से 6 इकाई नहीं घटाई जा सकती» too (user 2026-11-18): the 5 lights 1.1s on «5 इकाई», then the 6 for 1.1s on «6 इकाई» (they stayed lit through the whole line).
+
+## As File6's fixes of 2026-11-18 (the numbers said as words, the question's numbers)
+| From File6 | Here | How it is built |
+|---|---|---|
+| P4 / P5: the question's numbers light as it is said, only at the start | ✅ | P3 / P4 here: «84 में से 46 घटाइए …» lights 84 then 46 (each 1.1s; measured 0.28s / 1.36s), «91 में से 14 …» 91 then 14 (0.28s / 1.44s); the 7s reminder says it without lights (`PROMPT_AT`) |
+| A digit said as a word («शून्य इकाई») lights too | ✅ | T4 «यहाँ शून्य इकाई हैं …»: 30's 0 lights (1.1s) as the ones column beats. The other step lines here say their digits as numerals, so they already light |
+Verified in the browser (on/off logged): P3 84 → 46, P4 91 → 14, T4 0 at «शून्य इकाई»; 0 console errors.
