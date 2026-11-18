@@ -1097,8 +1097,9 @@ const PVK = (function(){
     const e = add(sc, "div", "pv-num " + (cls || ""), "height:" + px(h) + ";font-size:" + px(h * .7) + ";min-width:" + px(h * 1.55) + ";border-radius:" + px(h * .28));
     e.innerHTML = n == null ? "?" : numHTML(n); setXY(e, cx, y); e._n = n; return e;
   }
-  const lightDigit = (card, which, on)=>{ if(!card) return; const d = card.querySelector(which === "t" ? ".pv-dt" : ".pv-do");
-    if(d) d.classList.toggle(which === "t" ? "hl-t" : "hl-o", on !== false); };
+  const lightDigit = (card, which, on, ms)=>{ if(!card) return; const d = card.querySelector(which === "t" ? ".pv-dt" : ".pv-do");   // (ms: lit that long only - the ones digit stayed on to the line's end, user 2026-11-18)
+    if(!d) return; clearTimeout(d._hlT); d.classList.toggle(which === "t" ? "hl-t" : "hl-o", on !== false);
+    if(on !== false && ms) d._hlT = setTimeout(()=> d.classList.remove(which === "t" ? "hl-t" : "hl-o"), ms); };
   /* the equation row "a + b = ?" (one flex row, centred on cx) */
   /* ---- a dotted outline (the ten's ring, the drop target) with ONE dot missing: the gap travels round the shape a dot at a
      time while the dots stay put (review 2026-10-14). An SVG rect over the box: w x h its size, sw the line, r the corner,
@@ -2083,7 +2084,7 @@ const pvTable = (sc, L, cx, y, tensMax)=> PVK.table(sc, { cx, y, cube: L.cube, b
    cues <role>_dg: [[fraction, "a" | "b", "t" | "o"], ...], one digit at a time; all off at the line's end). Returns cues + off. */
 function pvDigLights(E, list){
   const off = ()=> [E.a, E.b].forEach(c =>{ if(c){ PVK.lightDigit(c, "t", false); PVK.lightDigit(c, "o", false); } });
-  return { cues: (list || []).map(([f, w, p])=> [f, ()=>{ off(); if(E[w]) PVK.lightDigit(E[w], p); }]), off };
+  return { cues: (list || []).map(([f, w, p])=> [f, ()=>{ off(); if(E[w]) PVK.lightDigit(E[w], p, true, 1100); }]), off };
 }
 /* C.cue(role) with the role's digit lights (cues <role>_dg) added to its own cues */
 function pvCueDg(C, E, CU, role, own){
@@ -2315,7 +2316,7 @@ const PVModules = {
         const late = role === "sub"; [E.eq, E.q].forEach(e => e.style.display = late ? "none" : "");
         const cs = CU[role] || { a: .12, op: .2, b: .3, q: .4 };
         await C.cue(role, [[cs.a, ()=> inn(E.a)], [cs.op, ()=> inn(E.op)], [cs.b, ()=> inn(E.b)], ...(late ? [] : [[cs.q, ()=> inn(E.eq, E.q)]]),
-                           [cs.t, ()=>{ K.lightDigit(E.b, "t"); K.beatHead(TA, "t"); }], [cs.o, ()=>{ K.lightDigit(E.b, "t", false); K.lightDigit(E.b, "o"); K.beatHead(TA, "o"); }]]);
+                           [cs.t, ()=>{ K.lightDigit(E.b, "t"); K.beatHead(TA, "t"); }], [cs.o, ()=>{ K.lightDigit(E.b, "t", false); K.lightDigit(E.b, "o", true, 1100); K.beatHead(TA, "o"); }]]);
         (late ? [E.a, E.op, E.b] : eqP).forEach(e => K.show(e)); K.lightDigit(E.b, "t", false); K.lightDigit(E.b, "o", false); };
       const growEq = ()=>{ if(E.q.style.display !== "none") return; const keep = [E.a, E.op, E.b], sc0 = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--scale")) || 1;
         const x0 = keep.map(e => e.getBoundingClientRect().left);
@@ -2334,7 +2335,7 @@ const PVModules = {
         if(d.demo) [src.t, src.o].forEach(g => g.classList.add("demo", "off"));
         const cd = CU.digits || { t: .3, o: .6 };
         await C.cue("digits", [[cd.t, ()=>{ K.lightDigit(card, "t"); K.beatCol(TA, "t"); }],
-                               [cd.o, ()=>{ K.lightDigit(card, "t", false); K.lightDigit(card, "o"); K.beatCol(TA, "o"); }]]);
+                               [cd.o, ()=>{ K.lightDigit(card, "t", false); K.lightDigit(card, "o", true, 1100); K.beatCol(TA, "o"); }]]);
         await C.wait(200); K.lightDigit(card, "o", false);
         src.show(); await C.wait(450);                                       // (user 2026-11-18: the + buttons only now, to add the blocks)
         if(d.demo){
@@ -2490,7 +2491,7 @@ const PVModules = {
           const src = K.sources(sc, TA, TA.y + TA.H + 14), cb = CU.build || { t: .62, o: .82 };
           /* "…जिसमें 3 दहाई और 4 इकाई होते हैं": the rod + pops on "3 दहाई", the cube + on "4 इकाई" (SME review 3) */
           await C.cue("build", [[cb.t, ()=>{ K.lightDigit(E.a, "t"); K.beatCol(TA, "t"); }],
-                                [cb.o, ()=>{ K.lightDigit(E.a, "t", false); K.lightDigit(E.a, "o"); K.beatCol(TA, "o"); }]]);
+                                [cb.o, ()=>{ K.lightDigit(E.a, "t", false); K.lightDigit(E.a, "o", true, 1100); K.beatCol(TA, "o"); }]]);
           K.lightDigit(E.a, "o", false);
           src.show(); await C.wait(400);                                     // (user 2026-11-18: the + buttons only now, to add the blocks)
           await K.childBuild(C, TA, d.a, src); C.guard();
@@ -2501,7 +2502,7 @@ const PVModules = {
         let cfg = { to, settle: 1100, onesFirst: true, sayStep: !d.steps };   // (every page: only the ones can be tapped until they are done - SME review 4)
         if(C.has("sub")){ const c = CU.sub || { b: .05, t: .6, o: .82 };
           await C.cue("sub", [...(c.this != null ? [[c.this, ()=> K.hlTable(TA)]] : []), [c.b, ()=> K.pop(E.b)],
-                              [c.t, ()=>{ K.lightDigit(E.b, "t"); K.beatHead(TA, "t"); }], [c.o, ()=>{ K.lightDigit(E.b, "t", false); K.lightDigit(E.b, "o"); K.beatHead(TA, "o"); }]]); }
+                              [c.t, ()=>{ K.lightDigit(E.b, "t"); K.beatHead(TA, "t"); }], [c.o, ()=>{ K.lightDigit(E.b, "t", false); K.lightDigit(E.b, "o", true, 1100); K.beatHead(TA, "o"); }]]); }
         K.lightDigit(E.b, "o", false);
         const sweepO = ()=> K.beatCol(TA, "o"), sweepT = ()=> K.beatCol(TA, "t");
         /* S02 - the ones are too few: the child opens a ten first (taps a rod: it comes into the इकाई column and opens into

@@ -240,3 +240,9 @@ Verified: every page (T1-T4, G1-G3, P1-P4) run through, right and wrong paths; 0
 |---|---|---|---|
 | 1 | "when we break the rod the group border made is smaller than actual group so fix it" | ✅ | the dashed ring round the opened ten (`app.js` `ring`) was sized with the old gap between cubes (`g`); the ones now stand further apart (`og`, from File6's 2026-11-17 change), so the ring held only 4 of each row's 5. It is sized with `og` now (the table keeps `og` beside `g`) |
 Verified, muted (`--mute-audio`): T3's opened ten - all 10 cubes inside the ring, an even ~5.6 px margin on every side; 0 console errors. Cache stamp `?v=20261118b`.
+
+## The ones digit lit too long — 2026-11-18
+| Asked | Status | How it is built |
+|---|---|---|
+| «… X दहाई और Y इकाई …»: the ones digit stayed highlighted for seconds (the tens digit was fine) | ✅ | The tens digit went off as the ones digit lit, but the ones digit stayed on to the end of the line (and 0.7s after a step line). `lightDigit(card, which, on, ms)`: the ones digit (and each digit a step line lights) is now on for 1.1s - as long as the tens digit is. Measured on T2: tens 1.13s, ones 1.10s |
+File7 only: «5 इकाई में से 6 इकाई नहीं घटाई जा सकती» keeps both digits lit through its line (by design, 2026-10-27)
