@@ -2843,6 +2843,7 @@ const PVLanding = {
         let sp = fs * .28; { const m = document.createElementNS(NS, "text"); m.setAttribute("class", "sgw-t"); all.appendChild(m);
           m.textContent = "क क"; const two = m.getComputedTextLength(); m.textContent = "कक"; const one = m.getComputedTextLength(); m.remove();
           if(two > one) sp = two - one; }
+        sp += fs * .12;   // (user 2026-11-19: "increase little space between the words of title" - the font's space + .12em)
         const total = wd.reduce((a, b)=> a + b, 0) + sp * (wd.length - 1);   // (the straight line's length)
         /* where each word stands: [x of its centre, y of its baseline, turn]. S03's pattern - the middle word level at the top of the arch,
            the outer words turned out by the same angle - here with the words' own lengths (संख्याओं is three times का): the middle word
