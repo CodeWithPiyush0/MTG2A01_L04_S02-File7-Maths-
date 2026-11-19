@@ -1799,11 +1799,12 @@ Object.assign(PVK, (function(){
   /* SME review 5 (2026-10-26): the 7s inactivity reminder - after 7s with no action the step's own line ("अब दहाई बनाइए।",
      "अब इकाई हटाइए।" ...), said again every 7s while the child stays idle; any action restarts the 7s; never over another
      voice (it waits for a quiet moment). pick() -> the clip id for now, or null (nothing to remind of right now) */
-  function idleVo(C, pick){
+  function idleVo(C, pick, onPlay){
     let t = 0, on = true;
     const arm = ()=>{ clearTimeout(t); if(!on) return;
       t = setTimeout(()=>{ if(!on || !C.alive()) return; const id = pick();
         if(!id || isPlaying){ arm(); return; }
+        if(onPlay) onPlay(id);                                             // (the ghost ten keeps time with its words - SME review 2026-11-19)
         play("assets/voiceover/" + id + "." + AUDIO_EXT, ()=>{ if(on && C.alive()) arm(); }); }, IDLE_MS); };
     return { arm, stop(){ on = false; clearTimeout(t); } };
   }
@@ -2034,6 +2035,30 @@ Object.assign(PVK, (function(){
     GameBus.emit("pv_ten_opened", { slide_id: C.slide.id });
     await wait(300);
   }
+  /* SME review 2026-11-19 (G1-G3): "when the VO says «1 दहाई को यहाँ लाइए» show the ghost animation of a tens rod, and then break it
+     into 10 unit blocks with the same ghost" - a see-through copy of the last rod glides into the इकाई column, to where a brought ten
+     stands (the cubes there make room, as for a real one), breaks into ten see-through cubes, and fades; the cubes go back. The real
+     rods stay where they are: the child opens one after. -> { done, stop } - stop() (the child taps a rod) clears it at once. */
+  function ghostTen(C, T){
+    const rod = left(T, "t").slice(-1)[0], els = []; let over = false;
+    const stop = ()=>{ if(over) return; over = true; els.forEach(e =>{ e.classList.add("pv-gone"); setTimeout(()=> e.remove(), 450); });
+      if(T.laneRod && T.laneRod._ghost){ T.laneRod = null; if(C.alive()) T.relayout(420); } };
+    if(!rod || T.laneRod || !C.alive()) return { done: Promise.resolve(), stop };
+    const g = K.block(T.sc, "t", rod._x, rod._y, T.rH); g.classList.add("pv-ghostdrag"); g._ghost = true; els.push(g);
+    const done = (async ()=>{
+      T.laneRod = g; PVSFX.move(); T.relayout(560, g);
+      const q = T.onesBox(T.cubes.length, true);
+      await glide(g, { x: q.rx, y: q.ry }, 760, true); if(over || !C.alive()) return stop();
+      await wait(160); if(over || !C.alive()) return stop();
+      /* it breaks: ten cubes where it stood, which then stand a little apart - one by one */
+      const unit = T.G * K.CUBE.pitch, mid = g._y + 4.5 * unit, ten = [];
+      for(let j = 0; j < 10; j++){ const c = K.block(T.sc, "o", g._x, g._y + (9 - j) * unit, T.G); c.classList.add("pv-ghostdrag"); els.push(c); ten.push(c); }
+      g.classList.add("pv-gone"); PVSFX.magic();
+      await Promise.all(ten.map((c, j)=> wait(j * 35).then(()=> glide(c, { x: c._x, y: mid + (4.5 - j) * (unit + 4) - unit / 2 }, 320, false))));
+      await wait(900); stop(); await wait(450);
+    })();
+    return { done, stop };
+  }
   /* the game opens a ten by itself (the help's blocks, a demo without cues) */
   async function openTen(C, T){ await bringTen(C, T); C.guard(); await wait(200); await splitTen(C, T); C.guard(); }
   /* the CHILD opens a ten (user 2026-10-26): every rod pulses and is tappable; the one tapped comes into the इकाई column and
@@ -2042,13 +2067,15 @@ Object.assign(PVK, (function(){
   function openChild(C, T, cfg){
     cfg = cfg || {};
     return new Promise(res =>{
-      const rods = left(T, "t"); let idleT = 0, fin = false;
+      const rods = left(T, "t"); let idleT = 0, fin = false, gh = null;
       (C.waits = C.waits || []).push({ live: ()=> !fin, busy: ()=> false });   // [QA BUG_09] waiting for the child: the speaker may replay
-      const vo = idleVo(C, ()=> fin ? null : "vo_idle_open");
+      /* cfg.ghostAt (s): the reminder "अब 1 दहाई को इकाई में लाइए।" brings the ghost ten on its "1 दहाई" (SME review 2026-11-19, G1-G3) */
+      const vo = idleVo(C, ()=> fin ? null : "vo_idle_open",
+                        cfg.ghostAt != null ? ()=> setTimeout(()=>{ if(!fin && C.alive() && !gh){ const g = gh = ghostTen(C, T); g.done.then(()=>{ if(gh === g) gh = null; }); } }, cfg.ghostAt * 1000) : null);
       const arm = ()=>{ clearTimeout(idleT); idleT = setTimeout(()=>{ if(!C.alive() || fin) return;
         rods.forEach(r => K.repulse(r)); placeNudge(rods[rods.length - 1]); arm(); }, cfg.idle || IDLE_MS); };   // (the hand on inactivity on every page - user 2026-11-18)
       rods.forEach(r =>{ r.classList.add("pv-tap", "pulse");
-        r.onclick = async ()=>{ if(fin || !C.alive()) return; fin = true; clearTimeout(idleT); vo.stop(); stopNudge(); PVSFX.tap();
+        r.onclick = async ()=>{ if(fin || !C.alive()) return; fin = true; clearTimeout(idleT); vo.stop(); stopNudge(); PVSFX.tap(); if(gh) gh.stop();
           rods.forEach(x =>{ x.onclick = null; x.classList.remove("pv-tap", "pulse"); });
           try{ await bringTen(C, T, r); C.guard(); await wait(200); await splitTen(C, T); C.guard(); res(); }catch(e){ if(e !== C.STOP) console.error(e); } };
       });
@@ -2057,7 +2084,7 @@ Object.assign(PVK, (function(){
   }
 
   return { headCount, liveHeads, dropBlock, beat, beatCol, beatHead, popTable, hlTable, sparkles, sources, demoAdd, childBuild, takeAway, putBack, demoRemove, removeChild, copyLeft,
-           eqSync, eqSyncAt, lightCues, left, bringTen, splitTen, openTen, openChild };
+           eqSync, eqSyncAt, lightCues, left, bringTen, splitTen, openTen, openChild, ghostTen };
 })());
 
 const PV_LAY = {
@@ -2180,7 +2207,7 @@ const PVModules = {
       K.run(C, async ()=>{
         await C.wait(250);
         if(C.has("head")) await C.say("head");
-        await C.cue("a", S.names(CU, "a", [[0.02, ()=>{ K.show(pA); gA.all().forEach((x, i)=> setTimeout(()=>{ if(C.alive()){ K.show(x); if(i % 3 === 0) PVSFX.appear(); } }, 120 + i * 45)); }],
+        await C.cue("a", S.names(CU, "a", [[cb.who != null ? cb.who : 0.02, ()=>{ K.show(pA); gA.all().forEach((x, i)=> setTimeout(()=>{ if(C.alive()){ K.show(x); if(i % 3 === 0) PVSFX.appear(); } }, 120 + i * 45)); }],
                           [cb.a != null ? cb.a : 0.6, ()=> inn(cA)]]));
         await C.cue("b", S.names(CU, "b", [[0.02, ()=>{ K.show(pB); }], [cb.op != null ? cb.op : 0.1, ()=> inn(minus)],
                           [cb.b != null ? cb.b : 0.25, ()=>inn(cB)]]));
@@ -2363,7 +2390,8 @@ const PVModules = {
         /* "5 इकाई में से 6 इकाई नहीं घटाई जा सकती…": the 5 of 25 lights on "5 इकाई", the 6 on "6 इकाई" - each for 1.1s as it is said (user 2026-11-18; they used to stay lit through the
            line (user 2026-10-27) */
         if(C.has("cant")){ const c = CU.cant || { o: .05, b: .25 };
-          await C.cue("cant", [[c.o, ()=>{ K.lightDigit(E.a, "o", true, 1100); bO(); }], [c.b, ()=>{ K.lightDigit(E.a, "o", false); K.lightDigit(E.b, "o", true, 1100); }]]);   // (each lit as it is said, 1.1s - user 2026-11-18; they stayed lit through the line)
+          await C.cue("cant", [[c.o, ()=>{ K.lightDigit(E.a, "o", true, 1100); bO(); }], [c.b, ()=>{ K.lightDigit(E.a, "o", false); K.lightDigit(E.b, "o", true, 1100); }],
+                               [c.big, ()=>{ K.lightDigit(E.a, "o", false); K.lightDigit(E.b, "o", true, 1100); }], [c.small, ()=>{ K.lightDigit(E.b, "o", false); K.lightDigit(E.a, "o", true, 1100); }]]);   // (SME review 2026-11-19: "…संख्या 6 बड़ी है और 5 छोटी।" - each number lights as it is said)   // (each lit as it is said, 1.1s - user 2026-11-18; they stayed lit through the line)
           K.lightDigit(E.a, "o", false); K.lightDigit(E.b, "o", false); }
         /* the ten: brought in on "हम 1 दहाई को यहाँ लाएँगे", opened on "तोड़ेंगे" */
         const co = CU.open || { bring: .3, split: .55 };
@@ -2501,7 +2529,7 @@ const PVModules = {
           /* "…जिसमें 3 दहाई और 4 इकाई होते हैं": the rod + pops on "3 दहाई", the cube + on "4 इकाई" (SME review 3) */
           await C.cue("build", [[cb.t, ()=>{ K.lightDigit(E.a, "t"); K.beatCol(TA, "t"); }],
                                 [cb.o, ()=>{ K.lightDigit(E.a, "t", false); K.lightDigit(E.a, "o", true, 1100); K.beatCol(TA, "o"); }]]);
-          K.lightDigit(E.a, "o", false);
+          K.lightDigit(E.a, "t", false); K.lightDigit(E.a, "o", false);      // (G2 "पहले 53 बनाइए।" lights no ones - SME review 2026-11-19)
           src.show(); await C.wait(400);                                     // (user 2026-11-18: the + buttons only now, to add the blocks)
           await K.childBuild(C, TA, d.a, src); C.guard();
           GameBus.emit("pv_build_done", { slide_id: slide.id });
@@ -2517,8 +2545,10 @@ const PVModules = {
         /* S02 - the ones are too few: the child opens a ten first (taps a rod: it comes into the इकाई column and opens into
            ten cubes). G1 says why ("2 इकाई में से 7 इकाई नहीं घटाई जा सकती। तो आप 1 दहाई को यहाँ लाइए।") and what it became */
         if(A.o < B.o){
-          if(C.has("regroup")){ const c = CU.regroup || {}; await C.cue("regroup", [[c.o, sweepO], [c.t, sweepT]]); }
-          await K.openChild(C, TA, {}); C.guard();
+          if(C.has("regroup")){ const c = CU.regroup || {}; let gh = null;
+            await C.cue("regroup", [[c.o, sweepO], [c.t, ()=>{ sweepT(); if(d.ghost_ten) gh = K.ghostTen(C, TA); }]]);   // (the ghost ten on "1 दहाई" - SME review 2026-11-19)
+            if(gh) await gh.done; C.guard(); }
+          await K.openChild(C, TA, { ghostAt: d.ghost_ten && CU.idle_open ? CU.idle_open.t : null }); C.guard();
           if(C.has("opened")) await C.say("opened");
           if(C.has("ones_now")) await C.cue("ones_now", [[(CU.ones_now || { o: .5 }).o, sweepO]]);
         }
@@ -3634,9 +3664,8 @@ const ASSET_SIZES = {
   "assets/voiceover/vo_ask_pick.ogg": 13653,
   "assets/voiceover/vo_cel.ogg": 14073,
   "assets/voiceover/vo_g1_build.ogg": 25412,
-  "assets/voiceover/vo_g1_correct.ogg": 33538,
-  "assets/voiceover/vo_g1_correct_late.ogg": 29934,
-  "assets/voiceover/vo_g1_eq.ogg": 16606,
+  "assets/voiceover/vo_g1_correct.ogg": 19757,
+  "assets/voiceover/vo_g1_correct_late.ogg": 15225,
   "assets/voiceover/vo_g1_h2.ogg": 24216,
   "assets/voiceover/vo_g1_ones_left.ogg": 19341,
   "assets/voiceover/vo_g1_ones_now.ogg": 8712,
@@ -3687,7 +3716,7 @@ const ASSET_SIZES = {
   "assets/voiceover/vo_p1_reveal.ogg": 21989,
   "assets/voiceover/vo_p1_rm_ones.ogg": 15294,
   "assets/voiceover/vo_p1_rm_tens.ogg": 6643,
-  "assets/voiceover/vo_p1_sub.ogg": 9473,
+  "assets/voiceover/vo_p1_sub.ogg": 9720,
   "assets/voiceover/vo_p2_correct.ogg": 23073,
   "assets/voiceover/vo_p2_correct_late.ogg": 15746,
   "assets/voiceover/vo_p2_h2.ogg": 21528,
@@ -3695,7 +3724,7 @@ const ASSET_SIZES = {
   "assets/voiceover/vo_p2_reveal.ogg": 21834,
   "assets/voiceover/vo_p2_rm_ones.ogg": 6196,
   "assets/voiceover/vo_p2_rm_tens.ogg": 6493,
-  "assets/voiceover/vo_p2_sub.ogg": 9315,
+  "assets/voiceover/vo_p2_sub.ogg": 9131,
   "assets/voiceover/vo_p3_correct.ogg": 28532,
   "assets/voiceover/vo_p3_correct_late.ogg": 18040,
   "assets/voiceover/vo_p3_h2.ogg": 24908,

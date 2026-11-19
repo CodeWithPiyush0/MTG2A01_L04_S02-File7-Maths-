@@ -153,9 +153,9 @@ slides.append(pv_sub("G1", "guided", 42, 27, {
     "rm_tens": vo("vo_g1_rm_tens", "अब दहाइयाँ घटाइए। 3 दहाई में से 2 दहाई हटाइए।"),
     "ask": ASK_PICK, "recount": RECOUNT, "h2": vo("vo_g1_h2", "42 में से 27 घटाने पर, 1 दहाई और 5 इकाई बचती हैं।"),
     "reveal": vo("vo_g1_reveal", "42 में से 27 घटाने पर 15 बचता है। तो सही संख्या यह है।"),
-    "correct": vo("vo_g1_correct", "शाबाश! 42 में से 27 घटाने पर हमें मिलीं 1 दहाई और 5 इकाई, यानी 15।"),
-    "eq": vo("vo_g1_eq", "इसलिए 42 घटा 27 बराबर 15।")},
-    answer="mcq", options=[15, 6, 105], extra_data={"reveal_hand": True}))
+    # SME review 2026-11-19: "remove vo_g1_eq, update vo_g1_correct" - the new take says the equation (as G2 / G3)
+    "correct": vo("vo_g1_correct", "शाबाश! 42 घटा 27 बराबर 15।")},
+    answer="mcq", options=[15, 6, 105], extra_data={"reveal_hand": True, "ghost_ten": True}))
 
 # deck page 6 - 53 − 14 (39 / 12 / 93)
 slides.append(pv_sub("G2", "guided", 53, 14, {
@@ -167,7 +167,7 @@ slides.append(pv_sub("G2", "guided", 53, 14, {
     "ask": ASK_PICK, "recount": RECOUNT, "h2": vo("vo_g2_h2", "53 में से 14 घटाने पर, 3 दहाई और 9 इकाई बचती हैं।"),
     "reveal": vo("vo_g2_reveal", "53 में से 14 घटाने पर 39 बचता है। तो सही संख्या यह है।"),
     "correct": vo("vo_g2_correct", "शाबाश! 53 घटा 14 बराबर 39।")},
-    answer="mcq", options=[39, 12, 93], extra_data={"reveal_hand": True}))
+    answer="mcq", options=[39, 12, 93], extra_data={"reveal_hand": True, "ghost_ten": True}))
 
 # deck page 7 - 46 − 28 (18 / 9 / 81)
 slides.append(pv_sub("G3", "guided", 46, 28, {
@@ -178,12 +178,12 @@ slides.append(pv_sub("G3", "guided", 46, 28, {
     "ask": ASK_PICK, "recount": RECOUNT, "h2": vo("vo_g3_h2", "46 में से 28 घटाने पर, 1 दहाई और 8 इकाई बचती हैं।"),
     "reveal": vo("vo_g3_reveal", "46 में से 28 घटाने पर 18 बचता है। तो सही संख्या यह है।"),
     "correct": vo("vo_g3_correct", "शाबाश! 46 घटा 28 बराबर 18।")},
-    answer="mcq", options=[18, 9, 81], extra_data={"reveal_hand": True}, build=False))
+    answer="mcq", options=[18, 9, 81], extra_data={"reveal_hand": True, "ghost_ten": True}, build=False))
 
 # deck page 8 - 74 − 58, the answer typed on the number pad (16)
 slides.append(pv_sub("P1", "practice", 74, 58, {
     "prompt": vo("vo_p1_prompt", "74 में से 58 घटाइए।"),
-    "sub": vo("vo_p1_sub", "और अब इसमें से 58 घटाते हैं।"),
+    "sub": vo("vo_p1_sub", "इसमें से 58 घटाइए।"),   # (SME review 2026-11-19: the new take)
     "rm_ones": vo("vo_p1_rm_ones", "14 इकाई में से 8 इकाई हटाइए।"),
     "rm_tens": vo("vo_p1_rm_tens", "अब दहाइयाँ घटाइए।"),
     "ask": ASK_PAD, "recount": RECOUNT, "h2": vo("vo_p1_h2", "74 में से 58 घटाने पर, 1 दहाई और 6 इकाई बचती हैं।"),
@@ -194,7 +194,7 @@ slides.append(pv_sub("P1", "practice", 74, 58, {
 # deck page 9 - 61 − 35, number pad (26)
 slides.append(pv_sub("P2", "practice", 61, 35, {
     "prompt": vo("vo_p2_prompt", "61 में से 35 घटाइए।"),
-    "sub": vo("vo_p2_sub", "और अब इसमें से 35 घटाते हैं।"),
+    "sub": vo("vo_p2_sub", "इसमें से 35 घटाइए।"),   # (SME review 2026-11-19: the new take)
     "rm_ones": vo("vo_p2_rm_ones", "इकाई हटाइए।"),
     "rm_tens": vo("vo_p2_rm_tens", "अब दहाइयाँ हटाइए।"),
     "ask": ASK_PAD, "recount": RECOUNT, "h2": vo("vo_p2_h2", "61 में से 35 घटाने पर, 2 दहाई और 6 इकाई बचती हैं।"),
@@ -386,7 +386,10 @@ for sl in slides:
     if sl["type"] == "PV_SUB" and "build" in au:
         tx = VO[au["build"]]
         cues["build"] = ({"t": frac(au["build"], f"{at} दहाई"), "o": frac(au["build"], f"{ao} इकाई")} if "दहाई" in tx
-                         else {"t": frac(au["build"], str(a)), "o": min(.95, frac(au["build"], str(a)) + .1)})
+                         else {"t": frac(au["build"], str(a))})   # (SME review 2026-11-19, G2 "पहले 53 बनाइए।": the 3 and the इकाई no longer light)
+    if d.get("ghost_ten"):   # SME review 2026-11-19 (G1-G3): the ghost ten glides in on "1 दहाई" of the 7s reminder (s into the clip)
+        _il = clip_len("vo_idle_open")
+        cues["idle_open"] = {"t": round(frac("vo_idle_open", "1 दहाई") * _il, 2) if _il else .6}
     if sl["type"] == "PV_SUB":
         tx = VO[au["sub"]]; c = {"b": frac(au["sub"], str(b))}
         if "दहाई" in tx:
@@ -410,6 +413,9 @@ for sl in slides:
         wa, wb = d["words"]["a"], d["words"]["b"]
         cues["build"] = {"a": frac(au["a"], wa), "op": frac(au["b"], "उनमें से"), "b": frac(au["b"], wb), "eq": frac(au["ask"], "कितने"),
                          "q": frac(au["ask"], "बचे")}
+        giver = next(w for w, who in CAST.items() if who == d["people"][0]["who"])
+        if not VO[au["a"]].startswith(giver):   # (SME review 2026-11-19, T3: Madhav and his blocks come in on «माधव के पास…», not with «आइए…»)
+            cues["build"]["who"] = frac(au["a"], giver)
     # user 2026-11-18 (as File6): a step line that names a column of a or b ("इन 15 इकाई में से 6 इकाई …") lights that digit of
     # the equation as it is said: <role>_dg
     for role in ("rm_ones", "rm_tens", "ones_left", "tens_left"):
@@ -449,6 +455,9 @@ for sl in slides:
             c["sub"]["o"] = frac(au["sub"], f"{bo} इकाई", after="घटाते")
         if "cant" in au:   # "5 इकाई में से 6 इकाई नहीं…": the 5 of 25, then the 6 light in the equation (user 2026-10-27)
             c["cant"] = {"o": frac(au["cant"], f"{ao} इकाई"), "b": frac(au["cant"], f"{bo} इकाई", after="में से")}
+            ct = VO[au["cant"]]   # (SME review 2026-11-19: "…संख्या 6 बड़ी है और 5 छोटी।" - the numbers light as they are said)
+            if f"संख्या {bo}" in ct and f"{ao} छोटी" in ct:
+                c["cant"].update({"big": frac(au["cant"], f"{bo} बड़ी"), "small": frac(au["cant"], f"{ao} छोटी")})
         ot = VO[au["open"]]
         c["open"] = {"o": frac(au["open"], "शून्य इकाई") if "शून्य इकाई" in ot else None,
                      "bring": frac(au["open"], "1 दहाई को"), "split": frac(au["open"], "तोड़ेंगे"),

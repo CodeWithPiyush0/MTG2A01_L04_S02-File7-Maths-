@@ -285,3 +285,17 @@ Verified: live and pulsing → speaker tapped: grey disc, a tap on it does nothi
 
 - User: "in the cover page increase little space between the words of title". The gap between the title's words is now the font's own space plus 0.12em (about 8px at the 64px title), in `app.js` (the arched title's `fit()`, `sp`). The arch and the title's place on the page are unchanged.
 - Cache version `?v=20261119a`.
+
+## SME feedback — 2026-11-19
+| # | Page | Asked (SME) | Status | How it is built |
+|---|---|---|---|---|
+| 1 | Global · G1, G2, G3 | "When VO says «1 दहाई को यहाँ लाइए / लाते हैं», show the ghost animation of a tens rod, and when it says «तोड़ते हैं» break it into 10 unit blocks, with the same ghost animation" | ✅ | `PVK.ghostTen` (`app.js`, flag `data.ghost_ten` on G1–G3): a see-through copy of the last rod glides into the इकाई column (the cubes there make room), breaks into ten see-through cubes, fades; the real rods stay and the child then taps one. G1: on «1 दहाई» of `vo_g1_regroup` (4.9 s). G1–G3: also with every 7 s reminder `vo_idle_open`, on its «1 दहाई» (`cues.idle_open`, s) — in G2 / G3 that reminder is the only line that says it. No G recording says «तोड़», so the ghost breaks as soon as it lands. A tap on a rod clears the ghost at once. |
+| 2 | T2 | "When VO plays «5 इकाइयों में से 6 इकाइयाँ नहीं घटाई जा सकती, चूँकि संख्या 6 बड़ी है और 5 छोटी।» number should highlight" | ✅ | 5 (of 25) on «5 इकाई», 6 on «6 इकाई» (as before), and now also the 6 on «6 बड़ी» and the 5 on «5 छोटी» (`cues.cant.big / small`, measured) |
+| 3 | T3 | "Madhav's image and blocks should not come first; they come in sync when VO says «माधव के पास 30 blocks हैं…»" | ✅ | the portrait and the blocks come in on «माधव» of `vo_t3s_a_madhav` (`cues.build.who`, 2.98 s), not with «आइए, एक और उदाहरण…». T1 unchanged (its line starts with the name) |
+| 4 | G1 | "Remove audio vo_g1_eq and update the audio vo_g1_correct" | ✅ | `vo_g1_eq` gone (card, clip, recording). New `vo_g1_correct` take: «शाबाश! 42 घटा 27 बराबर 15।» — its line text now says that, so 42, −, 27, =, 15 light on their words (as G2 / G3). `vo_g1_correct_late` (after a wrong answer) cut from the same new take, after «शाबाश!» |
+| 5 | G2 | "When VO plays «पहले 53 बनाइए।», 3 and इकाई are highlighting — remove it" | ✅ | the build cue keeps only the tens light on «53»; the 3 and the इकाई column no longer light |
+| 6 | P1 | "Update the audio vo_p1_sub" | ✅ | new take «इसमें से 58 घटाइए।» (line text matched) |
+| 7 | P2 | "Update the audio vo_p2_sub" | ✅ | new take «इसमें से 35 घटाइए।» (line text matched) |
+
+- New recordings from `assets/voiceover/new/` are in `vo_source/recorded/` (imported with `tools/import_vo.py`, as the rest); the replaced ones (mp3 + ogg) kept in `vo_source/_old_2026-11-19/`. Word times re-measured (`tools/vo_words.py`) for the four changed clips.
+- VO manifest regenerated (155 rows, 116 recordings); asset sizes regenerated; cache version `?v=20261119b`.
