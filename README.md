@@ -41,8 +41,11 @@ Deleted (deck): pages 12–16. Every problem needs a regroup (`tools/lessons.py`
 ## Rebuilding
 ```
 python tools/lessons.py          # card.json + tools/vo_script.json; embeds the card in index.html, copies MTG2A01_L04_S02.html
-python tools/build_vo.py         # renders any VO line not yet on disk (GEMINI_KEY in the environment; ffmpeg)
-python tools/lessons.py          # again after new VO: the cue times are measured from the clips
+python tools/import_vo.py        # recorded VO: vo_source/recorded/<id>.mp3 -> assets/voiceover/<id>.ogg (ends trimmed, 0.28s lead / 0.36s tail, -18.5 LUFS)
+python tools/build_vo.py         # TTS for any VO line not yet on disk (GEMINI_KEY in the environment; ffmpeg)
+python tools/vo_words.py         # after ANY VO change: when each word is said in each clip -> tools/vo_words.json (faster-whisper)
+python tools/lessons.py          # again after new VO: every cue is its word's measured time (vo_words.json)
+python tools/gen_vo_manifest.py  # lesson_vo_manifest.xlsx
 node tools/gen_asset_sizes.js    # the preload manifest - after ANY asset change
 ```
 The key in `.env` is named `GKEY`: `set -a; . ./.env; set +a; export GEMINI_KEY=$GKEY`.

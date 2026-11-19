@@ -258,73 +258,89 @@ def weight(t):
     return len(re.sub(r"[।,.!?—]", "oo", t))
 
 
+# when each word is said in each clip (s), measured on the recordings by tools/vo_words.py (user 2026-11-18: the new, shorter
+# recordings): a cue is the time its word starts. The line's words are lined up with the heard ones (their consonants
+# compared, a number as its Hindi word); a word not lined up takes the end of the one before it.
+_VW = os.path.join(HERE, "vo_words.json")
+WORDS = json.load(open(_VW, encoding="utf-8")) if os.path.exists(_VW) else {}
+NUM_HI = ("शून्य एक दो तीन चार पाँच छह सात आठ नौ दस ग्यारह बारह तेरह चौदह पंद्रह सोलह सत्रह अठारह उन्नीस बीस इक्कीस बाईस तेईस "
+          "चौबीस पच्चीस छब्बीस सत्ताईस अट्ठाईस उनतीस तीस इकतीस बत्तीस तैंतीस चौंतीस पैंतीस छत्तीस सैंतीस अड़तीस उनतालीस चालीस "
+          "इकतालीस बयालीस तैंतालीस चवालीस पैंतालीस छियालीस सैंतालीस अड़तालीस उनचास पचास इक्यावन बावन तिरपन चौवन पचपन छप्पन "
+          "सत्तावन अट्ठावन उनसठ साठ इकसठ बासठ तिरसठ चौंसठ पैंसठ छियासठ सड़सठ अड़सठ उनहत्तर सत्तर इकहत्तर बहत्तर तिहत्तर चौहत्तर "
+          "पचहत्तर छिहत्तर सतहत्तर अठहत्तर उनासी अस्सी इक्यासी बयासी तिरासी चौरासी पचासी छियासी सत्तासी अठासी नवासी नब्बे "
+          "इक्यानवे बानवे तिरानवे चौरानवे पचानवे छियानवे सत्तानवे अट्ठानवे निन्यानवे").split()
+_PLAIN = str.maketrans("घखठथधफभछझढवशषऋ", "गकटतदपबचजडबससर")   # (ड़ / ढ़: the nukta is dropped first)
+
+
+def _skel(w):
+    """a word's consonants, aspiration and nukta dropped (what the ear and the recogniser agree on)"""
+    w = re.sub(r"\d+", lambda m: NUM_HI[int(m.group())] if int(m.group()) < 100 else m.group(), w)
+    w = w.replace("़", "").translate(_PLAIN)
+    return "".join(c for c in w if "क" <= c <= "ह") or w
+
+
+def _aligned(cid):
+    """[(char start, char end, time)] for each word of the line, its start in the clip (s), or None (no measured words)"""
+    heard = WORDS.get(cid)
+    if not heard:
+        return None
+    from difflib import SequenceMatcher
+    said = [(m.start(), m.end(), m.group()) for m in re.finditer(r"[^\s।,.!?—\-]+", VO[cid])]
+    A, B = [_skel(w) for *_, w in said], [_skel(w) for w, *_ in heard]
+    r = lambda x, y: SequenceMatcher(None, x, y).ratio() if x and y else 0
+    n, m = len(A), len(B); S = [[-1e9] * (m + 1) for _ in range(n + 1)]; G = -.15
+    # the moves: a word for a word; one word heard as two («खोलकर» -> «खोल» «कर»); two words heard as one («मैं हूँ» -> «मैहु»)
+    moves = lambda i, j: [(1, 1, r(A[i - 1], B[j - 1]) - .4)] + \
+        ([(1, 2, r(A[i - 1], B[j - 2] + B[j - 1]) - .4)] if j > 1 else []) + \
+        ([(2, 1, r(A[i - 2] + A[i - 1], B[j - 1]) - .4)] if i > 1 else [])
+    S[0][0] = 0
+    for i in range(n + 1):
+        for j in range(m + 1):
+            if i: S[i][j] = max(S[i][j], S[i - 1][j] + G)
+            if j: S[i][j] = max(S[i][j], S[i][j - 1] + G)
+            if i and j:
+                S[i][j] = max([S[i][j]] + [S[i - di][j - dj] + v for di, dj, v in moves(i, j)])
+    at = [None] * n; i, j = n, m
+    while i and j:
+        mv = next(((di, dj) for di, dj, v in moves(i, j) if abs(S[i][j] - S[i - di][j - dj] - v) < 1e-9), None)
+        if mv:
+            di, dj = mv
+            for k in range(di):
+                at[i - di + k] = j - dj                     # (both words of a merged pair start where it does)
+            i -= di; j -= dj
+        elif abs(S[i][j] - S[i - 1][j] - G) < 1e-9:
+            i -= 1
+        else:
+            j -= 1
+    out, last = [], heard[0][1]
+    for k, (a, b, _) in enumerate(said):
+        t = heard[at[k]][1] if at[k] is not None else last
+        out.append((a, b, t)); last = heard[at[k]][2] if at[k] is not None else t
+    return out
+
+
 def frac(cid, phrase, after=None):
     text = VO[cid]; i0 = text.index(after) + len(after) if after else 0
     i = text.index(phrase, i0); dur = clip_len(cid)
+    al = _aligned(cid)
+    if al and dur:                                   # the measured time of the word the phrase starts in
+        return round(next(t for a, b, t in al if b > i) / dur, 3)
     pos = weight(text[:i]) / weight(text)
     if not dur:
         return round(.06 + .88 * pos, 3)
     return round((0.28 + pos * (dur - 0.28 - 0.36)) / dur, 3)
 
 
-# the closing lines' word times MEASURED on the clips (seconds; from their pauses and a 50 ms loudness strip, each word group being its
-# own voiced stretch) - the text estimate (frac) drifts on these lines, most after the slow «शाबाश!» (user 2026-11-10: the equation
-# lit in sync with the VO). a | − (घटा / में से) | b | (x: lights off while the line says something else) | = (बराबर / यानी / मिला) |
-# the answer. Re-measure a line if it is re-recorded.
-MEASURED = {
-    "vo_t2_total":        {"a": 1.15, "op": 1.70, "b": 2.10, "x": 3.10, "eq": 6.75, "q": 7.45},   # यानी | 25 में से 6 घटाने पर | … | यानी | 19
-    "vo_t3_total":        {"a": 0.25, "op": 0.60, "b": 1.20, "x": 2.10, "eq": 5.45, "q": 6.10},   # 30 में से 17 घटाने पर | … | यानी | 13
-    "vo_g1_correct":      {"a": 1.30, "op": 1.95, "b": 2.75, "x": 3.25, "eq": 6.35, "q": 6.95},   # शाबाश! 42 में से 27 घटाने पर … यानी 15।
-    "vo_g1_correct_late": {"a": 0.25, "op": 0.95, "b": 1.50, "x": 2.55, "eq": 5.65, "q": 6.25},
-    "vo_g1_eq":           {"a": 1.15, "op": 2.15, "b": 2.70, "eq": 3.55, "q": 4.45},              # इसलिए 42 घटा 27 बराबर 15।
-    "vo_g2_correct":      {"a": 1.55, "op": 2.15, "b": 2.35, "eq": 2.90, "q": 3.65},              # शाबाश! 53 घटा 14 बराबर 39।
-    "vo_g2_correct_late": {"a": 0.25, "op": 1.25, "b": 2.25, "eq": 3.25, "q": 4.35},
-    "vo_g3_correct":      {"a": 1.70, "op": 2.35, "b": 2.90, "eq": 3.45, "q": 4.00},              # शाबाश! 46 घटा 28 बराबर 18।
-    "vo_g3_correct_late": {"a": 0.30, "op": 0.95, "b": 1.35, "eq": 2.10, "q": 2.75},
-    "vo_p1_correct":      {"a": 1.60, "op": 2.40, "b": 2.75, "x": 3.60, "eq": 3.95, "q": 4.75},   # शाबाश! 74 में से 58 घटाने पर हमें मिला 16।
-    "vo_p1_correct_late": {"a": 0.30, "op": 1.15, "b": 1.55, "x": 2.40, "eq": 2.85, "q": 3.70},
-    "vo_p2_correct":      {"a": 1.55, "op": 2.25, "b": 2.65, "x": 3.50, "eq": 4.05, "q": 4.50},   # शाबाश! 61 में से 35 घटाने पर हमें मिला 26।
-    "vo_p2_correct_late": {"a": 0.25, "op": 0.90, "b": 1.30, "x": 2.15, "eq": 2.70, "q": 3.05},
-    "vo_p3_correct":      {"a": 3.45, "op": 3.90, "b": 4.50, "eq": 5.20, "q": 5.95},              # … चुन ली। 84 घटा 46 बराबर 38।
-    "vo_p3_correct_late": {"a": 2.50, "op": 3.00, "b": 3.60, "eq": 4.50, "q": 5.25},
-    "vo_p4_correct":      {"a": 3.60, "op": 4.50, "b": 5.10, "eq": 5.75, "q": 6.50},              # … चुन ली। 91 घटा 14 बराबर 77।
-    "vo_p4_correct_late": {"a": 2.30, "op": 2.95, "b": 3.35, "eq": 3.85, "q": 4.45},
-}
-
-
-# user 2026-11-18 (as File6): word times measured on the recordings (ffmpeg silencedetect -38dB/0.08s), in seconds -
-# story_a's answer ("…तो बचे | 19"), the take-away line's "… दहाई" / "… इकाई" (the table's words pulsate on them)
-WT = {"vo_t2_story_a": {"q": 3.93}, "vo_t4_story_a": {"q": 4.33},
-      "vo_t2_sub": {"o": 3.85},                      # "6 में | सिर्फ 6 इकाई होती हैं"
-      "vo_g1_sub": {"t": 3.05, "o": 4.42}}           # "27 में 2 दहाई | और 7 इकाई हैं"
-
-
-# the question's two numbers in the recordings (s), from their loudness: "चौरासी | में से | छियालीस घटाइए…", "इक्यानवे | में से | चौदह …"
-PROMPT_AT = {"vo_p3_prompt": {"a": 0.28, "b": 1.36}, "vo_p4_prompt": {"a": 0.28, "b": 1.44}}
-
-
-def wt(cid, cues):
-    """cues with the WT times of the clip (as fractions of it) put in"""
-    dur = clip_len(cid)
-    if cid in WT and dur:
-        cues.update({k: round(v / dur, 3) for k, v in WT[cid].items() if k in cues})
-    return cues
-
-
-def measured(cid, est):
-    """[a, op, b, eq, q (, x)] as fractions of the clip - its measured times, else the estimate"""
-    m = MEASURED.get(cid); dur = clip_len(cid)
-    if not (m and dur):
-        return est
-    return [round(m[k] / dur, 3) for k in ("a", "op", "b", "eq", "q")] + ([round(m["x"] / dur, 3)] if "x" in m else [])
+# (the hand-measured tables MEASURED / WT / PROMPT_AT went with the old recordings: every cue is a measured word time now, frac)
 
 
 def sub_cues(cid, a, b, n):
     """"a में से b घटाने पर … यानी n" / "… हमें मिला n" - the equation's parts on a, में से, b, यानी / मिला, n (measured where it can)"""
     t = VO[cid]; w = "यानी" if "यानी" in t[t.index(str(b)):] else "मिला"; ia = t.index(str(a))
-    est = [frac(cid, str(a)), frac(cid, "में से", after=t[:ia]), frac(cid, str(b), after=t[:ia] + str(a)),
-           frac(cid, w, after=t[:ia] + str(a) + " में से " + str(b)), frac(cid, str(n), after=w)]
-    return measured(cid, est)
+    ib = t.index(str(b), t.index("में से", ia)); ix = re.search(r"[^\s,]", t[ib + len(str(b)):]).start() + ib + len(str(b))
+    return [frac(cid, str(a)), frac(cid, "में से", after=t[:ia]), frac(cid, str(b), after=t[:ia] + str(a)),
+            frac(cid, w, after=t[:ib] + str(b)), frac(cid, str(n), after=w),
+            frac(cid, t[ix], after=t[:ix])]          # (x: the words after b - the equation's lights off till the answer)
 
 
 def eq_cues(cid, a, b, n, op="घटा"):
@@ -356,15 +372,13 @@ for sl in slides:
     if "recount" in au:
         cues["recount"] = {"t": frac(au["recount"], "दहाई"), "o": frac(au["recount"], "इकाई")}
     if sl["type"] == "MENTAL_SUB" and "prompt" in au:   # user 2026-11-18 (as File6): the question's numbers light as it is said
-        pa = PROMPT_AT.get(au["prompt"]); dur = clip_len(au["prompt"])
-        cues["prompt"] = ({k: round(v / dur, 3) for k, v in pa.items()} if pa and dur else
-                          {"a": frac(au["prompt"], str(a)), "b": frac(au["prompt"], str(b), after="में से")})
+        cues["prompt"] = {"a": frac(au["prompt"], str(a)), "b": frac(au["prompt"], str(b), after="में से")}
     if "order" in au:
         cues["order"] = {"o": frac(au["order"], "इकाई"), "t": frac(au["order"], "दहाई")}
     eqs = {}
     for role in ("eq", "correct", "correct_late"):
         if role in au and "बराबर" in VO[au[role]]:
-            eqs[role] = measured(au[role], eq_cues(au[role], a, b, diff))
+            eqs[role] = eq_cues(au[role], a, b, diff)
         elif role in au and "में से" in VO[au[role]] and ("यानी" in VO[au[role]] or "मिला" in VO[au[role]]):   # (user 2026-11-10)
             eqs[role] = sub_cues(au[role], a, b, diff)
     if eqs:
@@ -379,7 +393,7 @@ for sl in slides:
             c.update({"t": frac(au["sub"], f"{bt} दहाई"), "o": frac(au["sub"], f"{bo} इकाई")})
         if "इसमें" in tx:
             c["this"] = frac(au["sub"], "इसमें")
-        cues["sub"] = wt(au["sub"], c)
+        cues["sub"] = c
         if "regroup" in au:
             cues["regroup"] = {"o": frac(au["regroup"], f"{ao} इकाई"), "t": frac(au["regroup"], "1 दहाई")}
         if "ones_now" in au:
@@ -433,7 +447,6 @@ for sl in slides:
                     "q": frac(au["sub"], "घटाते")}
         if f"{bo} इकाई" in VO[au["sub"]]:
             c["sub"]["o"] = frac(au["sub"], f"{bo} इकाई", after="घटाते")
-        wt(au["sub"], c["sub"])
         if "cant" in au:   # "5 इकाई में से 6 इकाई नहीं…": the 5 of 25, then the 6 light in the equation (user 2026-10-27)
             c["cant"] = {"o": frac(au["cant"], f"{ao} इकाई"), "b": frac(au["cant"], f"{bo} इकाई", after="में से")}
         ot = VO[au["open"]]
@@ -457,20 +470,20 @@ for sl in slides:
         if "story_a" in au:
             NW = {25: "पच्चीस", 6: "छः", 30: "तीस", 17: "सत्रह"}   # (the story lines say a and b in words)
             c["story"] = {"a": frac(au["story_a"], NW[a]), "b": frac(au["story_a"], NW[b]), "n": frac(au["story_a"], "बचे"),
-                          "q": WT.get(au["story_a"], {}).get("q", frac(au["story_a"], str(diff), after="बचे")), "c": frac(au["story_c"], str(diff))}
-            if WT.get(au["story_a"]) and clip_len(au["story_a"]):
-                c["story"]["q"] = round(WT[au["story_a"]]["q"] / clip_len(au["story_a"]), 3)
+                          "q": frac(au["story_a"], str(diff), after="बचे"), "c": frac(au["story_c"], str(diff))}
     if cues:
         d["cues"] = cues
 
 # the landing's picture comes in on "आज हम" (S01: landing_hero.start_at, the word's time in vo_landing)
 _ld = clip_len("vo_landing")
 START_AT = round(frac("vo_landing", "आज हम") * _ld, 2) if _ld else 2.9
-# the tens cover follows the greeting word by word (SME review 2026-10-28 "align the visuals with the narration"): the
-# times (s) in vo_landing.ogg, MEASURED from its loudness (user's recording 2026-10-29; pauses at 1.13-1.42, 2.25-2.81, 5.23-): glide = "नमस्ते दोस्त",
-# drop = "मैं हूँ स्विफ्टी", lean = "आज हम", rise = "दहाई", open = "खोलकर", take = "घटाना", cheer = "सीखेंगे", end = the line's end.
-# Re-measure them if vo_landing is re-recorded.
-BEATS = {"glide": 0.28, "drop": 1.42, "lean": 2.81, "rise": 3.06, "open": 3.86, "take": 4.32, "cheer": 4.76, "end": 5.23}
+# the tens cover follows the greeting word by word (SME review 2026-10-28 "align the visuals with the narration"): each beat
+# is the time (s) its word starts in vo_landing (measured, WORDS): glide = "नमस्ते दोस्त", drop = "मैं हूँ स्विफ्टी", lean = "आज हम",
+# rise = "दहाई", open = "खोलकर", take = "घटाना", cheer = "सीखेंगे", end = the line's end.
+_LW = {"glide": "नमस्ते", "drop": "मैं", "lean": "आज", "rise": "दहाई", "open": "खोलकर", "take": "घटाना", "cheer": "सीखेंगे"}
+BEATS = ({**{k: round(frac("vo_landing", w) * _ld, 2) for k, w in _LW.items()}, "end": WORDS["vo_landing"][-1][2]}
+         if _ld and WORDS.get("vo_landing") else
+         {"glide": 0.28, "drop": 1.42, "lean": 2.81, "rise": 3.06, "open": 3.86, "take": 4.32, "cheer": 4.76, "end": 5.23})
 
 AUDIO_IDS = sorted(set(VO) | {"sfx_celebrate"})
 card = {
