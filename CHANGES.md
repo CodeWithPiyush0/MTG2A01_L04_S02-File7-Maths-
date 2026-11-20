@@ -299,3 +299,12 @@ Verified: live and pulsing → speaker tapped: grey disc, a tap on it does nothi
 
 - New recordings from `assets/voiceover/new/` are in `vo_source/recorded/` (imported with `tools/import_vo.py`, as the rest); the replaced ones (mp3 + ogg) kept in `vo_source/_old_2026-11-19/`. Word times re-measured (`tools/vo_words.py`) for the four changed clips.
 - VO manifest regenerated (155 rows, 116 recordings); asset sizes regenerated; cache version `?v=20261119b`.
+
+## SME feedback (checked on a phone) — 2026-11-20
+| Page | Asked (SME) | Status | How it is built |
+|---|---|---|---|
+| T4 | "«शून्य इकाई में से 7 इकाइयाँ घटाइए» pe numbers highlight nahi ho rahe" | ✅ | the take of `vo_t3_sub` says «…तो शून्य में से 7 घटाने हैं।» (the script said «तो पहले हम इकाई से घटाएँगे।» - its text now says what is heard): 30's 0 lights on «शून्य», 17's 7 on «7» (`cues.sub.z / o`) |
+| G1 | "«2 में से 7 इकाइयाँ…» bolti hain tab bhi number highlight nahi ho rahe" | ✅ | `vo_g1_regroup` «2 इकाई में से 7 इकाई नहीं घटाई जा सकती…»: 42's 2 lights on «2 इकाई», 27's 7 on «7 इकाई» (`cues.regroup_dg`, as the other step lines) |
+| G2 | "«पहले 53 बनाइए।» pe 5 aur दहाई dono highlight ho rahe hain - remove" | ✅ | that line lights nothing now (no digit, no column) |
+
+- Cache version `?v=20261120a`; VO manifest regenerated (the `vo_t3_sub` text).

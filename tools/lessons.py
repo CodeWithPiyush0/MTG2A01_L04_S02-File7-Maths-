@@ -112,7 +112,7 @@ slides.append({
               "digits": vo("vo_t3_digits", "30 में 3 दहाई और 0 इकाई होती हैं।"),
               "tens": vo("vo_t3_build", "आप दहाई के ब्लॉक्स बनाइए।"),
               "built": vo("vo_t3_built", "यह आपने ब्लॉक्स से संख्या 30 बना ली।"),
-              "sub": vo("vo_t3_sub", "अब 30 में से 17 घटाते हैं। तो पहले हम इकाई से घटाएँगे।"),
+              "sub": vo("vo_t3_sub", "अब 30 में से 17 घटाते हैं। तो शून्य में से 7 घटाने हैं।"),   # (the 2026-11-18 take says this - SME 2026-11-20: its numbers light)
               "open": vo("vo_t3_open", "यहाँ शून्य इकाई हैं, तो हम 1 दहाई को यहाँ लाएँगे और इसको तोड़ेंगे, अब ये 1 दहाई, 10 इकाई में हो गई।"),
               "rm_ones": vo("vo_t3_rm_ones", "अब इसमें से 7 इकाई को आप हटाइए।"),
               "ones_left": vo("vo_t3_ones_left", "इन 10 इकाई में से 7 इकाई घटाने पर बचीं, 3 इकाई।"),
@@ -386,7 +386,7 @@ for sl in slides:
     if sl["type"] == "PV_SUB" and "build" in au:
         tx = VO[au["build"]]
         cues["build"] = ({"t": frac(au["build"], f"{at} दहाई"), "o": frac(au["build"], f"{ao} इकाई")} if "दहाई" in tx
-                         else {"t": frac(au["build"], str(a))})   # (SME review 2026-11-19, G2 "पहले 53 बनाइए।": the 3 and the इकाई no longer light)
+                         else {})   # (SME 2026-11-19 / 11-20, G2 "पहले 53 बनाइए।": nothing lights - not the 5 / दहाई, not the 3 / इकाई)
     if d.get("ghost_ten"):   # SME review 2026-11-19 (G1-G3): the ghost ten glides in on "1 दहाई" of the 7s reminder (s into the clip)
         _il = clip_len("vo_idle_open")
         cues["idle_open"] = {"t": round(frac("vo_idle_open", "1 दहाई") * _il, 2) if _il else .6}
@@ -418,7 +418,7 @@ for sl in slides:
             cues["build"]["who"] = frac(au["a"], giver)
     # user 2026-11-18 (as File6): a step line that names a column of a or b ("इन 15 इकाई में से 6 इकाई …") lights that digit of
     # the equation as it is said: <role>_dg
-    for role in ("rm_ones", "rm_tens", "ones_left", "tens_left"):
+    for role in ("rm_ones", "rm_tens", "ones_left", "tens_left", "regroup"):   # (regroup: G1 "2 इकाई में से 7 इकाई नहीं…" - SME 2026-11-20)
         if role not in au:
             continue
         txt = VO[au[role]]; used = set(); dg = []
@@ -453,6 +453,8 @@ for sl in slides:
                     "q": frac(au["sub"], "घटाते")}
         if f"{bo} इकाई" in VO[au["sub"]]:
             c["sub"]["o"] = frac(au["sub"], f"{bo} इकाई", after="घटाते")
+        if "शून्य में से" in VO[au["sub"]]:   # T4 "…तो शून्य में से 7 घटाने हैं।": 30's 0, then 17's 7 (SME 2026-11-20)
+            c["sub"].update({"z": frac(au["sub"], "शून्य"), "o": frac(au["sub"], str(bo), after="शून्य में से")})
         if "cant" in au:   # "5 इकाई में से 6 इकाई नहीं…": the 5 of 25, then the 6 light in the equation (user 2026-10-27)
             c["cant"] = {"o": frac(au["cant"], f"{ao} इकाई"), "b": frac(au["cant"], f"{bo} इकाई", after="में से")}
             ct = VO[au["cant"]]   # (SME review 2026-11-19: "…संख्या 6 बड़ी है और 5 छोटी।" - the numbers light as they are said)

@@ -2352,7 +2352,8 @@ const PVModules = {
         const late = role === "sub"; [E.eq, E.q].forEach(e => e.style.display = late ? "none" : "");
         const cs = CU[role] || { a: .12, op: .2, b: .3, q: .4 };
         await C.cue(role, [[cs.a, ()=> inn(E.a)], [cs.op, ()=> inn(E.op)], [cs.b, ()=> inn(E.b)], ...(late ? [] : [[cs.q, ()=> inn(E.eq, E.q)]]),
-                           [cs.t, ()=>{ K.lightDigit(E.b, "t"); K.beatHead(TA, "t"); }], [cs.o, ()=>{ K.lightDigit(E.b, "t", false); K.lightDigit(E.b, "o", true, 1100); K.beatHead(TA, "o"); }]]);
+                           [cs.t, ()=>{ K.lightDigit(E.b, "t"); K.beatHead(TA, "t"); }], [cs.o, ()=>{ K.lightDigit(E.b, "t", false); K.lightDigit(E.a, "o", false); K.lightDigit(E.b, "o", true, 1100); K.beatHead(TA, "o"); }],
+                           [cs.z, ()=> K.lightDigit(E.a, "o", true, 1100)]]);   // (z: T4 "…तो शून्य में से 7…" - 30's 0 - SME 2026-11-20)
         (late ? [E.a, E.op, E.b] : eqP).forEach(e => K.show(e)); K.lightDigit(E.b, "t", false); K.lightDigit(E.b, "o", false); };
       const growEq = ()=>{ if(E.q.style.display !== "none") return; const keep = [E.a, E.op, E.b], sc0 = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--scale")) || 1;
         const x0 = keep.map(e => e.getBoundingClientRect().left);
@@ -2546,7 +2547,7 @@ const PVModules = {
            ten cubes). G1 says why ("2 इकाई में से 7 इकाई नहीं घटाई जा सकती। तो आप 1 दहाई को यहाँ लाइए।") and what it became */
         if(A.o < B.o){
           if(C.has("regroup")){ const c = CU.regroup || {}; let gh = null;
-            await C.cue("regroup", [[c.o, sweepO], [c.t, ()=>{ sweepT(); if(d.ghost_ten) gh = K.ghostTen(C, TA); }]]);   // (the ghost ten on "1 दहाई" - SME review 2026-11-19)
+            await pvCueDg(C, E, CU, "regroup", [[c.o, sweepO], [c.t, ()=>{ sweepT(); if(d.ghost_ten) gh = K.ghostTen(C, TA); }]]);   // (42's 2 and 27's 7 light on "2 इकाई" / "7 इकाई" - SME 2026-11-20)   // (the ghost ten on "1 दहाई" - SME review 2026-11-19)
             if(gh) await gh.done; C.guard(); }
           await K.openChild(C, TA, { ghostAt: d.ghost_ten && CU.idle_open ? CU.idle_open.t : null }); C.guard();
           if(C.has("opened")) await C.say("opened");
